@@ -1,0 +1,209 @@
+/* General Body & Typography */
+body { 
+    font-family: 'Poppins', sans-serif; 
+    background-color: #f7f8fc; 
+    color: #1a202c; 
+    overflow-x: hidden; 
+}
+
+/* --- Font Redesign --- */
+h1, h2, h3, .font-extrabold {
+    font-weight: 800; /* Bolder */
+    color: #000; /* Darker */
+}
+.text-gray-900 { color: #000; }
+.text-gray-800 { color: #111; }
+
+header nav a {
+    font-weight: 600; /* Bolder nav links */
+    color: #1a202c; /* Blacker nav links */
+}
+header nav a:hover {
+    color: #1d4ed8;
+}
+header nav a.active-nav {
+    color: #1d4ed8 !important;
+    font-weight: 700;
+}
+/* --- End Font Redesign --- */
+
+/* SPA Section Handling (Only affects index.html) */
+/* Initially hide sections unless they are the target */
+main > section:not(:target):not(#home) { 
+    display: none; 
+}
+/* Ensure home is shown by default if no hash */
+main > section#home {
+     display: block; /* Default display */
+} 
+/* Or show the targeted section */
+main > section:target {
+    display: block;
+}
+
+/* Gradients */
+.gradient-text { 
+    background: linear-gradient(to right, #1d4ed8, #2563eb); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent; 
+}
+.gradient-bg { 
+    background: linear-gradient(to right, #1d4ed8, #3b82f6); 
+}
+
+/* Reveal Animations */
+.reveal { 
+    opacity: 0; 
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out; 
+    transform: translateY(40px); 
+}
+.reveal.visible { 
+    opacity: 1; 
+    transform: translateY(0); 
+}
+.stat-card { 
+    opacity: 0; 
+    transform: translateY(20px); 
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out; 
+}
+.stat-card.visible { 
+    opacity: 1; 
+    transform: translateY(0); 
+}
+
+/* Modals */
+#pdf-preview-modal, 
+#blog-modal, /* Deprecated, but keep style */
+#coming-soon-modal { 
+    display: none; /* Controlled by JS */
+}
+
+/* Carousel */
+.carousel-track { 
+    transition: transform 0.5s ease-in-out; 
+}
+
+/* Pagination */
+.pagination-btn { 
+    padding: 8px 16px; 
+    border: 1px solid #ddd; 
+    background-color: white; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+}
+.pagination-btn:hover { 
+    background-color: #f0f0f0; 
+}
+.pagination-btn:disabled { 
+    background-color: #f9f9f9; 
+    color: #ccc; 
+    cursor: not-allowed; 
+}
+.pagination-btn.active { 
+    background-color: #1d4ed8; 
+    color: white; 
+    border-color: #1d4ed8; 
+}
+
+/* Floating Animation */
+@keyframes float {
+    0% { transform: translateY(0px); opacity: 1; }
+    50% { transform: translateY(-15px); opacity: 0.5; }
+    100% { transform: translateY(0px); opacity: 1; }
+}
+.viral-card {
+    animation: float 6s ease-in-out infinite;
+    background: rgba(29, 78, 216, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* --- Blog Post & Comment Styles --- */
+.prose { 
+    color: #333; 
+    line-height: 1.7; 
+    max-width: none; /* Override Tailwind prose max-width if needed */
+}
+.prose h1, .prose h2, .prose h3 { 
+    font-weight: 700; 
+    margin-top: 1.5em; 
+    margin-bottom: 0.5em; 
+    color: #000; /* Ensure headings are dark */
+}
+.prose p { 
+    margin-bottom: 1em; 
+}
+.prose ul { 
+    list-style-type: disc; 
+    margin-left: 1.5em; 
+    margin-bottom: 1em; 
+}
+.prose blockquote { 
+    border-left: 4px solid #1d4ed8; 
+    padding-left: 1em; 
+    margin-left: 0; 
+    font-style: italic; 
+    color: #555; 
+}
+.prose img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px; /* Optional: style images */
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+}
+
+.comment-form { 
+    margin-top: 2rem; 
+}
+.comment-list { 
+    margin-top: 2rem; 
+    space-y: 1.5rem; 
+}
+.comment { 
+    background: #f9f9f9; 
+    padding: 1rem; 
+    border-radius: 8px; 
+    border: 1px solid #eee;
+}
+.comment-author { 
+    font-weight: 600; 
+    color: #000; 
+}
+.comment-date { 
+    font-size: 0.875rem; 
+    color: #666; 
+    margin-bottom: 0.5rem;
+}
+.comment-body { 
+    margin-top: 0.5rem; 
+    color: #333; 
+    line-height: 1.6;
+}
+/* --- End Blog Styles --- */
+
+/* Share Buttons Styling */
+.share-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.share-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px; /* Pill shape */
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+.share-button:hover {
+    opacity: 0.85;
+}
+.share-button i {
+    margin-right: 0.5rem;
+}
+.share-whatsapp { background-color: #25D366; color: white; }
+.share-facebook { background-color: #1877F2; color: white; }
+.share-copy { background-color: #6B7280; color: white; cursor: pointer; border: none;}

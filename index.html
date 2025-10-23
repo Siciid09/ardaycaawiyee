@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArdayCaawiye - Somaliland Form 4 Exams Hub</title>
+    
+    <link rel="icon" href="https://play-lh.googleusercontent.com/BlV02BLnJvkzu-3R716uXz3VwIjBLYOfjZdSZeeJbtU8zSFcrOLMX492HoVCTxldrA49kwyYY9uv3-mIUp9LBOM=w480-h960-rw">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="ArdayCaawiye">
+    <link rel="apple-touch-icon" href="https://play-lh.googleusercontent.com/BlV02BLnJvkzu-3R716uXz3VwIjBLYOfjZdSZeeJbtU8zSFcrOLMX492HoVCTxldrA49kwyYY9uv3-mIUp9LBOM=w480-h960-rw"> 
+    
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="antialiased">
+
+    <header id="header" class="bg-white/80 backdrop-blur-lg fixed top-0 left-0 right-0 z-50 transition-all duration-300 shadow-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="nav-link text-2xl font-bold gradient-text">ArdayCaawiye</a>
+            <nav class="hidden md:flex items-center space-x-6 font-medium">
+                <a href="index.html" class="nav-link hover:text-blue-700 active-nav">HOME</a>
+                <a href="#exams" class="nav-link hover:text-blue-700">EXAMS</a>
+                <a href="#books" class="nav-link hover:text-blue-700">BOOKS</a>
+                <a href="#scholarships" class="nav-link hover:text-blue-700">SCHOLARSHIPS</a>
+                <a href="blog.html" class="nav-link hover:text-blue-700">BLOG</a>
+                <a href="#about" class="nav-link hover:text-blue-700">ABOUT</a>
+                <a href="#contact" class="nav-link hover:text-blue-700">CONTACT</a>
+            </nav>
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="login.html" id="signup-btn" class="nav-link text-blue-700 px-5 py-2 rounded-full font-semibold hover:bg-blue-50">SIGN IN</a>
+                <button id="logout-btn" class="hidden text-red-600 px-5 py-2 rounded-full font-semibold hover:bg-red-50">LOGOUT</button>
+                <a href="#download" id="download-btn" class="nav-link gradient-bg text-white px-5 py-2 rounded-full font-semibold hover:opacity-90 transform hover:scale-105">DOWNLOAD</a>
+                <a href="admin.html" id="admin-dashboard-btn" class="hidden nav-link gradient-bg text-white px-5 py-2 rounded-full font-semibold hover:opacity-90 transform hover:scale-105">DASHBOARD</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden text-gray-700"><i data-lucide="menu"></i></button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 space-y-2 bg-white">
+              <a href="index.html" class="block nav-link hover:text-blue-700 py-2">HOME</a>
+              <a href="#exams" class="block nav-link hover:text-blue-700 py-2">EXAMS</a>
+              <a href="#books" class="block nav-link hover:text-blue-700 py-2">BOOKS</a>
+              <a href="#scholarships" class="block nav-link hover:text-blue-700 py-2">SCHOLARSHIPS</a>
+              <a href="blog.html" class="block nav-link hover:text-blue-700 py-2">BLOG</a>
+              <a href="#about" class="block nav-link hover:text-blue-700 py-2">ABOUT</a>
+              <a href="#contact" class="block nav-link hover:text-blue-700 py-2">CONTACT</a>
+              <a href="login.html" id="mobile-signup-btn" class="block nav-link text-center text-blue-700 border border-blue-700 rounded-md py-2 mt-2">SIGN IN</a>
+              <button id="mobile-logout-btn" class="hidden w-full text-center text-red-600 border border-red-600 rounded-md py-2 mt-2">LOGOUT</button>
+              <a href="#download" id="mobile-download-btn" class="block nav-link gradient-bg text-white text-center rounded-md py-2 mt-2">DOWNLOAD</a>
+              <a href="admin.html" id="mobile-admin-dashboard-btn" class="hidden nav-link gradient-bg text-white text-center rounded-md py-2 mt-2">DASHBOARD</a>
+        </div>
+    </header>
+
+    <main>
+        <section id="home">
+            <div class="bg-white pt-24 md:pt-32">
+                <div class="container mx-auto px-6">
+                    <div class="grid md:grid-cols-2 gap-12 items-center">
+                        <div class="text-center md:text-left">
+                            <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">Ace Your <span class="gradient-text">Form 4</span> National Exams</h1>
+                            <p class="text-lg text-gray-600 max-w-xl mx-auto md:mx-0 mb-8">The #1 App for Somaliland Form 4 students. Access past papers, ebooks, verified answers, and interactive quizzes.</p>
+                                <div class="flex justify-center md:justify-start flex-wrap gap-4 mb-8">
+                                    <a href="#" class="apple-store-link bg-black text-white px-6 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800">
+                                        <i data-lucide="apple" class="w-6 h-6"></i><div><p class="text-xs">Download on the</p><p class="text-lg font-semibold -mt-1">App Store</p></div>
+                                    </a>
+                                    <a href="https://play.google.com/store/apps/details?id=com.ardaycaawiye.app" target="_blank" class="google-play-link bg-black text-white px-6 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800">
+                                      <img src="https://www.pngkit.com/png/full/14-146203_white-play-png-white-google-play-logo.png" class="w-6 h-6" alt="Google Play Icon">
+                                        <div><p class="text-xs">GET IT ON</p><p class="text-lg font-semibold -mt-1">Google Play</p></div>
+                                    </a>
+                                </div>
+                        </div>
+                        <div class="relative w-full h-[500px] flex justify-center items-center mt-12 md:mt-0">
+                            
+                            <img src="https://firebasestorage.googleapis.com/v0/b/ardaycaawiye-18b89.firebasestorage.app/o/test%2FScreenshot_20251019_103748.jpg?alt=media&token=25c0556a-3b42-40e9-9db8-089315e36e05" alt="App Screenshot 1" class="absolute w-64 h-auto rounded-2xl shadow-2xl z-20 transform -translate-x-20 md:-translate-x-24 translate-y-4 rotate-[-12deg]">
+                             <img src="https://firebasestorage.googleapis.com/v0/b/ardaycaawiye-18b89.firebasestorage.app/o/test%2FScreenshot_20251019_103742.jpg?alt=media&token=668b82d0-1ee9-4481-89d1-f11f10c70738" alt="App Screenshot 2" class="absolute w-64 h-auto rounded-2xl shadow-2xl z-30 transform translate-y-8">
+                             <img src="https://firebasestorage.googleapis.com/v0/b/ardaycaawiye-18b89.firebasestorage.app/o/test%2FScreenshot_20251019_104011.jpg?alt=media&token=87e33986-0175-4e77-89b9-c23b9c8cea19" alt="App Screenshot 3" class="absolute w-64 h-auto rounded-2xl shadow-2xl z-20 transform translate-x-20 md:translate-x-24 translate-y-12 rotate-[12deg]">
+                            
+                            <div class="absolute inset-0 z-40">
+                                <div class="viral-card absolute top-[10%] left-[5%] p-3 rounded-xl shadow-lg flex items-center gap-3 text-white" style="animation-delay: 0s;">
+                                    <i data-lucide="eye" class="w-6 h-6 opacity-80"></i>
+                                    <div><p class="font-bold text-lg">11M+</p><p class="text-xs opacity-80 -mt-1">Views</p></div>
+                                </div>
+                                <div class="viral-card absolute bottom-[15%] left-[10%] p-3 rounded-xl shadow-lg flex items-center gap-3 text-white" style="animation-delay: 1.5s;">
+                                    <i data-lucide="download" class="w-6 h-6 opacity-80"></i>
+                                    <div><p class="font-bold text-lg">300K+</p><p class="text-xs opacity-80 -mt-1">Downloads</p></div>
+                                </div>
+                                <div class="viral-card absolute top-[12%] right-[8%] p-3 rounded-xl shadow-lg flex items-center gap-3 text-white" style="animation-delay: 3s;">
+                                    <i data-lucide="file-text" class="w-6 h-6 opacity-80"></i>
+                                    <div><p class="font-bold text-lg">500+</p><p class="text-xs opacity-80 -mt-1">Exams</p></div>
+                                </div>
+                                <div class="viral-card absolute bottom-[20%] right-[5%] p-3 rounded-xl shadow-lg flex items-center gap-3 text-white" style="animation-delay: 4.5s;">
+                                    <i data-lucide="book-copy" class="w-6 h-6 opacity-80"></i>
+                                    <div><p class="font-bold text-lg">30+</p><p class="text-xs opacity-80 -mt-1">Subjects</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="py-24">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-16 reveal">
+                        <h2 class="text-3xl md:text-4xl font-bold">Find Recent Exam Papers</h2>
+                        <p class="text-gray-500 mt-4 max-w-2xl mx-auto">Quickly find the Form 4 resources you need for your upcoming national exams.</p>
+                    </div>
+                    <div id="home-exams-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    </div>
+                    <div class="text-center mt-12">
+                        <a href="#exams" class="nav-link gradient-bg text-white px-8 py-3 rounded-full font-semibold hover:opacity-90 transform hover:scale-105 inline-block">View All Exams</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-24 bg-white">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-16 reveal">
+                        <h2 class="text-3xl md:text-4xl font-bold">Explore Our Digital Library</h2>
+                        <p class="text-gray-500 mt-4 max-w-2xl mx-auto">Get a head start with our curated collection of books and study guides.</p>
+                    </div>
+                    <div id="home-books-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                    </div>
+                    <div class="text-center mt-12">
+                        <a href="#books" class="nav-link gradient-bg text-white px-8 py-3 rounded-full font-semibold hover:opacity-90 transform hover:scale-105 inline-block">View All Books</a>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="py-24">
+                <div class="container mx-auto px-6">
+                    <div class="text-center mb-16 reveal">
+                        <h2 class="text-3xl md:text-4xl font-bold">Your Path to Success in 3 Steps</h2>
+                        <p class="text-gray-500 mt-4 max-w-2xl mx-auto">A simple, clear path to mastering your Form 4 national exams.</p>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-8 text-center">
+                        <div class="reveal" style="transition-delay: 150ms;"><div class="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">1</div><h3 class="text-xl font-bold mb-2">Download</h3><p class="text-gray-600 px-4">Get the app to access all our free resources.</p></div>
+                        <div class="reveal" style="transition-delay: 300ms;"><div class="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">2</div><h3 class="text-xl font-bold mb-2">Practice</h3><p class="text-gray-600 px-4">Use past papers and quizzes to test your knowledge.</p></div>
+                        <div class="reveal" style="transition-delay: 450ms;"><div class="bg-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">3</div><h3 class="text-xl font-bold mb-2">Succeed</h3><p class="text-gray-600 px-4">Go into your exam with confidence and achieve your goals.</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="py-24 bg-white">
+                <div class="container mx-auto px-6"><div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8 text-center">
+                    <div class="stat-card reveal"><i data-lucide="users" class="w-10 h-10 gradient-text mx-auto mb-2"></i><h3 class="text-3xl font-bold gradient-text" data-target="120000">0</h3><p class="text-gray-500 mt-2">Students</p></div>
+                    <div class="stat-card reveal" style="transition-delay: 50ms;"><i data-lucide="download" class="w-10 h-10 gradient-text mx-auto mb-2"></i><h3 class="text-3xl font-bold gradient-text" data-target="300000">0</h3><p class="text-gray-500 mt-2">Downloads</p></div>
+                    <div class="stat-card reveal" style="transition-delay: 100ms;"><i data-lucide="eye" class="w-10 h-10 gradient-text mx-auto mb-2"></i><h3 class="text-3xl font-bold gradient-text" data-target="11000000">0</h3><p class="text-gray-500 mt-2">Views</p></div>
+                    <div class="stat-card reveal" style="transition-delay: 150ms;"><i data-lucide="file-text" class="w-10 h-10 gradient-text mx-auto mb-2"></i><h3 class="text-3xl font-bold gradient-text" data-target="500">0</h3><p class="text-gray-500 mt-2">Exams</p></div>
+                    <div class="stat-card reveal" style="transition-delay: 200ms;"><i data-lucide="book-copy" class="w-10 h-10 gradient-text mx-auto mb-2"></i><h3 class="text-3xl font-bold gradient-text" data-target="30">0</h3><p class="text-gray-500 mt-2">Subjects</p></div>
+                    <div class="stat-card reveal" style="transition-delay: 250ms;"><i data-lucide="trending-up" class="w-10 h-10 gradient-text mx-auto mb-2"></i><h3 class="text-3xl font-bold gradient-text" data-target="95">0%</h3><p class="text-gray-500 mt-2">Success Rate</p></div>
+                </div></div>
+            </div>
+
+              <div class="py-24 overflow-hidden">
+                    <div class="container mx-auto px-6">
+                        <div class="text-center mb-16 reveal">
+                            <h2 class="text-3xl md:text-4xl font-bold">Trusted by Students</h2>
+                            <p class="text-gray-500 mt-4 max-w-2xl mx-auto">See what your peers are saying about ArdayCaawiye.</p>
+                        </div>
+                        <div class="relative">
+                            <div id="carousel-track-container" class="overflow-hidden">
+                                <div id="carousel-track" class="flex">
+                                    <div class="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 p-4"><div class="bg-white p-8 rounded-2xl h-full shadow-md"><p class="text-gray-600 mb-6 italic">"This platform was essential for my Form 4 exam preparation. The past papers from previous years were exactly what I needed to practice and build my confidence. Highly recommended!"</p><div class="flex items-center"><img src="https://i.pravatar.cc/48?u=ayan" class="rounded-full mr-4" alt="User Avatar"><div><p class="font-bold">Ayan H.</p><p class="text-sm text-gray-500">Hargeisa</p></div></div></div></div>
+                                    <div class="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 p-4"><div class="bg-white p-8 rounded-2xl h-full shadow-md"><p class="text-gray-600 mb-6 italic">"The quizzes are my favorite feature. Getting instant feedback helped me learn from my mistakes quickly. The app is even better, I use it on the bus to school."</p><div class="flex items-center"><img src="https://i.pravatar.cc/48?u=mohamed" class="rounded-full mr-4" alt="User Avatar"><div><p class="font-bold">Mohamed A.</p><p class="text-sm text-gray-500">Burao</p></div></div></div></div>
+                                    <div class="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 p-4"><div class="bg-white p-8 rounded-2xl h-full shadow-md"><p class="text-gray-600 mb-6 italic">"I struggled with Physics, but the topic-by-topic quizzes and ebooks on ArdayCaawiye made a huge difference. I feel so much more prepared for the national exam."</p><div class="flex items-center"><img src="https://i.pravatar.cc/48?u=fatima" class="rounded-full mr-4" alt="User Avatar"><div><p class="font-bold">Fatima Y.</p><p class="text-sm text-gray-500">Berbera</p></div></div></div></div>
+                                    <div class="flex-shrink-0 w-full md:w-1/2 lg:w-1/3 p-4"><div class="bg-white p-8 rounded-2xl h-full shadow-md"><p class="text-gray-600 mb-6 italic">"The best part is having all the past papers in one place, with answers! It saved me so much time searching. The app is a must-have for every Form 4 student."</p><div class="flex items-center"><img src="https://i.pravatar.cc/48?u=abdi" class="rounded-full mr-4" alt="User Avatar"><div><p class="font-bold">Abdi K.</p><p class="text-sm text-gray-500">Borama</p></div></div></div></div>
+                                </div>
+                            </div>
+                            <div id="carousel-dots" class="flex justify-center gap-2 mt-8"></div>
+                        </div>
+                    </div>
+                </div>
+
+            <div class="py-12">
+                   <div class="container mx-auto px-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <a href="https://wa.me/252633227084" target="_blank" class="whatsapp-link bg-gradient-to-r from-green-500 to-teal-500 text-white p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+                                <div class="flex items-center gap-5 text-center md:text-left">
+                                    <i data-lucide="message-circle" class="w-12 h-12 flex-shrink-0"></i>
+                                    <div>
+                                        <h3 class="text-2xl font-bold">Join our Community</h3>
+                                        <p class="opacity-90">Get help and discuss with fellow students on WhatsApp.</p>
+                                    </div>
+                                </div>
+                                <span class="bg-white text-green-600 font-bold px-6 py-3 rounded-full mt-4 md:mt-0 whitespace-nowrap">Join Now</span>
+                            </a>
+                            <a href="#" target="_blank" class="bg-gradient-to-r from-sky-500 to-blue-600 text-white p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+                                <div class="flex items-center gap-5 text-center md:text-left">
+                                    <i data-lucide="send" class="w-12 h-12 flex-shrink-0"></i>
+                                    <div>
+                                        <h3 class="text-2xl font-bold">Get Instant Updates</h3>
+                                        <p class="opacity-90">Subscribe to our Telegram channel for the latest news.</p>
+                                    </div>
+                                </div>
+                                <span class="bg-white text-blue-600 font-bold px-6 py-3 rounded-full mt-4 md:mt-0 whitespace-nowrap">Subscribe</span>
+                            </a>
+                        </div>
+                   </div>
+            </div>
+
+            <div id="download" class="py-24">
+                <div class="container mx-auto px-6">
+                    <div class="gradient-bg rounded-2xl p-12 md:p-16 text-white text-center reveal">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Score Higher?</h2>
+                        <p class="text-lg opacity-90 mb-8 max-w-3xl mx-auto">The ultimate exam toolkit is one tap away. Get instant access to all resources by downloading the app now.</p>
+                        <div class="flex flex-wrap gap-4 justify-center">
+                            <a href="#" class="apple-store-link bg-white text-blue-700 px-6 py-3 rounded-lg flex items-center gap-3 font-bold hover:bg-gray-200">
+                                <i data-lucide="apple" class="w-6 h-6"></i><div><p class="text-xs">Download on the</p><p class="text-lg font-semibold -mt-1">App Store</p></div>
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=com.ardaycaawiye.app" target="_blank" class="google-play-link bg-white text-blue-700 px-6 py-3 rounded-lg flex items-center gap-3 font-bold hover:bg-gray-200">
+                                <img src="https://img.icons8.com/ios_filled/512/228BE6/google-play.png" class="w-6 h-6" alt="Google Play Icon">
+                                <div><p class="text-xs">GET IT ON</p><p class="text-lg font-semibold -mt-1">Google Play</p></div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="exams" class="py-24 md:py-32 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold">All Past Exam Papers</h2><p class="text-gray-500 mt-4 max-w-2xl mx-auto">Find every exam paper you need, organized for easy access.</p></div>
+                
+                <div class="mb-8 p-4 bg-gray-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
+                    <input type="text" id="exam-search" placeholder="Search by exam title..." class="w-full md:w-1/3 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <select id="exam-year-filter" class="w-full md:w-auto p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Filter by Year</option></select>
+                    <select id="exam-subject-filter" class="w-full md:w-auto p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Filter by Subject</option></select>
+                </div>
+
+                <div id="exams-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><div class="text-center py-10 col-span-full">Loading exams...</div></div>
+                
+                <div id="exams-pagination" class="flex justify-center items-center flex-wrap gap-2 md:gap-4 mt-12"></div>
+            </div>
+        </section>
+
+        <section id="books" class="py-24 md:py-32">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16"><h2 class="text-3xl md:text-4xl font-bold">Digital Library & Guides</h2><p class="text-gray-500 mt-4 max-w-2xl mx-auto">Browse our collection of general knowledge books and subject-specific guides.</p></div>
+                
+                <div class="mb-8 p-4 bg-gray-50 rounded-lg flex flex-col md:flex-row gap-4 items-center">
+                    <input type="text" id="book-search" placeholder="Search by book title or author..." class="w-full md:w-1/3 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <select id="book-subject-filter" class="w-full md:w-auto p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Filter by Subject</option></select>
+                </div>
+
+                <div id="books-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"><div class="text-center py-10 col-span-full">Loading books...</div></div>
+                
+                <div id="books-pagination" class="flex justify-center items-center flex-wrap gap-2 md:gap-4 mt-12"></div>
+            </div>
+        </section>
+
+        <section id="scholarships" class="py-24 md:py-32 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold">Scholarship Opportunities</h2>
+                    <p class="text-gray-500 mt-4 max-w-2xl mx-auto">Explore these opportunities to fund your future education. Apply now!</p>
+                </div>
+                <div id="scholarships-list" class="max-w-4xl mx-auto space-y-6">
+                    </div>
+            </div>
+        </section>
+
+        <section id="blog" class="py-24 md:py-32">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16"><h2 class="text-3xl md:text-4xl font-bold">Our Blog & Study Tips</h2><p class="text-gray-500 mt-4 max-w-2xl mx-auto">Explore articles on study strategies, exam tips, and student wellness from our team.</p></div>
+                <div id="blog-posts-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    </div>
+            </div>
+        </section>
+
+        <section id="about" class="py-24 md:py-32 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center max-w-4xl mx-auto">
+                    <h2 class="text-4xl font-extrabold gradient-text mb-4">Empowering Somaliland's Future</h2>
+                    <p class="text-lg text-gray-600">ArdayCaawiye was born from a simple yet powerful idea: every student deserves the best tools to succeed. We are a passionate team dedicated to making high-quality educational resources accessible to all Form 4 students across Somaliland.</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12 mt-20 items-center">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2084&auto=format&fit=crop" class="rounded-2xl shadow-lg" alt="Team working together">
+                    </div>
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Our Mission</h3>
+                            <p class="text-gray-600">Our mission is to bridge the educational gap by providing a comprehensive, user-friendly digital platform. We believe that by centralizing past exams, textbooks, and study guides, we can level the playing field, helping students build confidence and achieve academic excellence. We're not just an app; we're a study partner for the next generation of leaders, thinkers, and innovators in Somaliland.</p>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Who We Serve</h3>
+                            <p class="text-gray-600">We are committed to serving the ambitious Form 4 students of Somaliland. Whether you're in Hargeisa, Burao, Berbera, or any town in between, our platform is designed for you. We understand the challenges of preparing for national exams and aim to provide the support and resources needed to turn academic goals into reality.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-24">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-12">Meet the Team</h2>
+                    <div class="grid sm:grid-cols-1 md:grid-cols-3 gap-10">
+                        <div class="bg-gray-50 p-6 rounded-2xl shadow-lg text-center reveal">
+                            <img src="https://xsgames.co/randomusers/assets/avatars/male/74.jpg" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-blue-200" alt="Mubarik Osman Abdi">
+                            <h4 class="text-xl font-bold text-gray-900">Mubarik Osman Abdi</h4>
+                            <p class="text-blue-600 font-semibold">Full Stack Developer</p>
+                            <p class="text-gray-500 mt-2 text-sm">The architect of ArdayCaawiye, Mubarik combines his software engineering expertise with a passion for marketing to build and grow platforms that make a difference.</p>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-2xl shadow-lg text-center reveal" style="transition-delay: 200ms;">
+                            <img src="https://xsgames.co/randomusers/assets/avatars/male/56.jpg" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-blue-200" alt="Khadar Abdi Abidallahi">
+                            <h4 class="text-xl font-bold text-gray-900">Khadar Abdi Abidallahi</h4>
+                            <p class="text-blue-600 font-semibold">Telecommunication Engineer</p>
+                            <p class="text-gray-500 mt-2 text-sm">Khadar ensures our platform is robust, scalable, and accessible. His engineering background is key to our technical infrastructure and seamless user experience.</p>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-2xl shadow-lg text-center reveal" style="transition-delay: 400ms;">
+                            <img src="https://xsgames.co/randomusers/assets/avatars/male/46.jpg" class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-blue-200" alt="Farah Hussen">
+                            <h4 class="text-xl font-bold text-gray-900">Farah Hussen</h4>
+                            <p class="text-blue-600 font-semibold">Digital & Telecom Specialist</p>
+                            <p class="text-gray-500 mt-2 text-sm">Farah drives our digital strategy, blending his telecom engineering skills with creative digital marketing to connect with and support students across the nation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="contact" class="py-24 md:py-32">
+            <div class="container mx-auto px-6 max-w-4xl">
+                <div class="text-center mb-16"><h2 class="text-3xl md:text-4xl font-bold">Get In Touch</h2><p class="text-gray-500 mt-4 max-w-2xl mx-auto">We're here to help. Select a contact method below or send us a message.</p></div>
+                <div class="grid md:grid-cols-2 gap-8 items-start">
+                    <div class="space-y-6">
+                        <a href="https://wa.me/252633227084" target="_blank" class="whatsapp-link flex items-center p-4 border rounded-lg hover:bg-gray-50"><i data-lucide="message-circle" class="w-8 h-8 text-green-500 mr-4"></i><div><p class="font-bold">WhatsApp</p><p class="text-gray-600">+252 63 3227084</p></div></a>
+                        <a href="mailto:info@ardaycaawiye.com" class="flex items-center p-4 border rounded-lg hover:bg-gray-50"><i data-lucide="mail" class="w-8 h-8 text-blue-500 mr-4"></i><div><p class="font-bold">Email Support</p><p class="text-gray-600">info@ardaycaawiye.com</p></div></a>
+                        <div class="flex items-center p-4 border rounded-lg"><i data-lucide="phone" class="w-8 h-8 text-red-500 mr-4"></i><div><p class="font-bold">Call Us</p><p class="text-gray-600">633227084 / 636637456</p></div></div>
+                    </div>
+                    <form id="contact-form" class="space-y-4">
+                        <input type="text" id="contact-name" placeholder="Your Name" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <input type="email" id="contact-email" placeholder="Your Email" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <textarea id="contact-message" placeholder="Your Message" rows="5" required class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                        <button type="submit" class="w-full gradient-bg text-white font-bold py-3 px-6 rounded-lg hover:opacity-90">Send Message</button>
+                        <p id="contact-success" class="text-green-600 text-center font-semibold mt-2 hidden">Thank you! Your message has been sent.</p>
+                    </form>
+                </div>
+            </div>
+        </section>
+        
+        <section id="signup" class="py-24 md:py-32">
+              <div class="container mx-auto px-6 max-w-md"><div class="bg-white p-8 rounded-2xl shadow-lg"><h2 class="text-2xl font-bold text-center mb-1">Create Account</h2><p class="text-gray-500 text-center mb-6">Please go to our <a href="login.html" class="text-blue-600 font-bold hover:underline">Sign In</a> page.</p></div></div>
+        </section>
+    </main>
+
+    <div id="pdf-preview-modal" class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg w-full max-w-4xl h-[90vh] flex flex-col relative">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 id="pdf-title" class="font-bold text-lg">Access Full Document</h3>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-black text-3xl">×</button>
+            </div>
+            <div class="flex-grow relative flex items-center justify-center overflow-hidden p-4 bg-gray-200">
+                <img src="https://images.unsplash.com/photo-1549633030-8962852b318b?q=80&w=2070&auto=format=fit=crop" class="absolute inset-0 w-full h-full object-cover filter blur-md scale-110" alt="Blurred Document">
+
+                <div class="relative z-10 bg-white/80 backdrop-blur-sm p-8 rounded-2xl text-center shadow-xl max-w-lg">
+                    <i data-lucide="lock" class="w-16 h-16 text-blue-600 mb-4 mx-auto"></i>
+                    <h2 class="text-2xl font-bold mb-2">Download the App to View</h2>
+                    <p class="text-gray-700 mb-6">This content is exclusively available in the ArdayCaawiye mobile app. Get full offline access, answer keys, and more!</p>
+                    <div class="flex flex-col sm:flex-row flex-wrap gap-4 justify-center">
+                         <a href="#" class="apple-store-link bg-black text-white px-6 py-3 rounded-lg flex items-center gap-3 w-full sm:w-auto justify-center"><i data-lucide="apple" class="w-6 h-6"></i><div><p class="text-xs">Download on the</p><p class="text-lg font-semibold -mt-1">App Store</p></div></a>
+                         <a href="https://play.google.com/store/apps/details?id=com.ardaycaawiye.app" target="_blank" class="google-play-link bg-black text-white px-6 py-3 rounded-lg flex items-center gap-3 w-full sm:w-auto justify-center">
+                            <img src="https://www.pngkit.com/png/full/14-146203_white-play-png-white-google-play-logo.png" class="w-6 h-6" alt="Google Play Icon">
+                            <div><p class="text-xs">GET IT ON</p><p class="text-lg font-semibold -mt-1">Google Play</p></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="blog-modal" class="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4 overflow-y-auto">
+        </div>
+
+    <div id="coming-soon-modal" class="fixed inset-0 bg-black/70 z-[70] flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg w-full max-w-sm text-center p-8 relative shadow-xl">
+            <button id="close-coming-soon-btn" class="absolute top-2 right-4 text-gray-500 hover:text-black text-4xl">×</button>
+            <i data-lucide="apple" class="w-16 h-16 text-gray-800 mb-4 mx-auto"></i>
+            <h2 class="text-2xl font-bold mb-2">Coming Soon!</h2>
+            <p class="text-gray-700 mb-6">Our iOS app is currently in development and will be available on the App Store soon.</p>
+            <button id="coming-soon-ok-btn" class="gradient-bg text-white font-bold py-2 px-8 rounded-lg hover:opacity-90">
+                OK
+            </button>
+        </div>
+    </div>
+
+
+    <footer class="bg-gray-900 text-white">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid md:grid-cols-3 gap-8 text-center md:text-left">
+                <div class="md:col-span-1">
+                    <h3 class="text-2xl font-bold mb-2">ArdayCaawiye</h3>
+                    <p class="text-gray-400 max-w-md mx-auto md:mx-0">
+                        Your dedicated partner for academic success. We provide Somaliland's Form 4 students with a comprehensive digital library of past exams, textbooks, and study guides. Our mission is to make quality educational resources accessible to every student, helping them build confidence and achieve their goals. Prepare smarter, not harder, with ArdayCaawiye.
+                    </p>
+                </div>
+                <div class="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-8">
+                    <div>
+                        <h4 class="font-bold text-white mb-3">Quick Links</h4>
+                        <nav class="flex flex-col space-y-2">
+                            <a href="index.html" class="nav-link text-gray-400 hover:text-white">Home</a>
+                            <a href="#exams" class="nav-link text-gray-400 hover:text-white">Exams</a>
+                            <a href="#books" class="nav-link text-gray-400 hover:text-white">Books</a>
+                            <a href="#scholarships" class="nav-link text-gray-400 hover:text-white">Scholarships</a>
+                        </nav>
+                    </div>
+                     <div>
+                        <h4 class="font-bold text-white mb-3">Company</h4>
+                        <nav class="flex flex-col space-y-2">
+                            <a href="#about" class="nav-link text-gray-400 hover:text-white">About Us</a>
+                            <a href="blog.html" class="nav-link text-gray-400 hover:text-white">Blog</a>
+                            <a href="#contact" class="nav-link text-gray-400 hover:text-white">Contact</a>
+                        </nav>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white mb-3">Get the App</h4>
+                        <nav class="flex flex-col space-y-2">
+                            <a href="#" class="apple-store-link text-gray-400 hover:text-white">App Store</a>
+                            <a href="https://play.google.com/store/apps/details?id=com.ardaycaawiye.app" target="_blank" class="google-play-link text-gray-400 hover:text-white">Google Play</a>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-10 border-t border-gray-700 pt-8 text-center"><p class="text-gray-500">© 2025 ArdayCaawiye. Developed by <a href="https://hiigsitech.com" target="_blank" class="hover:text-white underline">Hiigsitech</a>.</p></div>
+        </div>
+    </footer>
+
+    <script src="app.js" type="module" defer></script>
+</body>
+</html>

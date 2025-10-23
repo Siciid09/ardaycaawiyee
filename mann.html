@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive CMS Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .sidebar-link.active { background-color: #4f46e5; color: white; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        #toast { position: fixed; bottom: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 0.5rem; color: white; z-index: 1000; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s ease-in-out; }
+        #toast.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .toast-success { background-color: #22c55e; }
+        .toast-error { background-color: #ef4444; }
+        .action-btn { padding: 0.25rem 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; font-size: 0.875rem; display: inline-flex; align-items: center; }
+        .file-preview { margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; }
+        .file-upload-progress { margin-top: 0.5rem; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <div id="login-page" class="w-full h-full flex items-center justify-center bg-gray-100">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg m-4">
+            <div><h2 id="auth-title" class="text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2></div>
+            <form id="auth-form" class="space-y-6">
+                <div>
+                    <label for="email" class="sr-only">Email address</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Email address" value="dausfilms@gmail.com">
+                </div>
+                <div>
+                    <label for="password" class="sr-only">Password</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Password" value="siciid23">
+                </div>
+                <div><button id="auth-submit-btn" type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign in</button></div>
+            </form>
+            <p class="text-center text-sm text-gray-600"><a href="#" id="auth-toggle-link" class="font-medium text-indigo-600 hover:text-indigo-500">Don't have an account? Sign up</a></p>
+        </div>
+    </div>
+
+    <div id="main-app" class="flex w-full h-full hidden">
+        
+        <aside id="sidebar" class="w-64 bg-gray-800 text-white flex flex-col fixed h-full z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+            <div class="p-6 text-2xl font-bold border-b border-gray-700">ArdayCaawiye CMS</div>
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#" class="sidebar-link active flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors" data-tab="dashboard"><i data-lucide="home" class="w-5 h-5 mr-3"></i> Dashboard</a>
+                <a href="#" class="sidebar-link flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors" data-tab="manage-content"><i data-lucide="folder-kanban" class="w-5 h-5 mr-3"></i> Manage Content</a>
+                <a href="#" class="sidebar-link flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors" data-tab="pdf-library"><i data-lucide="library" class="w-5 h-5 mr-3"></i> PDF Library</a>
+                <a href="#" class="sidebar-link flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors" data-tab="settings"><i data-lucide="settings" class="w-5 h-5 mr-3"></i> Settings</a>
+            </nav>
+            <div class="p-4 border-t border-gray-700">
+                <div id="auth-status" class="text-xs text-gray-400 truncate mb-2">Not Authenticated</div>
+                <button id="logout-btn" class="w-full flex items-center justify-center p-2 rounded-lg bg-red-600 hover:bg-red-700 transition-colors text-white font-medium text-sm"><i data-lucide="log-out" class="w-4 h-4 mr-2"></i> Logout</button>
+            </div>
+        </aside>
+
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden hidden"></div>
+
+        <div class="md:hidden flex justify-between items-center bg-white p-4 border-b fixed top-0 left-0 right-0 z-10">
+            <span class="text-xl font-bold text-gray-800">ArdayCaawiye CMS</span>
+            <button id="mobile-menu-btn" class="text-gray-800">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <main class="flex-1 ml-0 md:ml-64 pt-24 md:pt-8 p-8 overflow-y-auto">
+            <div id="dashboard" class="tab-content fade-in">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Overview</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-indigo-100 p-4 rounded-full mr-4"><i data-lucide="book-copy" class="w-8 h-8 text-indigo-600"></i></div><div><p class="text-gray-500">Total Subjects</p><p id="total-subjects" class="text-3xl font-bold">0</p></div></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-green-100 p-4 rounded-full mr-4"><i data-lucide="file-check-2" class="w-8 h-8 text-green-600"></i></div><div><p class="text-gray-500">Total Exams</p><p id="total-exams" class="text-3xl font-bold">0</p></div></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-amber-100 p-4 rounded-full mr-4"><i data-lucide="book-open" class="w-8 h-8 text-amber-600"></i></div><div><p class="text-gray-500">Total Books</p><p id="total-books" class="text-3xl font-bold">0</p></div></div>
+                </div>
+            </div>
+
+            <div id="manage-content" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Content</h1>
+                <div class="bg-white rounded-xl shadow-md">
+                    <div class="border-b border-gray-200 overflow-x-auto"><nav class="flex -mb-px px-6" aria-label="Tabs"><a href="#" class="content-tab border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-subtab="subjects">Subjects</a><a href="#" class="content-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm" data-subtab="exams">Exams</a><a href="#" class="content-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm" data-subtab="generalBooks">General Books</a></nav></div>
+                    <div id="subjects" class="content-subtab p-6"></div><div id="exams" class="content-subtab p-6 hidden"></div><div id="generalBooks" class="content-subtab p-6 hidden"></div>
+                </div>
+            </div>
+
+            <div id="pdf-library" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">PDF Library</h1>
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                        <h2 class="text-xl font-semibold">All Uploaded Files (sorted by size)</h2>
+                        <div>
+                            <input type="file" id="pdf-upload-input" multiple accept=".pdf,.zip,.png,.jpg,.jpeg" class="hidden">
+                            <button id="upload-pdf-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center w-full md:w-auto"><i data-lucide="upload" class="w-4 h-4 mr-2"></i>Upload Files</button>
+                        </div>
+                    </div>
+                    <div id="upload-progress-container" class="hidden my-4"><div class="text-sm font-medium text-gray-700 mb-1">Uploading...</div><div class="w-full bg-gray-200 rounded-full h-2.5"><div id="upload-progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div></div></div>
+                    <div class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <input type="text" id="pdf-search" placeholder="Search files..." class="w-full md:w-1/2 p-2 border border-gray-300 rounded-lg">
+                        <button id="delete-selected-pdfs-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center hidden w-full md:w-auto"><i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>Delete Selected</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-3 w-8"><input type="checkbox" id="select-all-pdfs"></th>
+                                    <th class="p-3 font-semibold text-sm">File Name</th>
+                                    <th class="p-3 font-semibold text-sm">Size</th>
+                                    <th class="p-3 font-semibold text-sm">Upload Date</th>
+                                    <th class="p-3 font-semibold text-sm">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pdf-list-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Settings</h1>
+                <div class="bg-white p-8 rounded-xl shadow-md"><p>Placeholder for settings.</p></div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 overflow-y-auto py-10">
+        <div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 m-4 fade-in">
+        </div>
+    </div>
+    
+    <div id="assign-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-8 m-4 fade-in h-[80vh] flex flex-col">
+            <h2 class="text-2xl font-bold mb-4">Assign PDF to <span id="assign-item-type" class="capitalize">Item</span></h2>
+            <p class="mb-4">Select a PDF below to assign to <strong id="assign-item-name"></strong>.</p>
+            <input type="text" id="assign-pdf-search" placeholder="Search available PDFs..." class="w-full p-2 border border-gray-300 rounded-lg mb-4">
+            <div id="assign-pdf-list-container" class="flex-1 overflow-y-auto border p-4 rounded-lg bg-gray-50">
+                 <p class="text-center text-gray-500">Loading PDFs...</p>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3"><button id="assign-modal-cancel" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300">Cancel</button></div>
+        </div>
+    </div>
+
+    <div id="assign-pdf-to-content-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-8 m-4 fade-in h-[80vh] flex flex-col">
+            <h2 class="text-2xl font-bold mb-4">Assign File to Content</h2>
+            <p class="mb-4 truncate">Assigning file: <strong id="assign-pdf-name-display" class="text-indigo-600"></strong></p>
+            
+            <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
+                <button class="assign-pdf-select-type-btn flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 hover:text-indigo-700" data-type="subjects">
+                    <i data-lucide="book-copy" class="w-4 h-4 mr-2 inline-block"></i>Assign to Subject
+                </button>
+                <button class="assign-pdf-select-type-btn flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 hover:text-indigo-700" data-type="exams">
+                    <i data-lucide="file-check-2" class="w-4 h-4 mr-2 inline-block"></i>Assign to Exam
+                </button>
+                <button class="assign-pdf-select-type-btn flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 hover:text-indigo-700" data-type="generalBooks">
+                    <i data-lucide="book-open" class="w-4 h-4 mr-2 inline-block"></i>Assign to General Book
+                </button>
+            </div>
+
+            <input type="text" id="assign-content-search" placeholder="Search for content..." class="w-full p-2 border border-gray-300 rounded-lg mb-4 hidden">
+            
+            <div id="assign-content-list-container" class="flex-1 overflow-y-auto border p-4 rounded-lg bg-gray-50">
+                 <p class="text-center text-gray-500">Please select a content type above (Subject, Exam, or Book).</p>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="assign-pdf-to-content-modal-cancel" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, listAll, getDownloadURL, getMetadata, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+        import JSZip from "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm";
+
+        // --- CONFIGURATION ---
+        const firebaseConfig = { apiKey: "AIzaSyDuqswofpquk8aUbCOZCGjdYLUivBEh7a8", authDomain: "ardaycaawiye-18b89.firebaseapp.com", projectId: "ardaycaawiye-18b89", storageBucket: "ardaycaawiye-18b89.firebasestorage.app", messagingSenderId: "590874185284", appId: "1:590874185284:web:6ee7df602c45068e38b611", measurementId: "G-SBGSTJWDMR" };
+        
+        // --- INITIALIZATION ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // --- STATE ---
+        let currentEditingId = null; let isLoginMode = true; let allPdfFiles = []; 
+        let availableSubjects = []; let availableExams = []; let availableGeneralBooks = [];
+        let currentAssignTarget = { type: null, id: null, field: null };
+        let currentPdfToAssign = { url: null, name: null }; // For the new modal
+
+        // --- DOM ELEMENTS --- 
+        const mainContentTabs = document.querySelectorAll('.tab-content'); const sidebarLinks = document.querySelectorAll('.sidebar-link'); const contentSubTabs = document.querySelectorAll('.content-subtab'); const contentTabs = document.querySelectorAll('.content-tab'); const modal = document.getElementById('modal'); const modalContent = document.getElementById('modal-content'); const toast = document.getElementById('toast'); const loginPage = document.getElementById('login-page'); const mainApp = document.getElementById('main-app'); const pdfListTable = document.getElementById('pdf-list-table'); const selectAllPdfsCheckbox = document.getElementById('select-all-pdfs'); const deleteSelectedPdfsBtn = document.getElementById('delete-selected-pdfs-btn'); 
+        // Assign PDF from Content Modal
+        const assignModal = document.getElementById('assign-modal'); const assignItemNameEl = document.getElementById('assign-item-name'); const assignItemTypeEl = document.getElementById('assign-item-type'); const assignPdfListContainerEl = document.getElementById('assign-pdf-list-container'); const assignPdfSearchEl = document.getElementById('assign-pdf-search');
+        // NEW: Assign PDF *to* Content Modal
+        const assignPdfToContentModal = document.getElementById('assign-pdf-to-content-modal'); const assignPdfNameDisplay = document.getElementById('assign-pdf-name-display'); const assignContentSearchEl = document.getElementById('assign-content-search'); const assignContentListContainerEl = document.getElementById('assign-content-list-container');
+        
+        // Responsive DOM Elements
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        // --- UTILS --- 
+        const showToast = (message, type = 'success') => { toast.textContent = message; toast.className = `toast-${type}`; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 4000); };
+        const showModal = (html) => { modalContent.innerHTML = html; modal.classList.remove('hidden'); attachFileInputListeners(); };
+        const hideModal = () => { modal.classList.add('hidden'); modalContent.innerHTML = ''; currentEditingId = null; };
+        const formatDate = (date) => { if (!date) return 'N/A'; const d = date.toDate ? date.toDate() : new Date(date); return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); };
+        const formatBytes = (bytes, decimals = 2) => { if (bytes === 0) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]; };
+
+        // --- File Upload Helper ---
+        const uploadFileToStorage = (file, pathPrefix) => new Promise((resolve, reject) => {
+            if (!file) { resolve(null); return; } 
+            const uniqueFileName = `${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, `${pathPrefix}${uniqueFileName}`); 
+            const uploadTask = uploadBytesResumable(storageRef, file);
+            const progressBar = modalContent.querySelector(`.file-upload-progress[data-for="${file.inputId}"] div`); 
+
+            uploadTask.on('state_changed',
+                (snapshot) => { const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100; if (progressBar) progressBar.style.width = progress + '%'; },
+                (error) => { console.error(`Upload failed for ${file.name}:`, error); showToast(`Upload failed for ${file.name}.`, 'error'); if (progressBar) progressBar.parentElement.textContent = 'Upload Failed!'; reject(error); },
+                async () => { try { const downloadURL = await getDownloadURL(uploadTask.snapshot.ref); if (progressBar) progressBar.parentElement.textContent = 'Upload Complete!'; resolve(downloadURL); } catch (error) { console.error(`Failed to get URL for ${file.name}:`, error); showToast(`Error getting URL for ${file.name}.`, 'error'); if (progressBar) progressBar.parentElement.textContent = 'Error getting URL!'; reject(error); } }
+            );
+        });
+        
+        // --- Attach File Input Listeners --- 
+        const attachFileInputListeners = () => {
+             modalContent.querySelectorAll('input[type="file"]').forEach(input => {
+                 input.addEventListener('change', (e) => {
+                     const file = e.target.files[0];
+                     const previewEl = modalContent.querySelector(`.file-preview[data-for="${e.target.id}"]`);
+                     const progressContainer = modalContent.querySelector(`.file-upload-progress[data-for="${e.target.id}"]`); 
+                     if (file && previewEl) { previewEl.textContent = `Selected: ${file.name} (${formatBytes(file.size)})`; if (progressContainer) { progressContainer.classList.add('hidden'); progressContainer.querySelector('div').style.width = '0%'; } } 
+                     else if (previewEl) { previewEl.textContent = 'No file selected.'; if (progressContainer) progressContainer.classList.add('hidden'); }
+                 });
+             });
+         };
+
+        // --- DYNAMIC HTML TEMPLATES --- 
+        const createTableHTML = (id, title, headers) => `<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4"><h2 class="text-xl font-semibold">${title}</h2><button class="add-btn bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center w-full md:w-auto" data-type="${id}"><i data-lucide="plus" class="w-4 h-4 mr-2"></i>Add New ${title.slice(0, -1)}</button></div><div class="mb-4"><input type="text" id="${id}-search" placeholder="Search ${title}..." class="w-full p-2 border border-gray-300 rounded-lg"></div><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-50"><tr>${headers.map(h => `<th class="p-3 font-semibold text-sm">${h}</th>`).join('')}<th class="p-3 font-semibold text-sm">Actions</th></tr></thead><tbody id="${id}-table"></tbody></table></div>`;
+        
+        // --- GENERIC CRUD LOGIC FACTORY ---
+        const createCrudManager = (config) => {
+            const { type, title, headers, fields, renderRow } = config;
+            const collectionRef = collection(db, type);
+            const container = document.getElementById(type);
+            let localItems = []; let unsubscribe = null;
+            
+            const render = () => { 
+                const tableBody = document.getElementById(`${type}-table`); 
+                if (!tableBody) return; 
+                const searchInput = document.getElementById(`${type}-search`);
+                const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+                const filteredItems = localItems.filter(item => Object.values(item).some(val => String(val).toLowerCase().includes(searchTerm))); 
+                if (filteredItems.length === 0) { 
+                    tableBody.innerHTML = `<tr><td colspan="${headers.length + 1}" class="p-4 text-center text-gray-500">${localItems.length === 0 ? `No ${title.toLowerCase()} found. Add one!` : `No ${title.toLowerCase()} match your search.`}</td></tr>`; 
+                } else { 
+                    tableBody.innerHTML = filteredItems.map(item => renderRow(item)).join(''); 
+                } 
+                lucide.createIcons(); 
+            };
+
+            const renderForm = (item = {}) => { let formHTML = `<h2 class="text-2xl font-bold mb-6">${currentEditingId ? 'Edit' : 'Add'} ${title.slice(0, -1)}</h2><form id="crud-form" data-type="${type}" class="space-y-4">`; fields.forEach(f => { formHTML += `<div><label for="${f.id}" class="block text-sm font-medium text-gray-700">${f.label}</label>`; const currentValue = item[f.id] || ''; const requiredAttr = f.required ? 'required' : ''; switch(f.type) { case 'textarea': formHTML += `<textarea id="${f.id}" ${requiredAttr} class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" rows="3">${currentValue}</textarea>`; break; case 'checkbox': formHTML += `<input id="${f.id}" type="checkbox" ${currentValue ? 'checked' : ''} class="mt-1 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">`; break; case 'date': let dateValue = ''; if (currentValue) { const d = currentValue.toDate ? currentValue.toDate() : new Date(currentValue); dateValue = d.toISOString().split('T')[0]; } formHTML += `<input id="${f.id}" type="date" value="${dateValue}" ${requiredAttr} class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">`; break; case 'select': formHTML += `<select id="${f.id}" ${requiredAttr} class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"><option value="">-- Select ${f.label} --</option>`; if (f.optionsSource === 'subjects' && availableSubjects.length > 0) { availableSubjects.forEach(subject => { const selected = subject.id === currentValue ? 'selected' : ''; formHTML += `<option value="${subject.id}" ${selected}>${subject.name} (Grade ${subject.grade || '?'})</option>`; }); } formHTML += `</select>`; break; case 'file': formHTML += `<input id="${f.id}" type="file" ${f.accept ? `accept="${f.accept}"` : ''} class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">`; formHTML += `<div class="file-preview text-xs text-gray-500 mt-1" data-for="${f.id}">${currentValue ? `Current: <a href="${currentValue}" target="_blank" class="text-indigo-600 hover:underline">${currentValue.split('/').pop().split('?')[0].substring(14)}</a>` : 'No file uploaded.'}</div>`; formHTML += `<div class="file-upload-progress w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 mt-1 hidden" data-for="${f.id}"><div class="bg-indigo-600 h-1.5 rounded-full" style="width: 0%"></div></div>`; break; default: formHTML += `<input id="${f.id}" type="${f.type || 'text'}" value="${currentValue}" ${requiredAttr} class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">`; } formHTML += `</div>`; }); formHTML += `<div class="flex justify-end space-x-3 pt-4"><button type="button" class="modal-cancel-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300">Cancel</button><button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700">Save</button></div></form>`; return formHTML; };
+            
+            const start = async () => { 
+                if (unsubscribe) return; 
+                
+                // This logic seems incomplete in the original, but I will preserve it.
+                // You may need to implement fetchSubjectsForDropdown() if you use it.
+                // if (fields.some(f => f.type === 'select' && f.optionsSource === 'subjects')) await fetchSubjectsForDropdown(); 
+                
+                container.innerHTML = createTableHTML(type, title, headers); 
+                
+                unsubscribe = onSnapshot(collectionRef, (snapshot) => { 
+                    localItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                    render(); 
+                    
+                    const totalSubjectsEl = document.getElementById('total-subjects');
+                    const totalExamsEl = document.getElementById('total-exams');
+                    const totalBooksEl = document.getElementById('total-books');
+
+                    if (type === 'subjects' && totalSubjectsEl) { 
+                        totalSubjectsEl.textContent = localItems.length; 
+                        availableSubjects = localItems.sort((a,b) => (a.name || '').localeCompare(b.name || '')); 
+                    } 
+                    if (type === 'exams' && totalExamsEl) { 
+                        totalExamsEl.textContent = localItems.length; 
+                        availableExams = localItems.sort((a,b) => (a.name || '').localeCompare(b.name || '')); 
+                    }
+                    if (type === 'generalBooks' && totalBooksEl) { 
+                        totalBooksEl.textContent = localItems.length; 
+                        availableGeneralBooks = localItems.sort((a,b) => (a.title || '').localeCompare(b.title || '')); 
+                    }
+                }, (error) => { 
+                    console.error(`Error fetching ${type}:`, error); 
+                    showToast(`Could not fetch ${type}.`, 'error'); 
+                    const tableBody = document.getElementById(`${type}-table`); 
+                    if (tableBody) tableBody.innerHTML = `<tr><td colspan="${headers.length + 1}" class="p-4 text-center text-red-500">Error fetching data.</td></tr>`; 
+                }); 
+                
+                const searchInput = document.getElementById(`${type}-search`);
+                if (searchInput) {
+                    searchInput.addEventListener('input', render); 
+                }
+            };
+            const stop = () => { if (unsubscribe) { unsubscribe(); unsubscribe = null; } };
+            const handleAdd = () => { currentEditingId = null; showModal(renderForm()); }; const handleEdit = (item) => { currentEditingId = item.id; showModal(renderForm(item)); };
+            const handleDelete = async (id) => { if (confirm(`Delete this ${title.slice(0, -1)}?`)) { try { await deleteDoc(doc(db, type, id)); showToast(`${title.slice(0, -1)} deleted!`); } catch (e) { console.error("Error deleting:", e); showToast(`Error deleting ${title.slice(0, -1)}.`, 'error'); } } };
+            
+            const handleFormSubmit = async (e) => {
+                e.preventDefault();
+                const form = e.target; const submitButton = form.querySelector('button[type="submit"]'); submitButton.disabled = true; submitButton.textContent = 'Saving...';
+                const formData = {}; const fileUploadPromises = [];
+
+                fields.forEach(f => {
+                    const input = form.querySelector(`#${f.id}`); if (!input) return;
+                    if (f.type === 'file') {
+                        const file = input.files[0];
+                        if (file) {
+                            const progressContainer = form.querySelector(`.file-upload-progress[data-for="${f.id}"]`); 
+                            if(progressContainer) progressContainer.classList.remove('hidden');
+                            
+                            let uploadPath = `${type}/`; // Default
+                            if (type === 'subjects') {
+                                if (f.id === 'coverImage') uploadPath = 'subject_covers/';
+                                else if (f.id === 'bookPdfUrl') uploadPath = 'subject_pdfs/'; 
+                            } else if (type === 'exams') {
+                                if (f.id === 'coverImage') uploadPath = 'exam_covers/';
+                                else if (f.id === 'pdfUrl') uploadPath = 'exam_pdfs/'; 
+                            } else if (type === 'generalBooks') {
+                                if (f.id === 'coverImageUrl') uploadPath = 'generalBooks_covers/';
+                                else if (f.id === 'pdfUrl') uploadPath = 'generalBooks_pdfs/';
+                            }
+                            
+                            file.inputId = f.id; 
+                            fileUploadPromises.push(uploadFileToStorage(file, uploadPath).then(url => ({ fieldId: f.id, url: url })));
+                        }
+                    } else if (f.type === 'checkbox') { formData[f.id] = input.checked; } 
+                    else if (f.type === 'number') { formData[f.id] = Number(input.value); } 
+                    else if (f.type === 'date') { formData[f.id] = input.value ? Timestamp.fromDate(new Date(input.value)) : null; } 
+                    else { formData[f.id] = input.value; }
+                });
+
+                try {
+                    const uploadResults = await Promise.all(fileUploadPromises);
+                    uploadResults.forEach(result => { if (result.url) formData[result.fieldId] = result.url; });
+                    
+                    if (currentEditingId) {
+                        const existingDoc = (type === 'subjects' ? availableSubjects : (type === 'exams' ? availableExams : availableGeneralBooks)).find(item => item.id === currentEditingId);
+                        fields.forEach(f => { if (f.type === 'file' && !formData[f.id] && existingDoc && existingDoc[f.id]) { formData[f.id] = existingDoc[f.id]; } });
+                        // Add modifiedAt timestamp for updates
+                        formData.modifiedAt = serverTimestamp();
+                        await updateDoc(doc(db, type, currentEditingId), formData);
+                        showToast(`${title.slice(0, -1)} updated!`);
+                    } else { 
+                        // Add createdAt timestamp for new documents
+                        formData.createdAt = serverTimestamp();
+                        await addDoc(collectionRef, formData); 
+                        showToast(`${title.slice(0, -1)} added!`); 
+                    }
+                    hideModal();
+                } catch (e) { console.error("Error saving:", e); showToast(`Error saving ${title.slice(0, -1)}.`, 'error'); } 
+                finally { submitButton.disabled = false; submitButton.textContent = 'Save'; }
+            };
+
+            return { start, stop, handleAdd, handleEdit, handleDelete, handleFormSubmit };
+        };
+        
+        // --- Your Original Functions (subjectsManager, examsManager, etc.) ---
+        // (This is your un-edited backend logic)
+        
+        const fetchSubjectsForDropdown = async () => {
+             if (availableSubjects.length === 0) {
+                 try {
+                     const snapshot = await getDocs(collection(db, 'subjects'));
+                     availableSubjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+                 } catch (error) {
+                     console.error("Error fetching subjects for dropdown:", error);
+                 }
+             }
+         };
+
+        const subjectsManager = createCrudManager({
+            type: 'subjects', title: 'Subjects',
+            headers: ['Cover', 'Name', 'Grade', 'Book PDF', 'Created'],
+            fields: [
+                { id: 'name', label: 'Subject Name', required: true },
+                { id: 'grade', label: 'Grade (e.g., F1, F2)', required: true },
+                { id: 'coverImage', label: 'Cover Image', type: 'file', accept: 'image/*' },
+                { id: 'bookPdfUrl', label: 'Book PDF', type: 'file', accept: '.pdf' }
+            ],
+            renderRow: (item) => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3"><img src="${item.coverImage || 'https://via.placeholder.com/40'}" alt="cover" class="w-10 h-10 rounded-md object-cover"></td>
+                    <td class="p-3 font-medium">${item.name || 'N/A'}</td>
+                    <td class="p-3">${item.grade || 'N/A'}</td>
+                    <td class="p-3">${item.bookPdfUrl ? `<a href="${item.bookPdfUrl}" target="_blank" class="text-indigo-600 hover:underline flex items-center"><i data-lucide="file-text" class="w-4 h-4 mr-1"></i>View PDF</a>` : '<span class="text-gray-400">No PDF</span>'}</td>
+                    <td class="p-3 text-sm text-gray-500">${formatDate(item.createdAt)}</td>
+                    <td class="p-3 space-x-2 whitespace-nowrap">
+                        <button class="action-btn text-indigo-600 hover:bg-indigo-100" onclick="window.app.editItem('subjects', '${item.id}')"><i data-lucide="edit-2" class="w-4 h-4 mr-1"></i>Edit</button>
+                        <button class="action-btn text-blue-600 hover:bg-blue-100" onclick="window.app.openAssignModal('subjects', '${item.id}', 'bookPdfUrl', '${item.name}')"><i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign PDF</button>
+                        <button class="action-btn text-red-600 hover:bg-red-100" onclick="window.app.deleteItem('subjects', '${item.id}')"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>Delete</button>
+                    </td>
+                </tr>`
+        });
+
+        const examsManager = createCrudManager({
+            type: 'exams', title: 'Exams',
+            headers: ['Cover', 'Name', 'Year', 'Subject', 'PDF', 'Created'],
+            fields: [
+                { id: 'name', label: 'Exam Name (e.g., Midterm)', required: true },
+                { id: 'year', label: 'Year', type: 'number', required: true },
+                { id: 'subjectId', label: 'Subject', type: 'select', optionsSource: 'subjects', required: true },
+                { id: 'coverImage', label: 'Cover Image', type: 'file', accept: 'image/*' },
+                { id: 'pdfUrl', label: 'Exam PDF', type: 'file', accept: '.pdf' }
+            ],
+            renderRow: (item) => {
+                const subject = availableSubjects.find(s => s.id === item.subjectId);
+                return `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3"><img src="${item.coverImage || 'https://via.placeholder.com/40'}" alt="cover" class="w-10 h-10 rounded-md object-cover"></td>
+                    <td class="p-3 font-medium">${item.name || 'N/A'}</td>
+                    <td class="p-3">${item.year || 'N/A'}</td>
+                    <td class="p-3">${subject ? `${subject.name} (G${subject.grade})` : '<span class="text-gray-400">?</span>'}</td>
+                    <td class="p-3">${item.pdfUrl ? `<a href="${item.pdfUrl}" target="_blank" class="text-indigo-600 hover:underline flex items-center"><i data-lucide="file-text" class="w-4 h-4 mr-1"></i>View PDF</a>` : '<span class="text-gray-400">No PDF</span>'}</td>
+                    <td class="p-3 text-sm text-gray-500">${formatDate(item.createdAt)}</td>
+                    <td class="p-3 space-x-2 whitespace-nowrap">
+                        <button class="action-btn text-indigo-600 hover:bg-indigo-100" onclick="window.app.editItem('exams', '${item.id}')"><i data-lucide="edit-2" class="w-4 h-4 mr-1"></i>Edit</button>
+                        <button class="action-btn text-blue-600 hover:bg-blue-100" onclick="window.app.openAssignModal('exams', '${item.id}', 'pdfUrl', '${item.name}')"><i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign PDF</button>
+                        <button class="action-btn text-red-600 hover:bg-red-100" onclick="window.app.deleteItem('exams', '${item.id}')"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>Delete</button>
+                    </td>
+                </tr>`
+            }
+        });
+
+        const generalBooksManager = createCrudManager({
+            type: 'generalBooks', title: 'General Books',
+            headers: ['Cover', 'Title', 'Author', 'PDF', 'Created'],
+            fields: [
+                { id: 'title', label: 'Book Title', required: true },
+                { id: 'author', label: 'Author', required: false },
+                { id: 'coverImageUrl', label: 'Cover Image', type: 'file', accept: 'image/*' },
+                { id: 'pdfUrl', label: 'Book PDF', type: 'file', accept: '.pdf' }
+            ],
+            renderRow: (item) => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3"><img src="${item.coverImageUrl || 'https://via.placeholder.com/40'}" alt="cover" class="w-10 h-10 rounded-md object-cover"></td>
+                    <td class="p-3 font-medium">${item.title || 'N/A'}</td>
+                    <td class="p-3">${item.author || 'N/A'}</td>
+                    <td class="p-3">${item.pdfUrl ? `<a href="${item.pdfUrl}" target="_blank" class="text-indigo-600 hover:underline flex items-center"><i data-lucide="file-text" class="w-4 h-4 mr-1"></i>View PDF</a>` : '<span class="text-gray-400">No PDF</span>'}</td>
+                    <td class="p-3 text-sm text-gray-500">${formatDate(item.createdAt)}</td>
+                    <td class="p-3 space-x-2 whitespace-nowrap">
+                        <button class="action-btn text-indigo-600 hover:bg-indigo-100" onclick="window.app.editItem('generalBooks', '${item.id}')"><i data-lucide="edit-2" class="w-4 h-4 mr-1"></i>Edit</button>
+                        <button class="action-btn text-blue-600 hover:bg-blue-100" onclick="window.app.openAssignModal('generalBooks', '${item.id}', 'pdfUrl', '${item.title}')"><i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign PDF</button>
+                        <button class="action-btn text-red-600 hover:bg-red-100" onclick="window.app.deleteItem('generalBooks', '${item.id}')"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>Delete</button>
+                    </td>
+                </tr>`
+        });
+        
+        const managers = {
+             subjects: subjectsManager,
+             exams: examsManager,
+             generalBooks: generalBooksManager
+         };
+
+        // --- PDF Library ---
+        const fetchAllPdfs = async () => {
+            try {
+                const listRef = ref(storage, ''); // List all files
+                const res = await listAll(listRef);
+                const allFiles = [];
+
+                const processItems = async (items) => {
+                    for (const itemRef of items) {
+                        try {
+                            const metadata = await getMetadata(itemRef);
+                            if (metadata.contentType === 'application/pdf' || metadata.contentType === 'application/zip' || metadata.contentType.startsWith('image/')) {
+                                allFiles.push({
+                                    ref: itemRef,
+                                    name: metadata.name,
+                                    fullPath: metadata.fullPath,
+                                    size: metadata.size,
+                                    updated: metadata.updated
+                                });
+                            }
+                        } catch (e) { console.error("Error getting metadata for item:", itemRef.fullPath, e); }
+                    }
+                };
+                
+                // Process top-level files
+                await processItems(res.items);
+
+                // Process files in folders (one-level deep as per original logic)
+                for (const folderRef of res.prefixes) {
+                    const folderRes = await listAll(folderRef);
+                    await processItems(folderRes.items);
+                }
+
+                allPdfFiles = allFiles.sort((a, b) => b.size - a.size); // Sort by size descending
+                renderPdfList();
+            } catch (error) {
+                console.error("Error fetching PDF list:", error);
+                showToast("Error fetching file list.", "error");
+                pdfListTable.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Error fetching files.</td></tr>`;
+            }
+        };
+        
+        const renderPdfList = () => {
+             const searchTerm = document.getElementById('pdf-search').value.toLowerCase();
+             const filteredPdfs = allPdfFiles.filter(pdf => pdf.name.toLowerCase().includes(searchTerm));
+             
+             if (filteredPdfs.length === 0) {
+                 pdfListTable.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">${allPdfFiles.length === 0 ? "No files found." : "No files match your search."}</td></tr>`;
+                 return;
+             }
+             
+             pdfListTable.innerHTML = filteredPdfs.map(pdf => `
+                 <tr class="border-b hover:bg-gray-50">
+                     <td class="p-3"><input type="checkbox" class="pdf-checkbox" data-path="${pdf.fullPath}"></td>
+                     <td class="p-3 font-medium text-gray-800 break-all">${pdf.name}</td>
+                     <td class="p-3 text-gray-600">${formatBytes(pdf.size)}</td>
+                     <td class="p-3 text-gray-600">${formatDate(pdf.updated)}</td>
+                     <td class="p-3 space-x-2 whitespace-nowrap">
+                         <button class="action-btn text-green-600 hover:bg-green-100" onclick="window.app.copyToClipboard('${pdf.fullPath}')"><i data-lucide="copy" class="w-4 h-4 mr-1"></i>Copy URL</button>
+                         <button class="action-btn text-blue-600 hover:bg-blue-100" onclick="window.app.openAssignPdfToContentModal('${pdf.fullPath}', '${pdf.name}')"><i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign</button>
+                         <button class="action-btn text-red-600 hover:bg-red-100" onclick="window.app.deletePdf('${pdf.fullPath}')"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>Delete</button>
+                     </td>
+                 </tr>
+             `).join('');
+             lucide.createIcons();
+         };
+
+        const copyPdfUrlToClipboard = async (path) => {
+            try {
+                const url = await getDownloadURL(ref(storage, path));
+                navigator.clipboard.writeText(url);
+                showToast("Download URL copied to clipboard!");
+            } catch (error) {
+                console.error("Error getting download URL:", error);
+                showToast("Could not get download URL.", "error");
+            }
+        };
+
+        const deletePdf = async (path) => {
+             if (confirm(`Are you sure you want to delete this file?\n${path}\n\nThis cannot be undone.`)) {
+                 try {
+                     await deleteObject(ref(storage, path));
+                     showToast("File deleted successfully!");
+                     allPdfFiles = allPdfFiles.filter(pdf => pdf.fullPath !== path); // Update local state
+                     renderPdfList(); // Re-render
+                 } catch (error) {
+                     console.error("Error deleting file:", error);
+                     showToast("Error deleting file.", "error");
+                 }
+             }
+         };
+         
+        const updateDeleteSelectedButton = () => {
+             const selected = pdfListTable.querySelectorAll('.pdf-checkbox:checked');
+             if (selected.length > 0) {
+                 deleteSelectedPdfsBtn.classList.remove('hidden');
+                 deleteSelectedPdfsBtn.querySelector('i').nextSibling.textContent = ` Delete Selected (${selected.length})`;
+             } else {
+                 deleteSelectedPdfsBtn.classList.add('hidden');
+             }
+         };
+
+        const deleteSelectedPdfs = async () => {
+             const selected = pdfListTable.querySelectorAll('.pdf-checkbox:checked');
+             if (selected.length === 0) return;
+             
+             if (confirm(`Are you sure you want to delete ${selected.length} file(s)? This cannot be undone.`)) {
+                 let deletePromises = [];
+                 let deletedPaths = [];
+                 selected.forEach(cb => {
+                     const path = cb.dataset.path;
+                     deletedPaths.push(path);
+                     deletePromises.push(deleteObject(ref(storage, path)));
+                 });
+                 
+                 try {
+                     await Promise.all(deletePromises);
+                     showToast(`${selected.length} file(s) deleted successfully!`);
+                     allPdfFiles = allPdfFiles.filter(pdf => !deletedPaths.includes(pdf.fullPath));
+                     renderPdfList();
+                     selectAllPdfsCheckbox.checked = false;
+                     updateDeleteSelectedButton();
+                 } catch (error) {
+                     console.error("Error deleting selected files:", error);
+                     showToast("Error deleting some files.", "error");
+                     fetchAllPdfs(); // Refresh list from server on partial failure
+                 }
+             }
+         };
+         
+        const handleFileUpload = async (files) => {
+             const uploadBtn = document.getElementById('upload-pdf-btn');
+             const progressContainer = document.getElementById('upload-progress-container');
+             const progressBar = document.getElementById('upload-progress-bar');
+             
+             if (files.length === 0) return;
+             
+             uploadBtn.disabled = true;
+             uploadBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Uploading...';
+             lucide.createIcons();
+             
+             progressContainer.classList.remove('hidden');
+             progressBar.style.width = '0%';
+             
+             let totalSize = Array.from(files).reduce((acc, file) => acc + file.size, 0);
+             let uploadedSize = 0;
+             let uploadPromises = [];
+
+             for (const file of files) {
+                 let path = 'general_uploads/'; // Default path
+                 if (file.type === 'application/pdf') path = 'general_pdfs/';
+                 if (file.type.startsWith('image/')) path = 'general_images/';
+                 if (file.type === 'application/zip') path = 'zips/';
+                 
+                 const storageRef = ref(storage, `${path}${Date.now()}_${file.name}`);
+                 const uploadTask = uploadBytesResumable(storageRef, file);
+
+                 const promise = new Promise((resolve, reject) => {
+                     uploadTask.on('state_changed',
+                         (snapshot) => {
+                             // This progress is for a single file, we'll average it
+                             // A more complex logic would track total progress
+                             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                             
+                             // Simple average progress:
+                             // This isn't perfect, but it's better than nothing.
+                             // A better way is to track total bytes uploaded vs totalSize
+                             // Let's try that.
+                         },
+                         (error) => reject(error),
+                         () => getDownloadURL(uploadTask.snapshot.ref).then(() => {
+                             uploadedSize += file.size; // Add file size to total uploaded
+                             const totalProgress = (uploadedSize / totalSize) * 100;
+                             progressBar.style.width = `${totalProgress}%`;
+                             resolve();
+                         })
+                     );
+                 });
+                 uploadPromises.push(promise);
+             }
+
+             try {
+                 await Promise.all(uploadPromises);
+                 showToast(`Successfully uploaded ${files.length} file(s)!`);
+                 await fetchAllPdfs(); // Refresh the list
+             } catch (error) {
+                 console.error("Error during file upload:", error);
+                 showToast("An error occurred during upload.", "error");
+             } finally {
+                 uploadBtn.disabled = false;
+                 uploadBtn.innerHTML = '<i data-lucide="upload" class="w-4 h-4 mr-2"></i>Upload Files';
+                 lucide.createIcons();
+                 progressContainer.classList.add('hidden');
+             }
+         };
+
+        // --- Assign PDF Modal (From Content) ---
+        const openAssignModal = (type, id, field, name) => {
+             currentAssignTarget = { type, id, field };
+             assignItemNameEl.textContent = name;
+             assignItemTypeEl.textContent = type.slice(0, -1);
+             assignPdfSearchEl.value = '';
+             renderAssignablePdfs();
+             assignModal.classList.remove('hidden');
+         };
+         
+        const closeAssignModal = () => {
+             assignModal.classList.add('hidden');
+             currentAssignTarget = { type: null, id: null, field: null };
+         };
+
+        const renderAssignablePdfs = () => {
+             const searchTerm = assignPdfSearchEl.value.toLowerCase();
+             // Filter for PDFs/Zips only
+             const assignableFiles = allPdfFiles.filter(pdf => 
+                 (pdf.name.toLowerCase().includes(searchTerm)) && 
+                 (pdf.name.endsWith('.pdf') || pdf.name.endsWith('.zip'))
+             );
+             
+             if (assignableFiles.length === 0) {
+                 assignPdfListContainerEl.innerHTML = `<p class="text-center text-gray-500">No matching files found.</p>`;
+                 return;
+             }
+             
+             assignPdfListContainerEl.innerHTML = assignableFiles.map(pdf => `
+                 <div class="flex justify-between items-center p-3 hover:bg-gray-100 rounded-lg">
+                     <div>
+                         <p class="font-medium text-gray-800">${pdf.name}</p>
+                         <p class="text-sm text-gray-500">${pdf.fullPath} (${formatBytes(pdf.size)})</p>
+                     </div>
+                     <button class="action-btn bg-indigo-600 text-white hover:bg-indigo-700" onclick="window.app.assignPdf('${pdf.fullPath}')">
+                         <i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign
+                     </button>
+                 </div>
+             `).join('');
+             lucide.createIcons();
+         };
+
+        const assignPdf = async (path) => {
+             if (!currentAssignTarget.type || !currentAssignTarget.id) return;
+             
+             try {
+                 const downloadURL = await getDownloadURL(ref(storage, path));
+                 const { type, id, field } = currentAssignTarget;
+                 
+                 const docRef = doc(db, type, id);
+                 let dataToUpdate = {};
+                 dataToUpdate[field] = downloadURL;
+                 
+                 await updateDoc(docRef, dataToUpdate);
+                 
+                 showToast(`PDF assigned successfully!`);
+                 closeAssignModal();
+             } catch (error) {
+                 console.error("Error assigning PDF:", error);
+                 showToast("Error assigning PDF.", "error");
+             }
+         };
+
+        // --- Assign PDF *to* Content Modal (From Library) ---
+        const openAssignPdfToContentModal = (path, name) => {
+             currentPdfToAssign = { path: path, name: name };
+             assignPdfNameDisplay.textContent = name;
+             assignContentSearchEl.value = '';
+             assignContentSearchEl.classList.add('hidden');
+             assignContentListContainerEl.innerHTML = `<p class="text-center text-gray-500">Please select a content type above (Subject, Exam, or Book).</p>`;
+             document.querySelectorAll('.assign-pdf-select-type-btn').forEach(btn => btn.classList.remove('bg-indigo-100', 'text-indigo-700'));
+             assignPdfToContentModal.classList.remove('hidden');
+         };
+
+        const closeAssignPdfToContentModal = () => {
+             assignPdfToContentModal.classList.add('hidden');
+             currentPdfToAssign = { path: null, name: null };
+         };
+
+        const renderAssignableContent = (type) => {
+             assignContentSearchEl.classList.remove('hidden');
+             assignContentSearchEl.placeholder = `Search for a ${type.slice(0, -1)}...`;
+             
+             let items = [];
+             if (type === 'subjects') items = availableSubjects;
+             else if (type === 'exams') items = availableExams;
+             else if (type === 'generalBooks') items = availableGeneralBooks;
+             
+             const searchTerm = assignContentSearchEl.value.toLowerCase();
+             const filteredItems = items.filter(item => {
+                 const name = item.name || item.title || '';
+                 return name.toLowerCase().includes(searchTerm);
+             });
+
+             if (filteredItems.length === 0) {
+                 assignContentListContainerEl.innerHTML = `<p class="text-center text-gray-500">No matching ${type} found.</p>`;
+                 return;
+             }
+             
+             assignContentListContainerEl.innerHTML = filteredItems.map(item => {
+                 const name = item.name || item.title;
+                 let field = 'pdfUrl'; // Default
+                 if (type === 'subjects') field = 'bookPdfUrl';
+                 
+                 return `
+                 <div class="flex justify-between items-center p-3 hover:bg-gray-100 rounded-lg">
+                     <div>
+                         <p class="font-medium text-gray-800">${name}</p>
+                         <p class="text-sm text-gray-500">
+                             ${type === 'subjects' ? `Grade: ${item.grade}` : ''}
+                             ${type === 'exams' ? `Year: ${item.year}` : ''}
+                             ${type === 'generalBooks' ? `Author: ${item.author || 'N/A'}` : ''}
+                         </p>
+                     </div>
+                     <button class="action-btn bg-indigo-600 text-white hover:bg-indigo-700" onclick="window.app.assignPdfToContent('${type}', '${item.id}', '${field}')">
+                         <i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign to this
+                     </button>
+                 </div>`
+             }).join('');
+             lucide.createIcons();
+         };
+         
+        const assignPdfToContent = async (type, id, field) => {
+             if (!currentPdfToAssign.path) return;
+             
+             try {
+                 const downloadURL = await getDownloadURL(ref(storage, currentPdfToAssign.path));
+                 const docRef = doc(db, type, id);
+                 let dataToUpdate = {};
+                 dataToUpdate[field] = downloadURL;
+                 
+                 await updateDoc(docRef, dataToUpdate);
+                 
+                 showToast(`File assigned to ${type.slice(0, -1)} successfully!`);
+                 closeAssignPdfToContentModal();
+             } catch (error) {
+                 console.error("Error assigning file:", error);
+                 showToast("Error assigning file.", "error");
+             }
+         };
+
+        // --- AUTHENTICATION ---
+        onAuthStateChanged(auth, (user) => {
+            const authStatus = document.getElementById('auth-status');
+            if (user) {
+                loginPage.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                authStatus.textContent = `Logged in as: ${user.email}`;
+                authStatus.classList.add('text-green-400');
+                authStatus.classList.remove('text-gray-400');
+                initializeAppLogic();
+            } else {
+                loginPage.classList.remove('hidden');
+                mainApp.classList.add('hidden');
+                authStatus.textContent = 'Not Authenticated';
+                authStatus.classList.add('text-gray-400');
+                authStatus.classList.remove('text-green-400');
+                stopAppLogic();
+            }
+            lucide.createIcons();
+        });
+
+        const handleAuthForm = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('auth-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                }
+                // Auth state change will handle UI
+            } catch (error) {
+                console.error("Auth Error:", error);
+                showToast(error.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = isLoginMode ? 'Sign in' : 'Sign up';
+            }
+        };
+
+        const toggleAuthMode = (e) => {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').textContent = isLoginMode ? 'Sign in to your account' : 'Create a new account';
+            document.getElementById('auth-submit-btn').textContent = isLoginMode ? 'Sign in' : 'Sign up';
+            document.getElementById('auth-toggle-link').textContent = isLoginMode ? "Don't have an account? Sign up" : 'Already have an account? Sign in';
+        };
+
+        const handleLogout = async () => {
+            if (confirm("Are you sure you want to log out?")) {
+                await signOut(auth);
+            }
+        };
+
+        // --- NAVIGATION ---
+        const switchTab = (tabId) => {
+            mainContentTabs.forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId)?.classList.remove('hidden');
+            
+            sidebarLinks.forEach(link => link.classList.remove('active'));
+            document.querySelector(`.sidebar-link[data-tab="${tabId}"]`)?.classList.add('active');
+            
+            // Special handling for content tab
+            if (tabId === 'manage-content') {
+                const activeSubTab = document.querySelector('.content-tab.border-indigo-500');
+                if (activeSubTab) {
+                    switchContentSubTab(activeSubTab.dataset.subtab);
+                }
+            } else {
+                Object.values(managers).forEach(manager => manager.stop());
+            }
+            
+            if (tabId === 'pdf-library') {
+                fetchAllPdfs();
+            }
+        };
+
+        const switchContentSubTab = (subTabId) => {
+            contentSubTabs.forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(subTabId)?.classList.remove('hidden');
+            
+            contentTabs.forEach(link => {
+                link.classList.remove('border-indigo-500', 'text-indigo-600');
+                link.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            });
+            const activeLink = document.querySelector(`.content-tab[data-subtab="${subTabId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('border-indigo-500', 'text-indigo-600');
+                activeLink.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            }
+            
+            // Stop all managers first
+            Object.values(managers).forEach(manager => manager.stop());
+            // Start the selected manager
+            if (managers[subTabId]) {
+                managers[subTabId].start();
+            }
+        };
+
+        // --- APP INITIALIZATION ---
+        const initializeAppLogic = () => {
+            switchTab('dashboard'); // Default tab
+            fetchSubjectsForDropdown(); // Pre-fetch subjects
+        };
+
+        const stopAppLogic = () => {
+            Object.values(managers).forEach(manager => manager.stop());
+        };
+
+        // --- GLOBAL EVENT LISTENERS ---
+        document.getElementById('auth-form').addEventListener('submit', handleAuthForm);
+        document.getElementById('auth-toggle-link').addEventListener('click', toggleAuthMode);
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchTab(e.currentTarget.dataset.tab);
+            });
+        });
+
+        contentTabs.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchContentSubTab(e.currentTarget.dataset.subtab);
+            });
+        });
+
+        document.body.addEventListener('click', (e) => {
+            // Modal cancel buttons
+            if (e.target.classList.contains('modal-cancel-btn') || e.target.id === 'modal') {
+                hideModal();
+            }
+            // Add new item buttons
+            if (e.target.classList.contains('add-btn')) {
+                const type = e.target.dataset.type;
+                if (managers[type]) {
+                    managers[type].handleAdd();
+                }
+            }
+        });
+
+        document.body.addEventListener('submit', (e) => {
+            // CRUD form submission
+            if (e.target.id === 'crud-form') {
+                const type = e.target.dataset.type;
+                if (managers[type]) {
+                    managers[type].handleFormSubmit(e);
+                }
+            }
+        });
+        
+        // PDF Library Listeners
+        document.getElementById('pdf-search').addEventListener('input', renderPdfList);
+        document.getElementById('upload-pdf-btn').addEventListener('click', () => document.getElementById('pdf-upload-input').click());
+        document.getElementById('pdf-upload-input').addEventListener('change', (e) => handleFileUpload(e.target.files));
+        
+        selectAllPdfsCheckbox.addEventListener('change', (e) => {
+             pdfListTable.querySelectorAll('.pdf-checkbox').forEach(cb => cb.checked = e.target.checked);
+             updateDeleteSelectedButton();
+         });
+         
+        pdfListTable.addEventListener('change', (e) => {
+             if (e.target.classList.contains('pdf-checkbox')) {
+                 updateDeleteSelectedButton();
+             }
+         });
+         
+        deleteSelectedPdfsBtn.addEventListener('click', deleteSelectedPdfs);
+        
+        // Assign Modal Listeners
+        document.getElementById('assign-modal-cancel').addEventListener('click', closeAssignModal);
+        assignPdfSearchEl.addEventListener('input', renderAssignablePdfs);
+        
+        // Assign PDF *to* Content Modal Listeners
+        document.getElementById('assign-pdf-to-content-modal-cancel').addEventListener('click', closeAssignPdfToContentModal);
+        document.querySelectorAll('.assign-pdf-select-type-btn').forEach(btn => {
+             btn.addEventListener('click', (e) => {
+                 const type = e.currentTarget.dataset.type;
+                 document.querySelectorAll('.assign-pdf-select-type-btn').forEach(b => b.classList.remove('bg-indigo-100', 'text-indigo-700'));
+                 e.currentTarget.classList.add('bg-indigo-100', 'text-indigo-700');
+                 assignContentSearchEl.value = '';
+                 renderAssignableContent(type);
+             });
+         });
+        assignContentSearchEl.addEventListener('input', (e) => {
+             const activeBtn = document.querySelector('.assign-pdf-select-type-btn.bg-indigo-100');
+             if (activeBtn) {
+                 renderAssignableContent(activeBtn.dataset.type);
+             }
+         });
+
+
+        // --- GLOBAL APP OBJECT (for inline onclicks) ---
+        window.app = {
+            editItem: (type, id) => {
+                const item = managers[type] ? (type === 'subjects' ? availableSubjects : (type === 'exams' ? availableExams : availableGeneralBooks)).find(i => i.id === id) : null;
+                if (item) {
+                    managers[type].handleEdit(item);
+                }
+            },
+            deleteItem: (type, id) => {
+                if (managers[type]) {
+                    managers[type].handleDelete(id);
+                }
+            },
+            copyToClipboard: (path) => {
+                copyPdfUrlToClipboard(path);
+            },
+            deletePdf: (path) => {
+                deletePdf(path);
+            },
+            openAssignModal: (type, id, field, name) => {
+                openAssignModal(type, id, field, name);
+            },
+            assignPdf: (path) => {
+                assignPdf(path);
+            },
+            openAssignPdfToContentModal: (path, name) => {
+                openAssignPdfToContentModal(path, name);
+            },
+            assignPdfToContent: (type, id, field) => {
+                assignPdfToContent(type, id, field);
+            }
+        };
+
+        // Mobile Sidebar Logic
+        const toggleSidebar = () => {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+        };
+
+        mobileMenuBtn.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (!sidebar.classList.contains('-translate-x-full') && window.innerWidth < 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>

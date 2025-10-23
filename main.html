@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArdayCaawiye - Complete CMS</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- BASE STYLES (from CMS) --- */
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        /* --- SIDEBAR STYLES (New) --- */
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: #d1d5db; /* gray-300 */
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-link:hover {
+            background-color: #374151; /* gray-700 */
+            color: white;
+        }
+        .sidebar-link.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            font-weight: 600;
+        }
+        .sidebar-link .icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        .dropdown-menu {
+            display: none; /* Hidden by default */
+            margin-left: 1rem;
+            padding-left: 1.25rem;
+            border-left: 1px solid #4b5563; /* gray-600 */
+        }
+        .dropdown-menu .sidebar-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        /* --- TOAST STYLES (from CMS) --- */
+        #toast { position: fixed; bottom: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 0.5rem; color: white; z-index: 1000; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s ease-in-out; }
+        #toast.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .toast-success { background-color: #22c55e; }
+        .toast-error { background-color: #ef4444; }
+
+        /* --- CMS/CONTENT STYLES --- */
+        .action-btn { padding: 0.25rem 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; font-size: 0.875rem; display: inline-flex; align-items: center; }
+        .file-preview { margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; }
+        .file-upload-progress { margin-top: 0.5rem; }
+
+        /* --- QUIZ STYLES (from Quiz file) --- */
+        .quiz-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; transition: all 0.2s ease-in-out; border: 1px solid transparent; cursor: pointer; font-size: 0.875rem; }
+        .quiz-btn-primary { background-color: #1d4ed8; color: white; box-shadow: 0 4px 6px -1px rgb(29 78 216 / 0.1), 0 2px 4px -2px rgb(29 78 216 / 0.1); }
+        .quiz-btn-primary:hover { background-color: #1e40af; }
+        .quiz-btn-secondary { background-color: #e2e8f0; color: #1e293b; border-color: #cbd5e1; }
+        .quiz-btn-secondary:hover { background-color: #cbd5e1; }
+        .quiz-btn-danger { background-color: #ef4444; color: white; }
+        .quiz-btn-danger:hover { background-color: #dc2626; }                
+        .quiz-fab { position: fixed; bottom: 1.5rem; right: 1.5rem; width: 3.5rem; height: 3.5rem; border-radius: 50%; z-index: 35; }
+        .quiz-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(15, 23, 42, 0.75); z-index: 40; display: flex; align-items: center; justify-content: center; }
+        .quiz-modal-container { background: white; border-radius: 1rem; max-height: 90vh; overflow-y: auto; width: 95%; max-width: 56rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+        .quiz-form-input, .quiz-form-select { width: 100%; border-radius: 0.5rem; border: 1px solid #e2e8f0; padding: 0.75rem 1rem; transition: border-color 0.2s, box-shadow 0.2s; background-color: white; }
+        .quiz-form-input:focus, .quiz-form-select:focus { outline: none; border-color: #1d4ed8; box-shadow: 0 0 0 3px rgb(29 78 216 / 0.1); }
+        .radio-custom { appearance: none; width: 1.25rem; height: 1.25rem; border: 2px solid #94a3b8; border-radius: 50%; transition: all 0.2s; cursor: pointer; margin-right: 0.5rem; flex-shrink: 0; }
+        .radio-custom:checked { border-color: #1d4ed8; background-color: #1d4ed8; background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e"); }
+        .question-card { border: 1px solid #e2e8f0; transition: all 0.15s ease-in-out; }
+        .question-card:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
+
+        /* --- USER STYLES (from User file) --- */
+        .user-modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto; /* Allow scrolling for modal itself */
+        }
+        
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <div id="login-page" class="w-full h-full flex items-center justify-center bg-gray-100">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg m-4">
+            <div><h2 id="auth-title" class="text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2></div>
+            <form id="auth-form" class="space-y-6">
+                <div>
+                    <label for="email" class="sr-only">Email address</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Email address" value="dausfilms@gmail.com">
+                </div>
+                <div>
+                    <label for="password" class="sr-only">Password</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Password" value="siciid23">
+                </div>
+                <div><button id="auth-submit-btn" type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign in</button></div>
+            </form>
+            <p class="text-center text-sm text-gray-600"><a href="#" id="auth-toggle-link" class="font-medium text-indigo-600 hover:text-indigo-500">Don't have an account? Sign up</a></p>
+        </div>
+    </div>
+    
+    <div id="main-app" class="flex w-full h-full hidden">
+        
+        <aside id="sidebar" class="w-64 bg-gray-800 text-white flex flex-col fixed h-full z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+            <div class="p-5 text-2xl font-bold border-b border-gray-700 flex items-center">
+                <img src="https://firebasestorage.googleapis.com/v0/b/ardaycaawiye-18b89.appspot.com/o/logo.png?alt=media&token=5b34de54-86a0-47e1-8848-033190897645" alt="Logo" class="h-8 mr-2">
+                <span>ArdayCaawiye</span>
+            </div>
+            
+            <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto">
+                <a href="#" class="sidebar-link active" data-tab="dashboard">
+                    <i data-lucide="home" class="icon"></i> Dashboard
+                </a>
+                
+                <div class="pt-2">
+                    <button class="sidebar-link has-dropdown w-full">
+                        <i data-lucide="folder-kanban" class="icon"></i>
+                        <span class="flex-1 text-left">Manage Content</span>
+                        <i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i>
+                    </button>
+                    <ul class="dropdown-menu space-y-1 pt-1">
+                        <li><a href="#" class="sidebar-link" data-tab="subjects"><i data-lucide="book-copy" class="icon"></i> Subjects</a></li>
+                        <li><a href="#" class="sidebar-link" data-tab="exams"><i data-lucide="file-check-2" class="icon"></i> Exams</a></li>
+                        <li><a href="#" class="sidebar-link" data-tab="quizzes"><i data-lucide="puzzle" class="icon"></i> Quizzes</a></li>
+                        <li><a href="#" class="sidebar-link" data-tab="generalBooks"><i data-lucide="book-open" class="icon"></i> General Books</a></li>
+                        <li><a href="#" class="sidebar-link" data-tab="pdf-library"><i data-lucide="library" class="icon"></i> PDF Library</a></li>
+                    </ul>
+                </div>
+                
+                <div class="pt-2">
+                    <button class="sidebar-link has-dropdown w-full">
+                        <i data-lucide="newspaper" class="icon"></i>
+                        <span class="flex-1 text-left">Blog Management</span>
+                        <i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i>
+                    </button>
+                    <ul class="dropdown-menu space-y-1 pt-1">
+                        <li><a href="#" class="sidebar-link" data-tab="blog-all-posts"><i data-lucide="layout-list" class="icon"></i> All Posts</a></li>
+                        <li><a href="#" class="sidebar-link" data-tab="blog-categories"><i data-lucide="tags" class="icon"></i> Categories / Tags</a></li>
+                        <li><a href="#" class="sidebar-link" data-tab="blog-comments"><i data-lucide="message-square" class="icon"></i> Comments</a></li>
+                    </ul>
+                </div>
+
+                <div class="pt-2">
+                    <button class="sidebar-link has-dropdown w-full">
+                        <i data-lucide="users" class="icon"></i>
+                        <span class="flex-1 text-left">User Management</span>
+                        <i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i>
+                    </button>
+                    <ul class="dropdown-menu space-y-1 pt-1">
+                        <li><a href="#" class="sidebar-link" data-tab="users-students"><i data-lucide="user" class="icon"></i> Students / Members</a></li>
+                        <li><a href="#" class="sidebar-link" data-tab="users-roles"><i data-lucide="shield-check" class="icon"></i> Roles & Permissions</a></li>
+                    </ul>
+                </div>
+
+                <div class="pt-2">
+                    <button class="sidebar-link has-dropdown w-full">
+                        <i data-lucide="bar-chart-3" class="icon"></i>
+                        <span class="flex-1 text-left">Reports & Analytics</span>
+                        <i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i>
+                    </button>
+                    <ul class="dropdown-menu space-y-1 pt-1">
+                        <li><a href="#" class="sidebar-link" data-tab="reports-user-activity"><i data-lucide="activity" class="icon"></i> User Activity</a></li>
+                        <li><a href="#" class="sidebar-link" data-tab="reports-content-performance"><i data-lucide="trending-up" class="icon"></i> Content Performance</a></li>
+                    </ul>
+                </div>
+                
+                <a href="#" class="sidebar-link" data-tab="settings">
+                    <i data-lucide="settings" class="icon"></i> Settings
+                </a>
+                
+            </nav>
+            
+            <div class="p-4 border-t border-gray-700">
+                <div id="auth-status" class="text-xs text-gray-400 truncate mb-2">Not Authenticated</div>
+                <button id="logout-btn" class="w-full flex items-center justify-center p-2 rounded-lg bg-red-600 hover:bg-red-700 transition-colors text-white font-medium text-sm">
+                    <i data-lucide="log-out" class="w-4 h-4 mr-2"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden hidden"></div>
+        
+        <div class="md:hidden flex justify-between items-center bg-white p-4 border-b fixed top-0 left-0 right-0 z-10">
+            <span class="text-xl font-bold text-gray-800">ArdayCaawiye CMS</span>
+            <button id="mobile-menu-btn" class="text-gray-800">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <main class="flex-1 ml-0 md:ml-64 pt-20 md:pt-4 p-4 md:p-8 overflow-y-auto">
+            
+            <div id="dashboard" class="tab-content fade-in">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Overview</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-indigo-100 p-4 rounded-full mr-4"><i data-lucide="book-copy" class="w-8 h-8 text-indigo-600"></i></div><div><p class="text-gray-500">Total Subjects</p><p id="total-subjects" class="text-3xl font-bold">0</p></div></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-green-100 p-4 rounded-full mr-4"><i data-lucide="file-check-2" class="w-8 h-8 text-green-600"></i></div><div><p class="text-gray-500">Total Exams</p><p id="total-exams" class="text-3xl font-bold">0</p></div></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-amber-100 p-4 rounded-full mr-4"><i data-lucide="book-open" class="w-8 h-8 text-amber-600"></i></div><div><p class="text-gray-500">Total Books</p><p id="total-books" class="text-3xl font-bold">0</p></div></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-sky-100 p-4 rounded-full mr-4"><i data-lucide="puzzle" class="w-8 h-8 text-sky-600"></i></div><div><p class="text-gray-500">Total Quizzes</p><p id="total-quizzes" class="text-3xl font-bold">0</p></div></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-blue-100 p-4 rounded-full mr-4"><i data-lucide="users" class="w-8 h-8 text-blue-600"></i></div><div><p class="text-gray-500">Total Users</p><p id="dash-total-users" class="text-3xl font-bold">0</p></div></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-emerald-100 p-4 rounded-full mr-4"><i data-lucide="user-check" class="w-8 h-8 text-emerald-600"></i></div><div><p class="text-gray-500">Paid Users</p><p id="dash-paid-users" class="text-3xl font-bold">0</p></div></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-rose-100 p-4 rounded-full mr-4"><i data-lucide="user-x" class="w-8 h-8 text-rose-600"></i></div><div><p class="text-gray-500">Banned Users</p><p id="dash-banned-users" class="text-3xl font-bold">0</p></div></div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-purple-100 p-4 rounded-full mr-4"><i data-lucide="wallet" class="w-8 h-8 text-purple-600"></i></div><div><p class="text-gray-500">Total Revenue</p><p id="dash-total-revenue" class="text-3xl font-bold">$0</p></div></div>
+                </div>
+            </div>
+            
+            <div id="subjects" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Subjects</h1>
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    </div>
+            </div>
+
+            <div id="exams" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Exams</h1>
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    </div>
+            </div>
+            
+            <div id="quizzes" class="tab-content fade-in hidden">
+                <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                    <div>
+                        <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Quiz Manager 💡</h1>
+                        <p class="text-gray-500 mt-1">Create, edit, and organize your educational content.</p>
+                    </div>
+                </header>
+                        
+                <div class="bg-white rounded-xl shadow-md p-4 mb-8 border border-gray-100">
+                    <label for="subject-filter" class="block text-sm font-semibold text-gray-700 mb-2">Filter Quizzes by Subject</label>
+                    <select id="subject-filter" class="quiz-form-select text-gray-700">
+                        <option value="all">All Subjects</option>
+                    </select>
+                </div>
+        
+                <div id="quiz-list-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 animate-pulse transition-all"><div class="h-16 bg-gray-200 rounded-lg w-full mb-3"></div><div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-100 rounded w-1/2 mb-4"></div><div class="h-8 bg-blue-100 rounded w-1/3 ml-auto"></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 animate-pulse hidden sm:block"><div class="h-16 bg-gray-200 rounded-lg w-full mb-3"></div><div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-100 rounded w-1/2 mb-4"></div><div class="h-8 bg-blue-100 rounded w-1/3 ml-auto"></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 animate-pulse hidden lg:block"><div class="h-16 bg-gray-200 rounded-lg w-full mb-3"></div><div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-100 rounded w-1/2 mb-4"></div><div class="h-8 bg-blue-100 rounded w-1/3 ml-auto"></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow-lg border border-gray-100 animate-pulse hidden xl:block"><div class="h-16 bg-gray-200 rounded-lg w-full mb-3"></div><div class="h-5 bg-gray-200 rounded w-3/4 mb-2"></div><div class="h-3 bg-gray-100 rounded w-1/2 mb-4"></div><div class="h-8 bg-blue-100 rounded w-1/3 ml-auto"></div></div>
+                </div>
+        
+                <div id="pagination-container" class="mt-10 flex justify-center items-center gap-2"></div>
+                
+                <button id="add-quiz-fab" class="quiz-btn quiz-btn-primary quiz-fab shadow-xl" title="Add New Quiz">
+                    <i class="fa-solid fa-plus text-xl"></i>
+                </button>
+            </div>
+
+            <div id="generalBooks" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage General Books</h1>
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    </div>
+            </div>
+            
+            <div id="pdf-library" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">PDF Library</h1>
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                        <h2 class="text-xl font-semibold">All Uploaded Files (sorted by size)</h2>
+                        <div>
+                            <input type="file" id="pdf-upload-input" multiple accept=".pdf,.zip,.png,.jpg,.jpeg" class="hidden">
+                            <button id="upload-pdf-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center w-full md:w-auto"><i data-lucide="upload" class="w-4 h-4 mr-2"></i>Upload Files</button>
+                        </div>
+                    </div>
+                    <div id="upload-progress-container" class="hidden my-4"><div class="text-sm font-medium text-gray-700 mb-1">Uploading...</div><div class="w-full bg-gray-200 rounded-full h-2.5"><div id="upload-progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div></div></div>
+                    <div class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <input type="text" id="pdf-search" placeholder="Search files..." class="w-full md:w-1/2 p-2 border border-gray-300 rounded-lg">
+                        <button id="delete-selected-pdfs-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center hidden w-full md:w-auto"><i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>Delete Selected</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-3 w-8"><input type="checkbox" id="select-all-pdfs"></th>
+                                    <th class="p-3 font-semibold text-sm">File Name</th>
+                                    <th class="p-3 font-semibold text-sm">Size</th>
+                                    <th class="p-3 font-semibold text-sm">Upload Date</th>
+                                    <th class="p-3 font-semibold text-sm">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pdf-list-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="blog-all-posts" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Blog Posts</h1>
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    </div>
+            </div>
+
+            <div id="blog-categories" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Blog Categories</h1>
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    </div>
+            </div>
+            
+            <div id="blog-comments" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Comments</h1>
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <p class="text-gray-500">Comment management placeholder. This would show a table of all comments with approve, reply, and delete actions.</p>
+                </div>
+            </div>
+
+            <div id="users-students" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">User Management</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+                        <div><p class="text-gray-500 text-sm">Total Users</p><p id="total-users" class="text-2xl font-bold">0</p></div>
+                        <div class="bg-blue-100 text-blue-500 p-3 rounded-full"><i class="fas fa-users"></i></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+                        <div><p class="text-gray-500 text-sm">Paid Users</p><p id="paid-users" class="text-2xl font-bold">0</p></div>
+                        <div class="bg-green-100 text-green-500 p-3 rounded-full"><i class="fas fa-dollar-sign"></i></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+                        <div><p class="text-gray-500 text-sm">Not Paid Users</p><p id="not-paid-users" class="text-2xl font-bold">0</p></div>
+                        <div class="bg-red-100 text-red-500 p-3 rounded-full"><i class="fas fa-exclamation-triangle"></i></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
+                        <div><p class="text-gray-500 text-sm">Total Revenue</p><p id="total-revenue" class="text-2xl font-bold">$0</p></div>
+                        <div class="bg-purple-100 text-purple-500 p-3 rounded-full"><i class="fas fa-wallet"></i></div>
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <div class="relative w-full md:w-1/3">
+                        <input type="text" id="search-input" placeholder="Search by name, email, or phone..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <button id="add-user-btn" class="w-full md:w-auto bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Add User
+                    </button>
+                </div>
+                <div class="bg-white rounded-lg shadow-md overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead class="bg-gray-50 border-b-2 border-gray-200">
+                            <tr>
+                                <th class="p-4 text-left text-sm font-semibold text-gray-600">User</th>
+                                <th class="p-4 text-left text-sm font-semibold text-gray-600">Phone</th>
+                                <th class="p-4 text-left text-sm font-semibold text-gray-600">Role</th>
+                                <th class="p-4 text-left text-sm font-semibold text-gray-600">Payment</th>
+                                <th class="p-4 text-left text-sm font-semibold text-gray-600">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="users-roles" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Roles & Permissions</h1>
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <p class="text-gray-500">Role management placeholder. This page would allow you to define custom roles (e.g., "Editor", "Moderator") and assign specific permissions to each role.</p>
+                </div>
+            </div>
+            
+            <div id="reports-user-activity" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">User Activity Report</h1>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <p class="text-gray-500 text-sm">New Signups (Last 30d)</p>
+                        <p class="text-3xl font-bold">1,204</p>
+                        <p class="text-sm text-green-500 flex items-center"><i data-lucide="arrow-up" class="w-4 h-4 mr-1"></i> 15.2%</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <p class="text-gray-500 text-sm">Daily Active Users (DAU)</p>
+                        <p class="text-3xl font-bold">4,590</p>
+                        <p class="text-sm text-gray-500 flex items-center"><i data-lucide="arrow-right" class="w-4 h-4 mr-1"></i> -1.1%</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <p class="text-gray-500 text-sm">User Retention (Week 1)</p>
+                        <p class="text-3xl font-bold">38%</p>
+                        <p class="text-sm text-green-500 flex items-center"><i data-lucide="arrow-up" class="w-4 h-4 mr-1"></i> 2.5%</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-4">New Users per Day</h2>
+                    <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                        <p class="text-gray-400">Chart.js or similar library would be integrated here.</p>
+                        <div class="flex items-end h-48 w-full px-4 gap-2">
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 30%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 45%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 40%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 60%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 75%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 50%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 55%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 80%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 65%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 70%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 90%"></div>
+                            <div class="w-1/12 bg-blue-400 rounded-t-lg" style="height: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="reports-content-performance" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Content Performance Report</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4">Most Viewed Exams</h2>
+                        <ul class="space-y-3">
+                            <li class="flex justify-between items-center"><span class="font-medium">2023 Physics Final</span> <span class="text-gray-500">12,409 Views</span></li>
+                            <li class="flex justify-between items-center"><span class="font-medium">2022 Chemistry Midterm</span> <span class="text-gray-500">9,830 Views</span></li>
+                            <li class="flex justify-between items-center"><span class="font-medium">2023 Biology Final</span> <span class="text-gray-500">8,112 Views</span></li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-4">Most Downloaded Books</h2>
+                        <ul class="space-y-3">
+                            <li class="flex justify-between items-center"><span class="font-medium">Form 4 Physics Textbook</span> <span class="text-gray-500">22,045 Downloads</span></li>
+                            <li class="flex justify-between items-center"><span class="font-medium">Form 4 Maths Textbook</span> <span class="text-gray-500">18,331 Downloads</span></li>
+                            <li class="flex justify-between items-center"><span class="font-medium">Somali Grammar Guide</span> <span class="text-gray-500">11,560 Downloads</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Settings</h1>
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <p class="text-gray-500">Placeholder for application settings, API keys, and configurations.</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 overflow-y-auto py-10">
+        <div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 m-4 fade-in">
+            </div>
+    </div>
+
+    <div id="assign-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-8 m-4 fade-in h-[80vh] flex flex-col">
+            <h2 class="text-2xl font-bold mb-4">Assign PDF to <span id="assign-item-type" class="capitalize">Item</span></h2>
+            <p class="mb-4">Select a PDF below to assign to <strong id="assign-item-name"></strong>.</p>
+            <input type="text" id="assign-pdf-search" placeholder="Search available PDFs..." class="w-full p-2 border border-gray-300 rounded-lg mb-4">
+            <div id="assign-pdf-list-container" class="flex-1 overflow-y-auto border p-4 rounded-lg bg-gray-50">
+                 <p class="text-center text-gray-500">Loading PDFs...</p>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3"><button id="assign-modal-cancel" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300">Cancel</button></div>
+        </div>
+    </div>
+    
+    <div id="assign-pdf-to-content-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-8 m-4 fade-in h-[80vh] flex flex-col">
+            <h2 class="text-2xl font-bold mb-4">Assign File to Content</h2>
+            <p class="mb-4 truncate">Assigning file: <strong id="assign-pdf-name-display" class="text-indigo-600"></strong></p>
+            <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
+                <button class="assign-pdf-select-type-btn flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 hover:text-indigo-700" data-type="subjects"><i data-lucide="book-copy" class="w-4 h-4 mr-2 inline-block"></i>Assign to Subject</button>
+                <button class="assign-pdf-select-type-btn flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 hover:text-indigo-700" data-type="exams"><i data-lucide="file-check-2" class="w-4 h-4 mr-2 inline-block"></i>Assign to Exam</button>
+                <button class="assign-pdf-select-type-btn flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 hover:text-indigo-700" data-type="generalBooks"><i data-lucide="book-open" class="w-4 h-4 mr-2 inline-block"></i>Assign to General Book</button>
+            </div>
+            <input type="text" id="assign-content-search" placeholder="Search for content..." class="w-full p-2 border border-gray-300 rounded-lg mb-4 hidden">
+            <div id="assign-content-list-container" class="flex-1 overflow-y-auto border p-4 rounded-lg bg-gray-50">
+                 <p class="text-center text-gray-500">Please select a content type above (Subject, Exam, or Book).</p>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="assign-pdf-to-content-modal-cancel" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="quiz-modal" class="quiz-modal-overlay hidden">
+        <div class="quiz-modal-container">
+            <form id="quiz-form" class="p-6 sm:p-8">
+                <div class="flex justify-between items-center pb-4 border-b mb-6">
+                    <h2 id="modal-title" class="text-3xl font-extrabold text-gray-900">Add New Quiz</h2>
+                    <div class="flex gap-3 items-center">
+                        <button id="import-json-btn" type="button" class="quiz-btn quiz-btn-secondary text-sm" title="Import Quiz from JSON"><i class="fa-solid fa-file-import mr-1"></i> Import</button>
+                        <input type="file" id="json-file-input" accept=".json" class="hidden">
+                        <button id="export-json-btn" type="button" class="quiz-btn quiz-btn-secondary text-sm" title="Export Quiz to JSON"><i class="fa-solid fa-file-export mr-1"></i> Export</button>
+                        <button id="close-modal-btn" type="button" class="text-gray-500 hover:text-gray-700 transition"><i class="fa-solid fa-xmark text-3xl"></i></button>
+                    </div>
+                </div>
+                <input type="hidden" id="quiz-id-input">
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="quiz-title" class="block text-sm font-semibold text-gray-700 mb-1">Quiz Title*</label>
+                            <input type="text" id="quiz-title" class="quiz-form-input" placeholder="e.g., The French Revolution" required>
+                        </div>
+                        <div>
+                            <label for="subject-select" class="block text-sm font-semibold text-gray-700 mb-1">Subject*</label>
+                            <select id="subject-select" class="quiz-form-select" required>
+                                <option value="">-- Select a Subject --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-blue-50 border border-blue-200">
+                        <label for="cover-image-input" class="block text-sm font-semibold text-blue-700 mb-2 flex items-center"><i class="fa-solid fa-image mr-2"></i> Quiz Cover Image (Optional)</label>
+                        <input type="file" id="cover-image-input" class="quiz-form-input p-2 bg-white" accept="image/*">
+                        <p id="cover-image-filename" class="text-xs text-blue-500 mt-1 italic"></p>
+                        <input type="hidden" id="cover-image-url-input">
+                        <div id="cover-image-preview" class="mt-4 border-2 border-dashed border-blue-300 p-2 bg-white rounded-lg flex justify-center items-center h-40 overflow-hidden">
+                            <span class="text-blue-400 text-sm">Image Preview will appear here</span>
+                        </div>
+                    </div>
+                    <hr class="border-gray-200"/>
+                    <h3 class="text-2xl font-bold text-gray-900 flex items-center"><i class="fa-solid fa-clipboard-question mr-2 text-gray-400"></i> Questions</h3>
+                    <div id="questions-container" class="space-y-5 max-h-[50vh] overflow-y-auto pr-3">
+                        <p class="text-gray-500 text-center py-4 text-sm" id="question-placeholder">Add your first question below.</p>
+                    </div>
+                    <button type="button" id="add-question-btn" class="quiz-btn quiz-btn-secondary w-full text-blue-600 border-blue-300 bg-blue-100 hover:bg-blue-200">
+                        <i class="fa-solid fa-plus mr-2"></i> Add New Question
+                    </button>
+                </div>
+                <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                    <button type="submit" id="save-quiz-btn" class="quiz-btn quiz-btn-primary flex-grow text-lg py-3"><i class="fa-solid fa-floppy-disk mr-2"></i> Save Quiz</button>
+                    <button id="delete-quiz-btn" type="button" class="quiz-btn quiz-btn-danger flex-grow hidden"><i class="fa-solid fa-trash-alt mr-2"></i> Delete Quiz</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="user-modal" class="user-modal-backdrop p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h2 id="user-modal-title" class="text-2xl font-bold">Add New User</h2>
+                <button id="user-modal-close" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <form id="user-form">
+                    <input type="hidden" id="user-id">
+                    <div class="mb-4">
+                        <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                        <input type="text" id="name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label for="user-email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="user-email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label for="phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                        <div class="flex">
+                            <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">252</span>
+                            <input type="tel" id="phone" pattern="\d{9,}" title="Phone number must be at least 9 digits" required class="rounded-none rounded-r-lg bg-gray-50 border text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm border-gray-300 p-2.5">
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-4 mt-6">
+                        <button type="button" id="cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Save User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="confirm-modal" class="user-modal-backdrop">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm m-4">
+            <div class="p-6 text-center">
+                <i id="confirm-icon" class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                <h3 id="confirm-title" class="text-xl font-bold mb-2">Are you sure?</h3>
+                <p id="confirm-message" class="text-gray-600 mb-6">You won't be able to revert this!</p>
+                <div class="flex justify-center gap-4">
+                    <button id="confirm-cancel-btn" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+                    <button id="confirm-action-btn" class="px-6 py-2 bg-red-500 text-white rounded-lg">Yes, do it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast"></div>
+
+    <script type="module">
+        // --- FIREBASE V10 IMPORTS (Standardized) ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            addDoc, 
+            doc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            serverTimestamp, 
+            Timestamp,
+            writeBatch,
+            query
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { 
+            getStorage, 
+            ref, 
+            uploadBytesResumable, 
+            listAll, 
+            getDownloadURL, 
+            getMetadata, 
+            deleteObject 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+        // --- CONFIGURATION ---
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDuqswofpquk8aUbCOZCGjdYLUivBEh7a8", 
+            authDomain: "ardaycaawiye-18b89.firebaseapp.com", 
+            projectId: "ardaycaawiye-18b89", 
+            storageBucket: "ardaycaawiye-18b89.firebasestorage.app", 
+            messagingSenderId: "590874185284", 
+            appId: "1:590874185284:web:6ee7df602c45068e38b611", 
+            measurementId: "G-SBGSTJWDMR" 
+        };
+
+        // --- INITIALIZATION ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // --- GLOBAL STATE ---
+        let isLoginMode = true;
+        let currentEditingId = null; 
+        let allPdfFiles = []; 
+        let availableSubjects = []; 
+        let availableExams = []; 
+        let availableGeneralBooks = [];
+        let availableBlogCategories = []; // For Blog
+        let currentAssignTarget = { type: null, id: null, field: null };
+        let currentPdfToAssign = { url: null, name: null };
+        
+        // Active manager/listener state
+        let activeManagers = {
+            subjects: null,
+            exams: null,
+            generalBooks: null,
+            pdfLibrary: null,
+            quiz: null,
+            users: null,
+            blogPosts: null,
+            blogCategories: null,
+            reports: null,
+            dashboard: null
+        };
+
+        // --- DOM ELEMENTS ---
+        const mainContentTabs = document.querySelectorAll('.tab-content');
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        const modal = document.getElementById('modal');
+        const modalContent = document.getElementById('modal-content');
+        const toast = document.getElementById('toast');
+        const loginPage = document.getElementById('login-page');
+        const mainApp = document.getElementById('main-app');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        // --- UTILS ---
+        const showToast = (message, type = 'success') => { 
+            toast.textContent = message; 
+            toast.className = `toast-${type}`; 
+            toast.classList.add('show'); 
+            setTimeout(() => toast.classList.remove('show'), 4000); 
+        };
+        const showModal = (html) => { 
+            modalContent.innerHTML = html; 
+            modal.classList.remove('hidden'); 
+            attachFileInputListeners(); 
+        };
+        const hideModal = () => { 
+            modal.classList.add('hidden'); 
+            modalContent.innerHTML = ''; 
+            currentEditingId = null; 
+        };
+        const formatDate = (date) => { 
+            if (!date) return 'N/A'; 
+            const d = date.toDate ? date.toDate() : new Date(date); 
+            return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); 
+        };
+        const formatBytes = (bytes, decimals = 2) => { 
+            if (bytes === 0) return '0 Bytes'; 
+            const k = 1024; 
+            const dm = decimals < 0 ? 0 : decimals; 
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; 
+            const i = Math.floor(Math.log(bytes) / Math.log(k)); 
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]; 
+        };
+        
+        // --- MASTER AUTHENTICATION (from CMS) ---
+        onAuthStateChanged(auth, (user) => {
+            const authStatus = document.getElementById('auth-status');
+            if (user) {
+                loginPage.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                authStatus.textContent = `Logged in as: ${user.email}`;
+                authStatus.classList.add('text-green-400');
+                authStatus.classList.remove('text-gray-400');
+                initializeAppLogic();
+            } else {
+                loginPage.classList.remove('hidden');
+                mainApp.classList.add('hidden');
+                authStatus.textContent = 'Not Authenticated';
+                authStatus.classList.add('text-gray-400');
+                authStatus.classList.remove('text-green-400');
+                stopAppLogic();
+            }
+            lucide.createIcons();
+        });
+
+        const handleAuthForm = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('auth-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    // When signing up from the CMS, create a user doc
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await addDoc(collection(db, "users"), {
+                        uid: userCredential.user.uid,
+                        displayName: email.split('@')[0], // Default name
+                        email: email,
+                        phone: '',
+                        role: 'user', // Default role
+                        isPremium: false,
+                        banned: false,
+                        createdAt: serverTimestamp()
+                    });
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+                showToast(error.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = isLoginMode ? 'Sign in' : 'Sign up';
+            }
+        };
+
+        const toggleAuthMode = (e) => {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').textContent = isLoginMode ? 'Sign in to your account' : 'Create a new account';
+            document.getElementById('auth-submit-btn').textContent = isLoginMode ? 'Sign in' : 'Sign up';
+            document.getElementById('auth-toggle-link').textContent = isLoginMode ? "Don't have an account? Sign up" : 'Already have an account? Sign in';
+        };
+
+        const handleLogout = async () => {
+            if (confirm("Are you sure you want to log out?")) {
+                await signOut(auth);
+            }
+        };
+        
+        // --- MASTER NAVIGATION ---
+        const stopAllManagers = () => {
+            Object.keys(activeManagers).forEach(key => {
+                if (activeManagers[key] && activeManagers[key].stop) {
+                    activeManagers[key].stop();
+                }
+                activeManagers[key] = null;
+            });
+        };
+
+        const switchTab = (tabId) => {
+            // Stop all currently active managers
+            stopAllManagers();
+
+            // Hide all content tabs
+            mainContentTabs.forEach(tab => tab.classList.add('hidden'));
+            
+            // Show the selected tab
+            const activeTab = document.getElementById(tabId);
+            if (activeTab) {
+                activeTab.classList.remove('hidden');
+            } else {
+                console.warn(`Tab with id "${tabId}" not found. Defaulting to dashboard.`);
+                document.getElementById('dashboard').classList.remove('hidden');
+                tabId = 'dashboard';
+            }
+
+            // Update sidebar active state
+            sidebarLinks.forEach(link => link.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar-link[data-tab="${tabId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+                // Open parent dropdown if it's a sub-item
+                const parentDropdown = activeLink.closest('.dropdown-menu');
+                if (parentDropdown) {
+                    parentDropdown.style.display = 'block';
+                    parentDropdown.previousElementSibling.querySelector('.dropdown-icon').style.transform = 'rotate(180deg)';
+                    parentDropdown.previousElementSibling.classList.add('active'); // Also highlight the parent
+                }
+            }
+            
+            // Start the specific manager for the new tab
+            switch (tabId) {
+                case 'dashboard':
+                    activeManagers.dashboard = startDashboardManager();
+                    break;
+                case 'subjects':
+                    activeManagers.subjects = managers.subjects.start();
+                    break;
+                case 'exams':
+                    activeManagers.exams = managers.exams.start();
+                    break;
+                case 'generalBooks':
+                    activeManagers.generalBooks = managers.generalBooks.start();
+                    break;
+                case 'quizzes':
+                    activeManagers.quiz = startQuizManager();
+                    break;
+                case 'pdf-library':
+                    activeManagers.pdfLibrary = startPdfLibraryManager();
+                    break;
+                case 'blog-all-posts':
+                    activeManagers.blogPosts = managers.blogPosts.start();
+                    break;
+                case 'blog-categories':
+                    activeManagers.blogCategories = managers.blogCategories.start();
+                    break;
+                case 'users-students':
+                    activeManagers.users = startUserManager();
+                    break;
+                case 'reports-user-activity':
+                case 'reports-content-performance':
+                    // These are static for now, but a real app would init charts here
+                    lucide.createIcons();
+                    break;
+                case 'settings':
+                case 'users-roles':
+                case 'blog-comments':
+                    // Placeholder tabs, no JS needed
+                    break;
+            }
+            
+            // Re-render icons if needed
+            lucide.createIcons();
+        };
+
+        // --- APP INITIALIZATION ---
+        const initializeAppLogic = () => {
+            // Pre-fetch data needed for dropdowns
+            fetchSubjectsForDropdown(); 
+            fetchBlogCategoriesForDropdown();
+            // Start on the dashboard
+            switchTab('dashboard');
+        };
+
+        const stopAppLogic = () => {
+            stopAllManagers();
+        };
+        
+        // --- Sidebar Dropdown Logic ---
+        document.querySelectorAll('.has-dropdown').forEach(button => {
+            button.addEventListener('click', () => {
+                const dropdownMenu = button.nextElementSibling;
+                const icon = button.querySelector('.dropdown-icon');
+                const isOpen = dropdownMenu.style.display === 'block';
+                
+                dropdownMenu.style.display = isOpen ? 'none' : 'block';
+                icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            });
+        });
+        
+        // --- Sidebar Link Click Handler ---
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tabId = e.currentTarget.dataset.tab;
+                if (tabId) {
+                    switchTab(tabId);
+                }
+                // Close mobile sidebar on click
+                if (!sidebar.classList.contains('-translate-x-full') && window.innerWidth < 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        // Mobile Sidebar Logic
+        const toggleSidebar = () => {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+        };
+        mobileMenuBtn.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+
+        // ====================================================================
+        // --- SECTION: Dashboard Manager (NEW) ---
+        // ====================================================================
+
+        const startDashboardManager = () => {
+            let unsubscribers = [];
+            
+            // K-Card for Subjects
+            const subQuery = collection(db, "subjects");
+            unsubscribers.push(onSnapshot(subQuery, (snapshot) => {
+                document.getElementById('total-subjects').textContent = snapshot.size;
+            }));
+            
+            // K-Card for Exams
+            const examQuery = collection(db, "exams");
+            unsubscribers.push(onSnapshot(examQuery, (snapshot) => {
+                document.getElementById('total-exams').textContent = snapshot.size;
+            }));
+
+            // K-Card for Books
+            const bookQuery = collection(db, "generalBooks");
+            unsubscribers.push(onSnapshot(bookQuery, (snapshot) => {
+                document.getElementById('total-books').textContent = snapshot.size;
+            }));
+            
+            // K-Card for Quizzes
+            const quizQuery = collection(db, "quizzes");
+            unsubscribers.push(onSnapshot(quizQuery, (snapshot) => {
+                document.getElementById('total-quizzes').textContent = snapshot.size;
+            }));
+
+            // K-Cards for Users
+            const userQuery = collection(db, "users");
+            unsubscribers.push(onSnapshot(userQuery, (snapshot) => {
+                let total = snapshot.size;
+                let paid = 0;
+                let banned = 0;
+                snapshot.docs.forEach(doc => {
+                    if (doc.data().isPremium) paid++;
+                    if (doc.data().banned) banned++;
+                });
+                let revenue = paid * 5; // Assuming $5 per user
+
+                document.getElementById('dash-total-users').textContent = total;
+                document.getElementById('dash-paid-users').textContent = paid;
+                document.getElementById('dash-banned-users').textContent = banned;
+                document.getElementById('dash-total-revenue').innerText = `$${revenue}`;
+            }));
+            
+            lucide.createIcons();
+
+            return {
+                stop: () => {
+                    unsubscribers.forEach(unsub => unsub());
+                }
+            };
+        };
+
+        // ====================================================================
+        // --- SECTION: CMS / PDF / CONTENT (from CMS file) ---
+        // ====================================================================
+        
+        // --- File Upload Helper ---
+        const uploadFileToStorage = (file, pathPrefix) => new Promise((resolve, reject) => {
+            if (!file) { resolve(null); return; }
+            const uniqueFileName = `${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, `${pathPrefix}${uniqueFileName}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+            const progressBar = modalContent.querySelector(`.file-upload-progress[data-for="${file.inputId}"] div`);
+
+            uploadTask.on('state_changed',
+                (snapshot) => { const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100; if (progressBar) progressBar.style.width = progress + '%'; },
+                (error) => { console.error(`Upload failed for ${file.name}:`, error); showToast(`Upload failed for ${file.name}.`, 'error'); if (progressBar) progressBar.parentElement.textContent = 'Upload Failed!'; reject(error); },
+                async () => { try { const downloadURL = await getDownloadURL(uploadTask.snapshot.ref); if (progressBar) progressBar.parentElement.textContent = 'Upload Complete!'; resolve(downloadURL); } catch (error) { console.error(`Failed to get URL for ${file.name}:`, error); showToast(`Error getting URL for ${file.name}.`, 'error'); if (progressBar) progressBar.parentElement.textContent = 'Error getting URL!'; reject(error); } }
+            );
+        });
+
+        const attachFileInputListeners = () => {
+            modalContent.querySelectorAll('input[type="file"]').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    const previewEl = modalContent.querySelector(`.file-preview[data-for="${e.target.id}"]`);
+                    const progressContainer = modalContent.querySelector(`.file-upload-progress[data-for="${e.target.id}"]`);
+                    if (file && previewEl) { previewEl.textContent = `Selected: ${file.name} (${formatBytes(file.size)})`; if (progressContainer) { progressContainer.classList.add('hidden'); progressContainer.querySelector('div').style.width = '0%'; } }
+                    else if (previewEl) { previewEl.textContent = 'No file selected.'; if (progressContainer) progressContainer.classList.add('hidden'); }
+                });
+            });
+        };
+        
+        // --- DYNAMIC HTML TEMPLATES ---
+        const createTableHTML = (id, title, headers) => `<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4"><h2 class="text-xl font-semibold">${title}</h2><button class="add-btn bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center w-full md:w-auto" data-type="${id}"><i data-lucide="plus" class="w-4 h-4 mr-2"></i>Add New ${title.slice(0, -1)}</button></div><div class="mb-4"><input type="text" id="${id}-search" placeholder="Search ${title}..." class="w-full p-2 border border-gray-300 rounded-lg"></div><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-50"><tr>${headers.map(h => `<th class="p-3 font-semibold text-sm">${h}</th>`).join('')}<th class="p-3 font-semibold text-sm">Actions</th></tr></thead><tbody id="${id}-table"></tbody></table></div>`;
+        
+        // --- GENERIC CRUD LOGIC FACTORY ---
+        const createCrudManager = (config) => {
+            const { type, title, headers, fields, renderRow } = config;
+            const collectionRef = collection(db, type);
+            const container = document.getElementById(type);
+            let localItems = []; 
+            let unsubscribe = null;
+
+            const render = () => {
+                const tableBody = document.getElementById(`${type}-table`);
+                if (!tableBody) return;
+                const searchInput = document.getElementById(`${type}-search`);
+                const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+                const filteredItems = localItems.filter(item => Object.values(item).some(val => String(val).toLowerCase().includes(searchTerm)));
+                if (filteredItems.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="${headers.length + 1}" class="p-4 text-center text-gray-500">${localItems.length === 0 ? `No ${title.toLowerCase()} found. Add one!` : `No ${title.toLowerCase()} match your search.`}</td></tr>`;
+                } else {
+                    tableBody.innerHTML = filteredItems.map(item => renderRow(item)).join('');
+                }
+                lucide.createIcons();
+            };
+
+            const renderForm = (item = {}) => { 
+                let formHTML = `<h2 class="text-2xl font-bold mb-6">${currentEditingId ? 'Edit' : 'Add'} ${title.slice(0, -1)}</h2><form id="crud-form" data-type="${type}" class="space-y-4">`; 
+                fields.forEach(f => { 
+                    formHTML += `<div><label for="${f.id}" class="block text-sm font-medium text-gray-700">${f.label}</label>`; 
+                    const currentValue = item[f.id] || (f.type === 'checkbox' ? false : ''); 
+                    const requiredAttr = f.required ? 'required' : ''; 
+                    switch(f.type) { 
+                        case 'textarea': formHTML += `<textarea id="${f.id}" ${requiredAttr} class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" rows="5">${currentValue}</textarea>`; break; 
+                        case 'checkbox': formHTML += `<input id="${f.id}" type="checkbox" ${currentValue ? 'checked' : ''} class="mt-1 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">`; break; 
+                        case 'date': let dateValue = ''; if (currentValue) { const d = currentValue.toDate ? currentValue.toDate() : new Date(currentValue); dateValue = d.toISOString().split('T')[0]; } formHTML += `<input id="${f.id}" type="date" value="${dateValue}" ${requiredAttr} class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">`; break; 
+                        case 'select': 
+                            formHTML += `<select id="${f.id}" ${requiredAttr} class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"><option value="">-- Select ${f.label} --</option>`; 
+                            let optionsSource = [];
+                            if (f.optionsSource === 'subjects') optionsSource = availableSubjects;
+                            if (f.optionsSource === 'blogCategories') optionsSource = availableBlogCategories;
+                            if (f.optionsSource === 'static' && f.options) optionsSource = f.options;
+                            
+                            if (optionsSource.length > 0) {
+                                optionsSource.forEach(opt => {
+                                    const value = opt.id || opt.value;
+                                    const label = opt.name || opt.label;
+                                    const selected = value === currentValue ? 'selected' : ''; 
+                                    formHTML += `<option value="${value}" ${selected}>${label}</option>`; 
+                                }); 
+                            }
+                            formHTML += `</select>`; break; 
+                        case 'file': 
+                            formHTML += `<input id="${f.id}" type="file" ${f.accept ? `accept="${f.accept}"` : ''} class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">`; 
+                            formHTML += `<div class="file-preview text-xs text-gray-500 mt-1" data-for="${f.id}">${currentValue ? `Current: <a href="${currentValue}" target="_blank" class="text-indigo-600 hover:underline">${currentValue.split('/').pop().split('?')[0].substring(14)}</a>` : 'No file uploaded.'}</div>`; 
+                            formHTML += `<div class="file-upload-progress w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 mt-1 hidden" data-for="${f.id}"><div class="bg-indigo-600 h-1.5 rounded-full" style="width: 0%"></div></div>`; break; 
+                        default: formHTML += `<input id="${f.id}" type="${f.type || 'text'}" value="${currentValue}" ${requiredAttr} class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">`; 
+                    } 
+                    formHTML += `</div>`; 
+                }); 
+                formHTML += `<div class="flex justify-end space-x-3 pt-4"><button type="button" class="modal-cancel-btn bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300">Cancel</button><button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700">Save</button></div></form>`; 
+                return formHTML; 
+            };
+            
+            const start = () => {
+                if (unsubscribe) return { stop: () => {} }; // Already running
+                
+                // Ensure container is ready
+                if (!container.innerHTML) {
+                    container.innerHTML = createTableHTML(type, title, headers);
+                }
+
+                unsubscribe = onSnapshot(collectionRef, (snapshot) => {
+                    localItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    render();
+                    
+                    // Update caches
+                    if (type === 'subjects') {
+                        availableSubjects = localItems.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+                    }
+                    if (type === 'exams') {
+                        availableExams = localItems.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+                    }
+                    if (type === 'generalBooks') {
+                        availableGeneralBooks = localItems.sort((a,b) => (a.title || '').localeCompare(b.title || ''));
+                    }
+                    if (type === 'blogCategories') {
+                        availableBlogCategories = localItems.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+                    }
+                }, (error) => {
+                    console.error(`Error fetching ${type}:`, error);
+                    showToast(`Could not fetch ${type}.`, 'error');
+                    const tableBody = document.getElementById(`${type}-table`);
+                    if (tableBody) tableBody.innerHTML = `<tr><td colspan="${headers.length + 1}" class="p-4 text-center text-red-500">Error fetching data.</td></tr>`;
+                });
+
+                const searchInput = document.getElementById(`${type}-search`);
+                if (searchInput) {
+                    searchInput.addEventListener('input', render);
+                }
+                
+                return {
+                    stop: () => {
+                        if (unsubscribe) {
+                            unsubscribe();
+                            unsubscribe = null;
+                        }
+                        if (searchInput) {
+                            searchInput.removeEventListener('input', render);
+                        }
+                        // Clear the table to force re-render on next start
+                        container.innerHTML = '';
+                    }
+                };
+            };
+            
+            const handleAdd = () => { currentEditingId = null; showModal(renderForm()); }; 
+            const handleEdit = (item) => { currentEditingId = item.id; showModal(renderForm(item)); };
+            const handleDelete = async (id) => { if (confirm(`Delete this ${title.slice(0, -1)}?`)) { try { await deleteDoc(doc(db, type, id)); showToast(`${title.slice(0, -1)} deleted!`); } catch (e) { console.error("Error deleting:", e); showToast(`Error deleting ${title.slice(0, -1)}.`, 'error'); } } };
+
+            const handleFormSubmit = async (e) => {
+                e.preventDefault();
+                const form = e.target; 
+                const submitButton = form.querySelector('button[type="submit"]'); 
+                submitButton.disabled = true; 
+                submitButton.textContent = 'Saving...';
+                const formData = {}; 
+                const fileUploadPromises = [];
+
+                fields.forEach(f => {
+                    const input = form.querySelector(`#${f.id}`); if (!input) return;
+                    if (f.type === 'file') {
+                        const file = input.files[0];
+                        if (file) {
+                            const progressContainer = form.querySelector(`.file-upload-progress[data-for="${f.id}"]`);
+                            if(progressContainer) progressContainer.classList.remove('hidden');
+                            
+                            let uploadPath = `${type}/`; // Default
+                            if (f.uploadPath) uploadPath = f.uploadPath;
+
+                            file.inputId = f.id;
+                            fileUploadPromises.push(uploadFileToStorage(file, uploadPath).then(url => ({ fieldId: f.id, url: url })));
+                        }
+                    } else if (f.type === 'checkbox') { formData[f.id] = input.checked; }
+                    else if (f.type === 'number') { formData[f.id] = Number(input.value); }
+                    else if (f.type === 'date') { formData[f.id] = input.value ? Timestamp.fromDate(new Date(input.value)) : null; }
+                    else { formData[f.id] = input.value.trim(); }
+                });
+
+                try {
+                    const uploadResults = await Promise.all(fileUploadPromises);
+                    uploadResults.forEach(result => { if (result.url) formData[result.fieldId] = result.url; });
+
+                    if (currentEditingId) {
+                        const existingDoc = localItems.find(item => item.id === currentEditingId);
+                        fields.forEach(f => { if (f.type === 'file' && !formData[f.id] && existingDoc && existingDoc[f.id]) { formData[f.id] = existingDoc[f.id]; } });
+                        formData.modifiedAt = serverTimestamp();
+                        await updateDoc(doc(db, type, currentEditingId), formData);
+                        showToast(`${title.slice(0, -1)} updated!`);
+                    } else {
+                        formData.createdAt = serverTimestamp();
+                        await addDoc(collectionRef, formData);
+                        showToast(`${title.slice(0, -1)} added!`);
+                    }
+                    hideModal();
+                } catch (e) { console.error("Error saving:", e); showToast(`Error saving ${title.slice(0, -1)}.`, 'error'); }
+                finally { submitButton.disabled = false; submitButton.textContent = 'Save'; }
+            };
+
+            return { start, stop, handleAdd, handleEdit, handleDelete, handleFormSubmit };
+        };
+
+        // --- FETCHERS FOR DROPDOWNS ---
+        const fetchSubjectsForDropdown = async () => {
+            if (availableSubjects.length === 0) {
+                try {
+                    const snapshot = await getDocs(collection(db, 'subjects'));
+                    availableSubjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+                } catch (error) {
+                    console.error("Error fetching subjects for dropdown:", error);
+                }
+            }
+        };
+        const fetchBlogCategoriesForDropdown = async () => {
+            if (availableBlogCategories.length === 0) {
+                try {
+                    const snapshot = await getDocs(collection(db, 'blogCategories'));
+                    availableBlogCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+                } catch (error) {
+                    console.error("Error fetching blog categories for dropdown:", error);
+                }
+            }
+        };
+
+        // --- CRUD MANAGERS DEFINITIONS ---
+        const managers = {
+            subjects: createCrudManager({
+                type: 'subjects', title: 'Subjects',
+                headers: ['Cover', 'Name', 'Grade', 'Book PDF', 'Created'],
+                fields: [
+                    { id: 'name', label: 'Subject Name', required: true },
+                    { id: 'grade', label: 'Grade (e.g., F1, F2)', required: true },
+                    { id: 'coverImage', label: 'Cover Image', type: 'file', accept: 'image/*', uploadPath: 'subject_covers/' },
+                    { id: 'bookPdfUrl', label: 'Book PDF', type: 'file', accept: '.pdf', uploadPath: 'subject_pdfs/' }
+                ],
+                renderRow: (item) => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3"><img src="${item.coverImage || 'https://via.placeholder.com/40'}" alt="cover" class="w-10 h-10 rounded-md object-cover"></td>
+                        <td class="p-3 font-medium">${item.name || 'N/A'}</td>
+                        <td class="p-3">${item.grade || 'N/A'}</td>
+                        <td class="p-3">${item.bookPdfUrl ? `<a href="${item.bookPdfUrl}" target="_blank" class="text-indigo-600 hover:underline flex items-center"><i data-lucide="file-text" class="w-4 h-4 mr-1"></i>View PDF</a>` : '<span class="text-gray-400">No PDF</span>'}</td>
+                        <td class="p-3 text-sm text-gray-500">${formatDate(item.createdAt)}</td>
+                        <td class="p-3 space-x-2 whitespace-nowrap">
+                            <button class="action-btn text-indigo-600 hover:bg-indigo-100" onclick="window.app.editItem('subjects', '${item.id}')"><i data-lucide="edit-2" class="w-4 h-4 mr-1"></i>Edit</button>
+                            <button class="action-btn text-blue-600 hover:bg-blue-100" onclick="window.app.openAssignModal('subjects', '${item.id}', 'bookPdfUrl', '${item.name}')"><i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign PDF</button>
+                            <button class="action-btn text-red-600 hover:bg-red-100" onclick="window.app.deleteItem('subjects', '${item.id}')"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>Delete</button>
+                        </td>
+                    </tr>`
+            }),
+            exams: createCrudManager({
+                type: 'exams', title: 'Exams',
+                headers: ['Cover', 'Name', 'Year', 'Subject', 'PDF', 'Created'],
+                fields: [
+                    { id: 'name', label: 'Exam Name (e.g., Midterm)', required: true },
+                    { id: 'year', label: 'Year', type: 'number', required: true },
+                    { id: 'subjectId', label: 'Subject', type: 'select', optionsSource: 'subjects', required: true },
+                    { id: 'coverImage', label: 'Cover Image', type: 'file', accept: 'image/*', uploadPath: 'exam_covers/' },
+                    { id: 'pdfUrl', label: 'Exam PDF', type: 'file', accept: '.pdf', uploadPath: 'exam_pdfs/' }
+                ],
+                renderRow: (item) => {
+                    const subject = availableSubjects.find(s => s.id === item.subjectId);
+                    return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3"><img src="${item.coverImage || 'https://via.placeholder.com/40'}" alt="cover" class="w-10 h-10 rounded-md object-cover"></td>
+                        <td class="p-3 font-medium">${item.name || 'N/A'}</td>
+                        <td class="p-3">${item.year || 'N/A'}</td>
+                        <td class="p-3">${subject ? `${subject.name} (G${subject.grade})` : '<span class="text-gray-400">?</span>'}</td>
+                        <td class="p-3">${item.pdfUrl ? `<a href="${item.pdfUrl}" target="_blank" class="text-indigo-600 hover:underline flex items-center"><i data-lucide="file-text" class="w-4 h-4 mr-1"></i>View PDF</a>` : '<span class="text-gray-400">No PDF</span>'}</td>
+                        <td class="p-3 text-sm text-gray-500">${formatDate(item.createdAt)}</td>
+                        <td class="p-3 space-x-2 whitespace-nowrap">
+                            <button class="action-btn text-indigo-600 hover:bg-indigo-100" onclick="window.app.editItem('exams', '${item.id}')"><i data-lucide="edit-2" class="w-4 h-4 mr-1"></i>Edit</button>
+                            <button class="action-btn text-blue-600 hover:bg-blue-100" onclick="window.app.openAssignModal('exams', '${item.id}', 'pdfUrl', '${item.name}')"><i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign PDF</button>
+                            <button class="action-btn text-red-600 hover:bg-red-100" onclick="window.app.deleteItem('exams', '${item.id}')"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>Delete</button>
+                        </td>
+                    </tr>`
+                }
+            }),
+            generalBooks: createCrudManager({
+                type: 'generalBooks', title: 'General Books',
+                headers: ['Cover', 'Title', 'Author', 'PDF', 'Created'],
+                fields: [
+                    { id: 'title', label: 'Book Title', required: true },
+                    { id: 'author', label: 'Author', required: false },
+                    { id: 'coverImageUrl', label: 'Cover Image', type: 'file', accept: 'image/*', uploadPath: 'generalBooks_covers/' },
+                    { id: 'pdfUrl', label: 'Book PDF', type: 'file', accept: '.pdf', uploadPath: 'generalBooks_pdfs/' }
+                ],
+                renderRow: (item) => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3"><img src="${item.coverImageUrl || 'https://via.placeholder.com/40'}" alt="cover" class="w-10 h-10 rounded-md object-cover"></td>
+                        <td class="p-3 font-medium">${item.title || 'N/A'}</td>
+                        <td class="p-3">${item.author || 'N/A'}</td>
+                        <td class="p-3">${item.pdfUrl ? `<a href="${item.pdfUrl}" target="_blank" class="text-indigo-600 hover:underline flex items-center"><i data-lucide="file-text" class="w-4 h-4 mr-1"></i>View PDF</a>` : '<span class="text-gray-400">No PDF</span>'}</td>
+                        <td class="p-3 text-sm text-gray-500">${formatDate(item.createdAt)}</td>
+                        <td class="p-3 space-x-2 whitespace-nowrap">
+                            <button class="action-btn text-indigo-600 hover:bg-indigo-100" onclick="window.app.editItem('generalBooks', '${item.id}')"><i data-lucide="edit-2" class="w-4 h-4 mr-1"></i>Edit</button>
+                            <button class="action-btn text-blue-600 hover:bg-blue-100" onclick="window.app.openAssignModal('generalBooks', '${item.id}', 'pdfUrl', '${item.title}')"><i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign PDF</button>
+                            <button class="action-btn text-red-600 hover:bg-red-100" onclick="window.app.deleteItem('generalBooks', '${item.id}')"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>Delete</button>
+                        </td>
+                    </tr>`
+            }),
+            // --- NEW BLOG MANAGERS ---
+            blogPosts: createCrudManager({
+                type: 'blogPosts', title: 'Blog Posts',
+                headers: ['Image', 'Title', 'Category', 'Status', 'Created'],
+                fields: [
+                    { id: 'title', label: 'Post Title', required: true },
+                    { id: 'slug', label: 'Slug (e.g., my-first-post)', required: true },
+                    { id: 'content', label: 'Post Content (Markdown or HTML)', type: 'textarea', required: true },
+                    { id: 'featuredImage', label: 'Featured Image', type: 'file', accept: 'image/*', uploadPath: 'blog_images/' },
+                    { id: 'categoryId', label: 'Category', type: 'select', optionsSource: 'blogCategories', required: true },
+                    { id: 'tags', label: 'Tags (comma-separated)', required: false },
+                    { id: 'status', label: 'Status', type: 'select', required: true, optionsSource: 'static', options: [
+                        { value: 'draft', label: 'Draft' },
+                        { value: 'published', label: 'Published' }
+                    ]}
+                ],
+                renderRow: (item) => {
+                    const category = availableBlogCategories.find(c => c.id === item.categoryId);
+                    const statusClass = item.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
+                    return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3"><img src="${item.featuredImage || 'https://via.placeholder.com/40'}" alt="cover" class="w-10 h-10 rounded-md object-cover"></td>
+                        <td class="p-3 font-medium">${item.title || 'N/A'}</td>
+                        <td class="p-3">${category ? category.name : '<span class="text-gray-400">?</span>'}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${statusClass}">${item.status || 'draft'}</span></td>
+                        <td class="p-3 text-sm text-gray-500">${formatDate(item.createdAt)}</td>
+                        <td class="p-3 space-x-2 whitespace-nowrap">
+                            <button class="action-btn text-indigo-600 hover:bg-indigo-100" onclick="window.app.editItem('blogPosts', '${item.id}')"><i data-lucide="edit-2" class="w-4 h-4 mr-1"></i>Edit</button>
+                            <button class="action-btn text-red-600 hover:bg-red-100" onclick="window.app.deleteItem('blogPosts', '${item.id}')"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>Delete</button>
+                        </td>
+                    </tr>`
+                }
+            }),
+            blogCategories: createCrudManager({
+                type: 'blogCategories', title: 'Blog Categories',
+                headers: ['Name', 'Slug', 'Description'],
+                fields: [
+                    { id: 'name', label: 'Category Name', required: true },
+                    { id: 'slug', label: 'Slug (e.g., technology)', required: true },
+                    { id: 'description', label: 'Description', type: 'textarea', required: false },
+                ],
+                renderRow: (item) => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 font-medium">${item.name || 'N/A'}</td>
+                        <td class="p-3 text-gray-500">${item.slug || 'N/A'}</td>
+                        <td class="p-3">${item.description || 'N/A'}</td>
+                        <td class="p-3 space-x-2 whitespace-nowrap">
+                            <button class="action-btn text-indigo-600 hover:bg-indigo-100" onclick="window.app.editItem('blogCategories', '${item.id}')"><i data-lucide="edit-2" class="w-4 h-4 mr-1"></i>Edit</button>
+                            <button class="action-btn text-red-600 hover:bg-red-100" onclick="window.app.deleteItem('blogCategories', '${item.id}')"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>Delete</button>
+                        </td>
+                    </tr>`
+            }),
+        };
+
+        // --- PDF Library (from CMS) ---
+        let pdfListTable, selectAllPdfsCheckbox, deleteSelectedPdfsBtn;
+
+        const startPdfLibraryManager = () => {
+            pdfListTable = document.getElementById('pdf-list-table');
+            selectAllPdfsCheckbox = document.getElementById('select-all-pdfs');
+            deleteSelectedPdfsBtn = document.getElementById('delete-selected-pdfs-btn');
+            
+            const pdfSearch = document.getElementById('pdf-search');
+            const uploadBtn = document.getElementById('upload-pdf-btn');
+            const uploadInput = document.getElementById('pdf-upload-input');
+            
+            const renderPdfList = () => {
+                const searchTerm = document.getElementById('pdf-search').value.toLowerCase();
+                const filteredPdfs = allPdfFiles.filter(pdf => pdf.name.toLowerCase().includes(searchTerm));
+                if (filteredPdfs.length === 0) {
+                    pdfListTable.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">${allPdfFiles.length === 0 ? "No files found." : "No files match your search."}</td></tr>`;
+                    return;
+                }
+                pdfListTable.innerHTML = filteredPdfs.map(pdf => `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3"><input type="checkbox" class="pdf-checkbox" data-path="${pdf.fullPath}"></td>
+                        <td class="p-3 font-medium text-gray-800 break-all">${pdf.name}</td>
+                        <td class="p-3 text-gray-600">${formatBytes(pdf.size)}</td>
+                        <td class="p-3 text-gray-600">${formatDate(pdf.updated)}</td>
+                        <td class="p-3 space-x-2 whitespace-nowrap">
+                            <button class="action-btn text-green-600 hover:bg-green-100" onclick="window.app.copyToClipboard('${pdf.fullPath}')"><i data-lucide="copy" class="w-4 h-4 mr-1"></i>Copy URL</button>
+                            <button class="action-btn text-blue-600 hover:bg-blue-100" onclick="window.app.openAssignPdfToContentModal('${pdf.fullPath}', '${pdf.name}')"><i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign</button>
+                            <button class="action-btn text-red-600 hover:bg-red-100" onclick="window.app.deletePdf('${pdf.fullPath}')"><i data-lucide="trash-2" class="w-4 h-4 mr-1"></i>Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+                lucide.createIcons();
+            };
+
+            const fetchAllPdfs = async () => {
+                try {
+                    const listRef = ref(storage, ''); // List all files
+                    const res = await listAll(listRef);
+                    const allFiles = [];
+
+                    const processItems = async (items) => {
+                        for (const itemRef of items) {
+                            try {
+                                const metadata = await getMetadata(itemRef);
+                                if (metadata.contentType === 'application/pdf' || metadata.contentType === 'application/zip' || metadata.contentType.startsWith('image/')) {
+                                    allFiles.push({ ref: itemRef, name: metadata.name, fullPath: metadata.fullPath, size: metadata.size, updated: metadata.updated });
+                                }
+                            } catch (e) { console.error("Error getting metadata for item:", itemRef.fullPath, e); }
+                        }
+                    };
+                    await processItems(res.items);
+                    for (const folderRef of res.prefixes) {
+                        const folderRes = await listAll(folderRef);
+                        await processItems(folderRes.items);
+                    }
+                    allPdfFiles = allFiles.sort((a, b) => b.size - a.size); // Sort by size
+                    renderPdfList();
+                } catch (error) {
+                    console.error("Error fetching PDF list:", error);
+                    showToast("Error fetching file list.", "error");
+                    pdfListTable.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Error fetching files.</td></tr>`;
+                }
+            };
+            
+            const updateDeleteSelectedButton = () => {
+                const selected = pdfListTable.querySelectorAll('.pdf-checkbox:checked');
+                if (selected.length > 0) {
+                    deleteSelectedPdfsBtn.classList.remove('hidden');
+                    deleteSelectedPdfsBtn.querySelector('i').nextSibling.textContent = ` Delete Selected (${selected.length})`;
+                } else {
+                    deleteSelectedPdfsBtn.classList.add('hidden');
+                }
+            };
+
+            const deleteSelectedPdfs = async () => {
+                const selected = pdfListTable.querySelectorAll('.pdf-checkbox:checked');
+                if (selected.length === 0) return;
+                if (confirm(`Are you sure you want to delete ${selected.length} file(s)? This cannot be undone.`)) {
+                    let deletePromises = [];
+                    let deletedPaths = [];
+                    selected.forEach(cb => {
+                        const path = cb.dataset.path;
+                        deletedPaths.push(path);
+                        deletePromises.push(deleteObject(ref(storage, path)));
+                    });
+                    try {
+                        await Promise.all(deletePromises);
+                        showToast(`${selected.length} file(s) deleted successfully!`);
+                        allPdfFiles = allPdfFiles.filter(pdf => !deletedPaths.includes(pdf.fullPath));
+                        renderPdfList();
+                        selectAllPdfsCheckbox.checked = false;
+                        updateDeleteSelectedButton();
+                    } catch (error) {
+                        console.error("Error deleting selected files:", error);
+                        showToast("Error deleting some files.", "error");
+                        fetchAllPdfs();
+                    }
+                }
+            };
+
+            const handleFileUpload = async (files) => {
+                const progressContainer = document.getElementById('upload-progress-container');
+                const progressBar = document.getElementById('upload-progress-bar');
+                if (files.length === 0) return;
+                uploadBtn.disabled = true;
+                uploadBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Uploading...';
+                lucide.createIcons();
+                progressContainer.classList.remove('hidden');
+                progressBar.style.width = '0%';
+                let totalSize = Array.from(files).reduce((acc, file) => acc + file.size, 0);
+                let uploadedSize = 0;
+                let uploadPromises = [];
+                for (const file of files) {
+                    let path = 'general_uploads/';
+                    if (file.type === 'application/pdf') path = 'general_pdfs/';
+                    if (file.type.startsWith('image/')) path = 'general_images/';
+                    if (file.type === 'application/zip') path = 'zips/';
+                    const storageRef = ref(storage, `${path}${Date.now()}_${file.name}`);
+                    const uploadTask = uploadBytesResumable(storageRef, file);
+                    const promise = new Promise((resolve, reject) => {
+                        uploadTask.on('state_changed',
+                            (snapshot) => {},
+                            (error) => reject(error),
+                            () => getDownloadURL(uploadTask.snapshot.ref).then(() => {
+                                uploadedSize += file.size;
+                                const totalProgress = (uploadedSize / totalSize) * 100;
+                                progressBar.style.width = `${totalProgress}%`;
+                                resolve();
+                            })
+                        );
+                    });
+                    uploadPromises.push(promise);
+                }
+                try {
+                    await Promise.all(uploadPromises);
+                    showToast(`Successfully uploaded ${files.length} file(s)!`);
+                    await fetchAllPdfs();
+                } catch (error) {
+                    console.error("Error during file upload:", error);
+                    showToast("An error occurred during upload.", "error");
+                } finally {
+                    uploadBtn.disabled = false;
+                    uploadBtn.innerHTML = '<i data-lucide="upload" class="w-4 h-4 mr-2"></i>Upload Files';
+                    lucide.createIcons();
+                    progressContainer.classList.add('hidden');
+                }
+            };
+
+            const onPdfSearchInput = () => renderPdfList();
+            const onUploadBtnClick = () => uploadInput.click();
+            const onUploadInputChange = (e) => handleFileUpload(e.target.files);
+            const onSelectAllChange = (e) => {
+                pdfListTable.querySelectorAll('.pdf-checkbox').forEach(cb => cb.checked = e.target.checked);
+                updateDeleteSelectedButton();
+            };
+            const onPdfListTableChange = (e) => {
+                if (e.target.classList.contains('pdf-checkbox')) {
+                    updateDeleteSelectedButton();
+                }
+            };
+
+            // Add Listeners
+            pdfSearch.addEventListener('input', onPdfSearchInput);
+            uploadBtn.addEventListener('click', onUploadBtnClick);
+            uploadInput.addEventListener('change', onUploadInputChange);
+            selectAllPdfsCheckbox.addEventListener('change', onSelectAllChange);
+            pdfListTable.addEventListener('change', onPdfListTableChange);
+            deleteSelectedPdfsBtn.addEventListener('click', deleteSelectedPdfs);
+            
+            // Initial Fetch
+            fetchAllPdfs();
+            
+            // Return stop function
+            return {
+                stop: () => {
+                    pdfSearch.removeEventListener('input', onPdfSearchInput);
+                    uploadBtn.removeEventListener('click', onUploadBtnClick);
+                    uploadInput.removeEventListener('change', onUploadInputChange);
+                    selectAllPdfsCheckbox.removeEventListener('change', onSelectAllChange);
+                    pdfListTable.removeEventListener('change', onPdfListTableChange);
+                    deleteSelectedPdfsBtn.removeEventListener('click', deleteSelectedPdfs);
+                }
+            };
+        };
+
+        // --- Assign PDF Modals (from CMS) ---
+        const assignModal = document.getElementById('assign-modal');
+        const assignItemNameEl = document.getElementById('assign-item-name');
+        const assignItemTypeEl = document.getElementById('assign-item-type');
+        const assignPdfListContainerEl = document.getElementById('assign-pdf-list-container');
+        const assignPdfSearchEl = document.getElementById('assign-pdf-search');
+        const assignPdfToContentModal = document.getElementById('assign-pdf-to-content-modal');
+        const assignPdfNameDisplay = document.getElementById('assign-pdf-name-display');
+        const assignContentSearchEl = document.getElementById('assign-content-search');
+        const assignContentListContainerEl = document.getElementById('assign-content-list-container');
+
+        const openAssignModal = (type, id, field, name) => {
+            currentAssignTarget = { type, id, field };
+            assignItemNameEl.textContent = name;
+            assignItemTypeEl.textContent = type.slice(0, -1);
+            assignPdfSearchEl.value = '';
+            renderAssignablePdfs();
+            assignModal.classList.remove('hidden');
+        };
+        const closeAssignModal = () => {
+            assignModal.classList.add('hidden');
+            currentAssignTarget = { type: null, id: null, field: null };
+        };
+        const renderAssignablePdfs = () => {
+            const searchTerm = assignPdfSearchEl.value.toLowerCase();
+            const assignableFiles = allPdfFiles.filter(pdf => (pdf.name.toLowerCase().includes(searchTerm)) && (pdf.name.endsWith('.pdf') || pdf.name.endsWith('.zip')));
+            if (assignableFiles.length === 0) {
+                assignPdfListContainerEl.innerHTML = `<p class="text-center text-gray-500">No matching files found.</p>`;
+                return;
+            }
+            assignPdfListContainerEl.innerHTML = assignableFiles.map(pdf => `
+                <div class="flex justify-between items-center p-3 hover:bg-gray-100 rounded-lg">
+                    <div><p class="font-medium text-gray-800">${pdf.name}</p><p class="text-sm text-gray-500">${pdf.fullPath} (${formatBytes(pdf.size)})</p></div>
+                    <button class="action-btn bg-indigo-600 text-white hover:bg-indigo-700" onclick="window.app.assignPdf('${pdf.fullPath}')"><i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign</button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        };
+        const assignPdf = async (path) => {
+            if (!currentAssignTarget.type || !currentAssignTarget.id) return;
+            try {
+                const downloadURL = await getDownloadURL(ref(storage, path));
+                const { type, id, field } = currentAssignTarget;
+                const docRef = doc(db, type, id);
+                let dataToUpdate = {};
+                dataToUpdate[field] = downloadURL;
+                await updateDoc(docRef, dataToUpdate);
+                showToast(`PDF assigned successfully!`);
+                closeAssignModal();
+            } catch (error) {
+                console.error("Error assigning PDF:", error);
+                showToast("Error assigning PDF.", "error");
+            }
+        };
+        const openAssignPdfToContentModal = (path, name) => {
+            currentPdfToAssign = { path: path, name: name };
+            assignPdfNameDisplay.textContent = name;
+            assignContentSearchEl.value = '';
+            assignContentSearchEl.classList.add('hidden');
+            assignContentListContainerEl.innerHTML = `<p class="text-center text-gray-500">Please select a content type above (Subject, Exam, or Book).</p>`;
+            document.querySelectorAll('.assign-pdf-select-type-btn').forEach(btn => btn.classList.remove('bg-indigo-100', 'text-indigo-700'));
+            assignPdfToContentModal.classList.remove('hidden');
+        };
+        const closeAssignPdfToContentModal = () => {
+            assignPdfToContentModal.classList.add('hidden');
+            currentPdfToAssign = { path: null, name: null };
+        };
+        const renderAssignableContent = (type) => {
+            assignContentSearchEl.classList.remove('hidden');
+            assignContentSearchEl.placeholder = `Search for a ${type.slice(0, -1)}...`;
+            let items = [];
+            if (type === 'subjects') items = availableSubjects;
+            else if (type === 'exams') items = availableExams;
+            else if (type === 'generalBooks') items = availableGeneralBooks;
+            const searchTerm = assignContentSearchEl.value.toLowerCase();
+            const filteredItems = items.filter(item => {
+                const name = item.name || item.title || '';
+                return name.toLowerCase().includes(searchTerm);
+            });
+            if (filteredItems.length === 0) {
+                assignContentListContainerEl.innerHTML = `<p class="text-center text-gray-500">No matching ${type} found.</p>`;
+                return;
+            }
+            assignContentListContainerEl.innerHTML = filteredItems.map(item => {
+                const name = item.name || item.title;
+                let field = 'pdfUrl';
+                if (type === 'subjects') field = 'bookPdfUrl';
+                return `
+                <div class="flex justify-between items-center p-3 hover:bg-gray-100 rounded-lg">
+                    <div>
+                        <p class="font-medium text-gray-800">${name}</p>
+                        <p class="text-sm text-gray-500">
+                            ${type === 'subjects' ? `Grade: ${item.grade}` : ''}
+                            ${type === 'exams' ? `Year: ${item.year}` : ''}
+                            ${type === 'generalBooks' ? `Author: ${item.author || 'N/A'}` : ''}
+                        </p>
+                    </div>
+                    <button class="action-btn bg-indigo-600 text-white hover:bg-indigo-700" onclick="window.app.assignPdfToContent('${type}', '${item.id}', '${field}')"><i data-lucide="link" class="w-4 h-4 mr-1"></i>Assign to this</button>
+                </div>`
+            }).join('');
+            lucide.createIcons();
+        };
+        const assignPdfToContent = async (type, id, field) => {
+            if (!currentPdfToAssign.path) return;
+            try {
+                const downloadURL = await getDownloadURL(ref(storage, currentPdfToAssign.path));
+                const docRef = doc(db, type, id);
+                let dataToUpdate = {};
+                dataToUpdate[field] = downloadURL;
+                await updateDoc(docRef, dataToUpdate);
+                showToast(`File assigned to ${type.slice(0, -1)} successfully!`);
+                closeAssignPdfToContentModal();
+            } catch (error) {
+                console.error("Error assigning file:", error);
+                showToast("Error assigning file.", "error");
+            }
+        };
+
+        // --- CMS Modal Listeners (global) ---
+        document.getElementById('assign-modal-cancel').addEventListener('click', closeAssignModal);
+        assignPdfSearchEl.addEventListener('input', renderAssignablePdfs);
+        document.getElementById('assign-pdf-to-content-modal-cancel').addEventListener('click', closeAssignPdfToContentModal);
+        document.querySelectorAll('.assign-pdf-select-type-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const type = e.currentTarget.dataset.type;
+                document.querySelectorAll('.assign-pdf-select-type-btn').forEach(b => b.classList.remove('bg-indigo-100', 'text-indigo-700'));
+                e.currentTarget.classList.add('bg-indigo-100', 'text-indigo-700');
+                assignContentSearchEl.value = '';
+                renderAssignableContent(type);
+            });
+        });
+        assignContentSearchEl.addEventListener('input', (e) => {
+            const activeBtn = document.querySelector('.assign-pdf-select-type-btn.bg-indigo-100');
+            if (activeBtn) {
+                renderAssignableContent(activeBtn.dataset.type);
+            }
+        });
+
+
+        // ====================================================================
+        // --- SECTION: QUIZ MANAGER (from Quiz file) ---
+        // ====================================================================
+
+        const startQuizManager = () => {
+            // --- DOM ELEMENTS ---
+            const quizListContainer = document.getElementById('quiz-list-container');
+            const paginationContainer = document.getElementById('pagination-container');
+            const subjectFilter = document.getElementById('subject-filter');
+            const quizModal = document.getElementById('quiz-modal');
+            const quizForm = document.getElementById('quiz-form');
+            const modalTitle = document.getElementById('modal-title');
+            const quizIdInput = document.getElementById('quiz-id-input');
+            const quizTitleInput = document.getElementById('quiz-title');
+            const subjectSelect = document.getElementById('subject-select');
+            const questionsContainer = document.getElementById('questions-container');
+            const deleteQuizBtn = document.getElementById('delete-quiz-btn');
+            const coverImageInput = document.getElementById('cover-image-input');
+            const coverImageUrlInput = document.getElementById('cover-image-url-input');
+            const coverImagePreview = document.getElementById('cover-image-preview');
+            const coverImageFilename = document.getElementById('cover-image-filename');
+            const importJsonBtn = document.getElementById('import-json-btn');
+            const exportJsonBtn = document.getElementById('export-json-btn');
+            const jsonFileInput = document.getElementById('json-file-input');
+            const questionPlaceholder = document.getElementById('question-placeholder');
+            const addQuizFab = document.getElementById('add-quiz-fab');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const addQuestionBtn = document.getElementById('add-question-btn');
+            
+            // --- STATE ---
+            let allQuizzes = [];
+            let subjectsCache = [];
+            let currentPage = 1;
+            const ITEMS_PER_PAGE = 12;
+
+            // --- UTILITY ---
+            const getSubjectName = (subjectId) => {
+                const subject = subjectsCache.find(s => s.id === subjectId);
+                return subject ? subject.name : 'Unknown Subject';
+            };
+
+            // --- DATA FETCHING ---
+            async function fetchSubjectsForQuiz() {
+                try {
+                    const querySnapshot = await getDocs(collection(db, "subjects"));
+                    subjectsCache = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    
+                    const populateSelect = (selectEl) => {
+                        selectEl.innerHTML = `<option value="">-- Select a Subject --</option>`;
+                        subjectsCache.forEach(subject => {
+                            const option = document.createElement('option');
+                            option.value = subject.id;
+                            option.textContent = `${subject.name} (G${subject.grade})`;
+                            selectEl.appendChild(option);
+                        });
+                    };
+                    populateSelect(subjectSelect);
+                    
+                    subjectFilter.innerHTML = '<option value="all">All Subjects</option>';
+                    subjectsCache.forEach(subject => {
+                        const option = document.createElement('option');
+                        option.value = subject.id;
+                        option.textContent = `${subject.name} (G${subject.grade})`;
+                        subjectFilter.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error("Error fetching subjects: ", error);
+                    showToast("Failed to load subjects.", true);
+                }
+            }
+
+            async function fetchQuizzes() {
+                try {
+                    const q = query(collection(db, "quizzes"));
+                    const querySnapshot = await getDocs(q);
+                    allQuizzes = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderPage();
+                } catch (error) {
+                    console.error("Error fetching quizzes:", error);
+                    quizListContainer.innerHTML = `<p class="text-red-500 col-span-full text-center p-8">Failed to load quizzes.</p>`;
+                }
+            }
+
+            // --- RENDERING ---
+            function renderPage() {
+                const selectedSubject = subjectFilter.value;
+                const filteredQuizzes = selectedSubject === 'all'
+                    ? allQuizzes
+                    : allQuizzes.filter(quiz => quiz.subjectId === selectedSubject);
+                const totalPages = Math.ceil(filteredQuizzes.length / ITEMS_PER_PAGE);
+                if (currentPage > totalPages && totalPages > 0) {
+                    currentPage = totalPages;
+                } else if (totalPages === 0) {
+                    currentPage = 1;
+                }
+                renderQuizList(filteredQuizzes);
+                renderPagination(filteredQuizzes.length);
+            }
+
+            function renderQuizList(quizzes) {
+                quizListContainer.innerHTML = '';
+                if (quizzes.length === 0) {
+                    quizListContainer.innerHTML = `<p class="text-gray-500 col-span-full text-center py-12"><i class="fa-solid fa-box-open text-5xl mb-4 text-gray-300"></i><br>No quizzes found for this filter.</p>`;
+                    return;
+                }
+                const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+                const endIndex = startIndex + ITEMS_PER_PAGE;
+                const paginatedQuizzes = quizzes.slice(startIndex, endIndex);
+                paginatedQuizzes.forEach(quiz => {
+                    const subjectName = getSubjectName(quiz.subjectId);
+                    const coverImageHtml = quiz.coverImageUrl && quiz.coverImageUrl.startsWith('http')
+                        ? `<div class="h-16 w-full mb-3 overflow-hidden rounded-lg"><img src="${quiz.coverImageUrl}" alt="Cover" class="w-full h-full object-cover"></div>` 
+                        : `<div class="h-16 w-full mb-3 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-500"><i class="fa-solid fa-puzzle-piece text-2xl"></i></div>`;
+                    const quizCard = document.createElement('div');
+                    quizCard.className = 'bg-white p-4 rounded-xl shadow-lg border border-gray-100 transition-all hover:shadow-xl hover:-translate-y-0.5 cursor-pointer';
+                    quizCard.innerHTML = `
+                        ${coverImageHtml}
+                        <h3 class="text-lg font-bold text-gray-800 truncate mb-1" title="${quiz.title}">${quiz.title}</h3>
+                        <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+                            <span class="inline-flex items-center"><i class="fa-solid fa-book-open mr-1 text-gray-400"></i> ${subjectName}</span>
+                            <span class="inline-flex items-center font-semibold text-gray-600">${quiz.questionCount || 0} Qs</span>
+                        </div>
+                        <button class="edit-quiz-btn quiz-btn quiz-btn-secondary w-full" data-id="${quiz.id}"><i class="fa-solid fa-pen-to-square mr-1"></i> Edit Quiz</button>
+                    `;
+                    quizListContainer.appendChild(quizCard);
+                });
+            }
+
+            function renderPagination(totalItems) {
+                paginationContainer.innerHTML = '';
+                const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+                if (totalPages <= 1) return;
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.textContent = i;
+                    pageButton.className = `w-10 h-10 rounded-full font-semibold transition ${currentPage === i ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'}`;
+                    pageButton.onclick = () => {
+                        currentPage = i;
+                        renderPage();
+                    };
+                    paginationContainer.appendChild(pageButton);
+                }
+            }
+
+            // --- MODAL & FORM ---
+            function openModal(quizId = null) {
+                resetForm();
+                if (quizId) {
+                    modalTitle.textContent = 'Edit Quiz';
+                    deleteQuizBtn.classList.remove('hidden');
+                    quizIdInput.value = quizId;
+                    const quiz = allQuizzes.find(q => q.id === quizId);
+                    if (quiz) {
+                        quizTitleInput.value = quiz.title;
+                        setTimeout(() => { subjectSelect.value = quiz.subjectId; }, 0);
+                        coverImageUrlInput.value = quiz.coverImageUrl || '';
+                        if (quiz.coverImageUrl) {
+                            coverImagePreview.innerHTML = `<img src="${quiz.coverImageUrl}" alt="Cover Preview" class="w-full h-full object-contain rounded-md">`;
+                            coverImageFilename.textContent = `Current URL: ${quiz.coverImageUrl.substring(0, 50)}${quiz.coverImageUrl.length > 50 ? '...' : ''}`;
+                        } else {
+                            coverImagePreview.innerHTML = `<span class="text-blue-400 text-sm">Image Preview will appear here</span>`;
+                        }
+                        loadQuestionsForEdit(quizId);
+                    }
+                } else {
+                    modalTitle.textContent = 'Add New Quiz';
+                    deleteQuizBtn.classList.add('hidden');
+                    addQuestionElement();
+                }
+                quizModal.classList.remove('hidden');
+            }
+
+            function closeModal() { quizModal.classList.add('hidden'); }
+            function resetForm() {
+                quizForm.reset();
+                quizIdInput.value = '';
+                questionsContainer.innerHTML = '';
+                questionPlaceholder.classList.remove('hidden');
+                coverImageUrlInput.value = '';
+                coverImagePreview.innerHTML = `<span class="text-blue-400 text-sm">Image Preview will appear here</span>`;
+                coverImageFilename.textContent = '';
+                coverImageInput.value = '';
+            }
+
+            function addQuestionElement(question = { questionText: '', options: ['', ''], correctAnswerIndex: null }) {
+                questionPlaceholder.classList.add('hidden');
+                const index = questionsContainer.children.length;
+                const questionId = `question-${Date.now()}-${index}`;
+                const questionWrapper = document.createElement('div');
+                questionWrapper.className = 'p-5 rounded-xl question-card bg-white shadow-sm';
+                questionWrapper.id = questionId;
+                while (question.options.length < 2) { question.options.push(''); }
+                
+                const renderOptions = () => {
+                    const optionsContainer = questionWrapper.querySelector('.options-container');
+                    if (!optionsContainer) return;
+                    const optionsHtml = question.options.map((opt, optIndex) => 
+                        createOptionHtml(questionId, optIndex, opt, question.correctAnswerIndex === optIndex)
+                    ).join('');
+                    optionsContainer.innerHTML = optionsHtml;
+                }
+                questionWrapper.innerHTML = `
+                    <div class="flex justify-between items-center mb-4 border-b pb-3">
+                        <h4 class="font-bold text-lg text-gray-800">Question ${index + 1}</h4>
+                        <button type="button" class="remove-question-btn text-red-500 hover:text-red-700 transition" title="Remove Question"><i class="fa-solid fa-trash-alt text-lg"></i></button>
+                    </div>
+                    <textarea class="quiz-form-input question-text mb-4" rows="3" placeholder="Enter the quiz question here..." required>${question.questionText}</textarea>
+                    <h5 class="text-sm font-semibold text-gray-700 mb-2">Options & Correct Answer:</h5>
+                    <div class="options-container space-y-3"></div>
+                    <button type="button" class="add-option-btn mt-4 text-sm text-green-600 hover:text-green-800 font-semibold flex items-center"><i class="fa-solid fa-circle-plus mr-1"></i> Add Another Option</button>
+                `;
+                questionsContainer.appendChild(questionWrapper);
+                renderOptions();
+                const addOptionBtn = questionWrapper.querySelector('.add-option-btn');
+                addOptionBtn.addEventListener('click', () => {
+                    const optionsContainer = questionWrapper.querySelector('.options-container');
+                    const newOptionHtml = createOptionHtml(questionId, optionsContainer.children.length, '', false);
+                    optionsContainer.insertAdjacentHTML('beforeend', newOptionHtml);
+                });
+            }
+
+            function createOptionHtml(questionId, optIndex, optionText, isChecked) {
+                return `
+                <div class="flex items-start option-item p-2 bg-gray-50 rounded-lg transition hover:bg-gray-100">
+                    <div class="pt-1">
+                        <input type="radio" id="${questionId}-opt-${optIndex}" name="${questionId}-correct" class="radio-custom" value="${optIndex}" ${isChecked ? 'checked' : ''} required>
+                    </div>
+                    <input type="text" class="quiz-form-input flex-grow ml-2 option-text !p-2" placeholder="Option ${optIndex + 1} Text" value="${optionText}" required>
+                    <button type="button" class="remove-option-btn text-gray-400 hover:text-red-500 ml-2 pt-1" title="Remove Option"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>`;
+            }
+
+            async function loadQuestionsForEdit(quizId) {
+                try {
+                    const q = query(collection(db, `quizzes/${quizId}/questions`));
+                    const querySnapshot = await getDocs(q);
+                    questionsContainer.innerHTML = '';
+                    if (querySnapshot.empty) {
+                        addQuestionElement();
+                    } else {
+                        querySnapshot.forEach(doc => addQuestionElement(doc.data()));
+                    }
+                } catch (error) {
+                    console.error("Error loading questions for edit:", error);
+                    showToast("Failed to load questions.", true);
+                }
+            }
+
+            // --- EVENT LISTENERS (Quiz Specific) ---
+            const onSubjectFilterChange = () => { currentPage = 1; renderPage(); };
+            const onAddQuizFabClick = () => openModal();
+            const onCloseModalBtnClick = () => closeModal();
+            const onQuizListContainerClick = e => {
+                const editBtn = e.target.closest('.edit-quiz-btn');
+                if (editBtn) { openModal(editBtn.dataset.id); }
+            };
+            const onAddQuestionBtnClick = () => addQuestionElement();
+            const onQuestionsContainerClick = e => {
+                const removeQuestionBtn = e.target.closest('.remove-question-btn');
+                const removeOptionBtn = e.target.closest('.remove-option-btn');
+                if (removeQuestionBtn) {
+                    if (questionsContainer.children.length > 1) {
+                        removeQuestionBtn.closest('.question-card').remove();
+                    } else {
+                        showToast("A quiz must have at least one question.", true);
+                    }
+                }
+                if (removeOptionBtn) {
+                    const optionsContainer = removeOptionBtn.closest('.question-card').querySelector('.options-container');
+                    if (optionsContainer.children.length > 2) {
+                        removeOptionBtn.closest('.option-item').remove();
+                    } else {
+                        showToast("A question must have at least two options.", true);
+                    }
+                }
+                Array.from(questionsContainer.children).forEach((card, index) => {
+                    card.querySelector('h4').textContent = `Question ${index + 1}`;
+                });
+                if (questionsContainer.children.length === 0) {
+                    questionPlaceholder.classList.remove('hidden');
+                }
+            };
+            
+            // --- SUBMIT AND DELETE ---
+            const onQuizFormSubmit = async (e) => {
+                e.preventDefault();
+                const quizId = quizIdInput.value;
+                const isEditing = !!quizId;
+                const saveBtn = document.getElementById('save-quiz-btn');
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> ${isEditing ? 'Updating...' : 'Saving...'} `;
+                saveBtn.disabled = true;
+                try {
+                    const quizData = {
+                        title: quizTitleInput.value.trim(),
+                        subjectId: subjectSelect.value,
+                        coverImageUrl: coverImageUrlInput.value || null, 
+                    };
+                    const questions = Array.from(document.querySelectorAll('#questions-container .question-card')).map(card => {
+                        const questionText = card.querySelector('.question-text').value.trim();
+                        const options = Array.from(card.querySelectorAll('.option-text')).map(input => input.value.trim());
+                        const correctRadio = card.querySelector('input[type="radio"]:checked');
+                        if (!questionText || options.some(opt => !opt) || !correctRadio) {
+                            card.style.border = '2px solid #ef4444'; 
+                            throw new Error("Please ensure all question text, options, and a correct answer are selected.");
+                        }
+                        card.style.border = '';
+                        return { questionText, options, correctAnswerIndex: parseInt(correctRadio.value) };
+                    });
+                    if (questions.length === 0) throw new Error("A quiz must have at least one question.");
+                    quizData.questionCount = questions.length;
+                    const batch = writeBatch(db);
+                    const quizRef = isEditing ? doc(db, 'quizzes', quizId) : doc(collection(db, 'quizzes'));
+                    if (isEditing) {
+                        batch.update(quizRef, quizData);
+                        const oldQuestions = await getDocs(collection(db, `quizzes/${quizId}/questions`));
+                        oldQuestions.forEach(doc => batch.delete(doc.ref));
+                    } else {
+                        batch.set(quizRef, quizData);
+                    }
+                    questions.forEach(q => {
+                        const questionRef = doc(collection(db, `quizzes/${quizRef.id}/questions`));
+                        batch.set(questionRef, q);
+                    });
+                    await batch.commit();
+                    showToast(`Quiz successfully ${isEditing ? 'updated' : 'saved'}! 🥳`);
+                    closeModal();
+                    await fetchQuizzes();
+                } catch (error) {
+                    console.error("Error saving quiz:", error);
+                    showToast(error.message || "Failed to save quiz.", true);
+                } finally {
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
+                }
+            };
+            
+            const onDeleteQuizBtnClick = async () => {
+                const quizId = quizIdInput.value;
+                if (!quizId || !confirm('⚠️ Are you sure you want to permanently delete this quiz and ALL its questions? This action cannot be undone.')) return;
+                deleteQuizBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Deleting...';
+                deleteQuizBtn.disabled = true;
+                try {
+                    const batch = writeBatch(db);
+                    const oldQuestions = await getDocs(collection(db, `quizzes/${quizId}/questions`));
+                    oldQuestions.forEach(doc => batch.delete(doc.ref));
+                    batch.delete(doc(db, 'quizzes', quizId));
+                    await batch.commit();
+                    showToast('Quiz deleted successfully. 👋');
+                    closeModal();
+                    await fetchQuizzes();
+                } catch (error) {
+                    console.error("Error deleting quiz:", error);
+                    showToast("Failed to delete quiz.", true);
+                } finally {
+                    deleteQuizBtn.innerHTML = '<i class="fa-solid fa-trash-alt mr-2"></i> Delete Quiz';
+                    deleteQuizBtn.disabled = false;
+                }
+            };
+
+            // --- COVER IMAGE & JSON ---
+            const onCoverImageInputChange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) {
+                    coverImageUrlInput.value = '';
+                    coverImagePreview.innerHTML = `<span class="text-blue-400 text-sm">Image Preview will appear here</span>`;
+                    coverImageFilename.textContent = '';
+                    return;
+                }
+                try {
+                    coverImageFilename.textContent = `Uploading ${file.name}... (Mocking Firebase Storage)`;
+                    coverImagePreview.innerHTML = `<div class="w-12 h-12 flex items-center justify-center"><i class="fa-solid fa-spinner fa-spin text-blue-500 text-2xl"></i></div>`;
+                    await new Promise(resolve => setTimeout(resolve, 1500)); 
+                    const mockUrl = `https://mock-storage.com/${Date.now()}-${file.name.replace(/ /g, '_')}`;
+                    coverImageUrlInput.value = mockUrl;
+                    coverImageFilename.textContent = `File ready: ${file.name}`;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        coverImagePreview.innerHTML = `<img src="${e.target.result}" alt="Cover Preview" class="w-full h-full object-contain rounded-md">`;
+                    };
+                    reader.readAsDataURL(file);
+                    showToast("Image selected (mock upload complete).");
+                } catch (error) {
+                    console.error("Mock Upload Error:", error);
+                    showToast("Failed to upload image.", true);
+                }
+            };
+            function getQuizDataFromForm() {
+                const questions = Array.from(document.querySelectorAll('#questions-container .question-card')).map(card => {
+                    const questionText = card.querySelector('.question-text').value.trim();
+                    const options = Array.from(card.querySelectorAll('.option-text')).map(input => input.value.trim());
+                    const correctRadio = card.querySelector('input[type="radio"]:checked');
+                    if (!questionText || options.some(opt => !opt) || !correctRadio) {
+                        throw new Error("Missing data in question form for export.");
+                    }
+                    return { questionText, options, correctAnswerIndex: parseInt(correctRadio.value) };
+                });
+                return {
+                    title: quizTitleInput.value.trim(),
+                    subjectId: subjectSelect.value,
+                    subjectName: getSubjectName(subjectSelect.value),
+                    coverImageUrl: coverImageUrlInput.value || null,
+                    questions: questions,
+                    questionCount: questions.length,
+                };
+            }
+            function downloadJson(data, filename) {
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+            const onExportJsonBtnClick = () => {
+                try {
+                    const quizData = getQuizDataFromForm();
+                    if (!quizData.title) throw new Error("Quiz title is required before export.");
+                    if (quizData.questions.length === 0) throw new Error("A quiz must have at least one question to export.");
+                    const safeTitle = quizData.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    downloadJson(quizData, `${safeTitle}_quiz_export.json`);
+                    showToast('Quiz data exported as JSON. 💾');
+                } catch (error) {
+                    showToast(`Export Failed: ${error.message}`, true);
+                }
+            };
+            function loadFormFromQuizData(data) {
+                resetForm();
+                quizTitleInput.value = data.title || '';
+                if (data.subjectId && subjectsCache.some(s => s.id === data.subjectId)) {
+                    subjectSelect.value = data.subjectId;
+                } else {
+                    subjectSelect.value = '';
+                    showToast(`Warning: Subject ID ${data.subjectId} not found. Select a subject.`, true);
+                }
+                coverImageUrlInput.value = data.coverImageUrl || '';
+                if (data.coverImageUrl) {
+                    coverImagePreview.innerHTML = `<img src="${data.coverImageUrl}" alt="Cover Preview" class="w-full h-full object-contain rounded-md">`;
+                    coverImageFilename.textContent = `Loaded URL: ${data.coverImageUrl.substring(0, 50)}${data.coverImageUrl.length > 50 ? '...' : ''}`;
+                }
+                if (data.questions && data.questions.length > 0) {
+                    questionsContainer.innerHTML = '';
+                    data.questions.forEach(q => addQuestionElement(q));
+                } else {
+                    addQuestionElement();
+                }
+                modalTitle.textContent = 'Imported Quiz';
+                deleteQuizBtn.classList.add('hidden');
+                quizIdInput.value = '';
+                quizModal.classList.remove('hidden');
+            }
+            const onImportJsonBtnClick = () => jsonFileInput.click();
+            const onJsonFileInputChange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const quizData = JSON.parse(event.target.result);
+                        if (!quizData || !quizData.title || !quizData.questions) {
+                            throw new Error("Invalid JSON format. Missing title or questions array.");
+                        }
+                        loadFormFromQuizData(quizData);
+                        showToast(`Quiz data from ${file.name} imported! 🎉 Please review and save.`);
+                    } catch (error) {
+                        console.error("JSON Import Error:", error);
+                        showToast(`Import Failed: ${error.message}`, true);
+                    } finally {
+                        e.target.value = null;
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            // --- Add Listeners ---
+            subjectFilter.addEventListener('change', onSubjectFilterChange);
+            addQuizFab.addEventListener('click', onAddQuizFabClick);
+            closeModalBtn.addEventListener('click', onCloseModalBtnClick);
+            quizListContainer.addEventListener('click', onQuizListContainerClick);
+            addQuestionBtn.addEventListener('click', onAddQuestionBtnClick);
+            questionsContainer.addEventListener('click', onQuestionsContainerClick);
+            quizForm.addEventListener('submit', onQuizFormSubmit);
+            deleteQuizBtn.addEventListener('click', onDeleteQuizBtnClick);
+            coverImageInput.addEventListener('change', onCoverImageInputChange);
+            exportJsonBtn.addEventListener('click', onExportJsonBtnClick);
+            importJsonBtn.addEventListener('click', onImportJsonBtnClick);
+            jsonFileInput.addEventListener('change', onJsonFileInputChange);
+
+            // --- INIT ---
+            (async () => {
+                await fetchSubjectsForQuiz();
+                await fetchQuizzes();
+            })();
+            
+            // --- Return Stop Function ---
+            return {
+                stop: () => {
+                    subjectFilter.removeEventListener('change', onSubjectFilterChange);
+                    addQuizFab.removeEventListener('click', onAddQuizFabClick);
+                    closeModalBtn.removeEventListener('click', onCloseModalBtnClick);
+                    quizListContainer.removeEventListener('click', onQuizListContainerClick);
+                    addQuestionBtn.removeEventListener('click', onAddQuestionBtnClick);
+                    questionsContainer.removeEventListener('click', onQuestionsContainerClick);
+                    quizForm.removeEventListener('submit', onQuizFormSubmit);
+                    deleteQuizBtn.removeEventListener('click', onDeleteQuizBtnClick);
+                    coverImageInput.removeEventListener('change', onCoverImageInputChange);
+                    exportJsonBtn.removeEventListener('click', onExportJsonBtnClick);
+                    importJsonBtn.removeEventListener('click', onImportJsonBtnClick);
+                    jsonFileInput.removeEventListener('change', onJsonFileInputChange);
+                }
+            };
+        };
+
+
+        // ====================================================================
+        // --- SECTION: USER MANAGER (from User file, adapted to v10) ---
+        // ====================================================================
+        
+        const startUserManager = () => {
+            // --- DOM ELEMENTS ---
+            const userModal = document.getElementById('user-modal');
+            const confirmModal = document.getElementById('confirm-modal');
+            const userModalClose = document.getElementById('user-modal-close');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+            const addUserBtn = document.getElementById('add-user-btn');
+            const userForm = document.getElementById('user-form');
+            const userTableBody = document.getElementById('user-table-body');
+            const searchInput = document.getElementById('search-input');
+            
+            // --- STATE ---
+            let allUsers = [];
+            let unsubscribe;
+            let searchTimeout;
+
+            // --- MODALS ---
+            const openModal = (modal) => modal.style.display = 'flex';
+            const closeModal = (modal) => modal.style.display = 'none';
+
+            // --- DATA ---
+            function fetchUsers() {
+                if (unsubscribe) unsubscribe();
+                const usersRef = collection(db, "users");
+                unsubscribe = onSnapshot(usersRef, (snapshot) => {
+                    allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderUsers(allUsers);
+                    updateAnalytics(allUsers);
+                });
+            }
+
+            function renderUsers(users) {
+                userTableBody.innerHTML = '';
+                if (users.length === 0) {
+                    userTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-gray-500">No users found.</td></tr>`;
+                    return;
+                }
+                users.forEach(user => {
+                    const isBanned = user.banned || false;
+                    const tr = document.createElement('tr');
+                    tr.className = `border-b ${isBanned ? 'bg-red-50 text-gray-400' : ''}`;
+                    tr.innerHTML = `
+                        <td class="p-4">
+                            <div class="font-medium">${user.displayName || 'N/A'}</div>
+                            <div class="text-sm text-gray-500">${user.email || 'N/A'}</div>
+                        </td>
+                        <td class="p-4">${user.phone || 'N/A'}</td>
+                        <td class="p-4">
+                            <select data-id="${user.id}" data-field="role" class="role-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2">
+                                <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
+                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                            </select>
+                        </td>
+                        <td class="p-4">
+                            <select data-id="${user.id}" data-field="isPremium" class="payment-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2">
+                                <option value="false" ${!user.isPremium ? 'selected' : ''}>Not Paid</option>
+                                <option value="true" ${user.isPremium ? 'selected' : ''}>Paid</option>
+                            </select>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-2">
+                                <button class="edit-btn text-blue-500 hover:text-blue-700" data-id="${user.id}"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn text-red-500 hover:text-red-700" data-id="${user.id}"><i class="fas fa-trash"></i></button>
+                                <button class="ban-btn text-yellow-600 hover:text-yellow-800" data-id="${user.id}" data-banned="${isBanned}">${isBanned ? '<i class="fas fa-undo"></i>' : '<i class="fas fa-ban"></i>'}</button>
+                                <a href="https://wa.me/${user.phone}" target="_blank" class="whatsapp-btn text-green-500 hover:text-green-700 ${!user.phone ? 'hidden' : ''}"><i class="fab fa-whatsapp"></i></a>
+                            </div>
+                        </td>
+                    `;
+                    userTableBody.appendChild(tr);
+                });
+            }
+
+            function updateAnalytics(users) {
+                const total = users.length;
+                const paid = users.filter(u => u.isPremium).length;
+                const notPaid = total - paid;
+                const revenue = paid * 5; // $5 assumption
+                document.getElementById('total-users').innerText = total;
+                document.getElementById('paid-users').innerText = paid;
+                document.getElementById('not-paid-users').innerText = notPaid;
+                document.getElementById('total-revenue').innerText = `$${revenue}`;
+            }
+
+            // --- CRUD ---
+            const onUserFormSubmit = async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('user-id').value;
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('user-email').value;
+                const phone = "252" + document.getElementById('phone').value;
+                const userData = {
+                    displayName: name,
+                    email: email,
+                    phone: phone,
+                };
+                try {
+                    if (id) {
+                        const userRef = doc(db, 'users', id);
+                        await updateDoc(userRef, userData);
+                    } else {
+                        // This path is for admin-created users
+                        // We can't create an Auth user for them here easily
+                        // This just creates the Firestore doc.
+                        await addDoc(collection(db, "users"), {
+                            ...userData,
+                            role: 'user',
+                            isPremium: false,
+                            banned: false,
+                            createdAt: serverTimestamp()
+                            // Note: This user won't be able to log in
+                            // until an auth account is created for them
+                        });
+                        showToast("User doc created. They must sign up to link auth.", "success");
+                    }
+                    closeModal(userModal);
+                } catch (error) {
+                    console.error("Error saving user:", error);
+                    showToast("Error saving user data.", "error");
+                }
+            };
+
+            function showConfirmModal({ title, message, iconClass, actionBtnClass, onConfirm }) {
+                document.getElementById('confirm-title').innerText = title;
+                document.getElementById('confirm-message').innerText = message;
+                document.getElementById('confirm-icon').className = `text-4xl mb-4 ${iconClass}`;
+                const actionBtn = document.getElementById('confirm-action-btn');
+                actionBtn.className = `px-6 py-2 text-white rounded-lg ${actionBtnClass}`;
+                actionBtn.onclick = onConfirm; // Assign the callback directly
+                openModal(confirmModal);
+            }
+            
+            // --- LISTENERS ---
+            const onAddUserBtnClick = () => {
+                userForm.reset();
+                document.getElementById('user-id').value = '';
+                document.getElementById('user-modal-title').innerText = 'Add New User';
+                document.getElementById('user-email').disabled = false;
+                openModal(userModal);
+            };
+            const onUserTableBodyClick = (e) => {
+                const target = e.target.closest('button');
+                if (!target) return;
+                const id = target.dataset.id;
+                if (target.classList.contains('edit-btn')) {
+                    const user = allUsers.find(u => u.id === id);
+                    if (user) {
+                        document.getElementById('user-id').value = user.id;
+                        document.getElementById('name').value = user.displayName || '';
+                        document.getElementById('user-email').value = user.email || '';
+                        document.getElementById('user-email').disabled = true;
+                        const phone = user.phone ? user.phone.replace('252', '') : '';
+                        document.getElementById('phone').value = phone;
+                        document.getElementById('user-modal-title').innerText = 'Edit User';
+                        openModal(userModal);
+                    }
+                } else if (target.classList.contains('delete-btn')) {
+                    showConfirmModal({
+                        title: 'Delete User',
+                        message: 'Are you sure you want to delete this user? This action cannot be undone.',
+                        iconClass: 'fas fa-trash text-red-500',
+                        actionBtnClass: 'bg-red-500',
+                        onConfirm: async () => {
+                           await deleteDoc(doc(db, "users", id));
+                           closeModal(confirmModal);
+                        }
+                    });
+                } else if (target.classList.contains('ban-btn')) {
+                    const isBanned = target.dataset.banned === 'true';
+                    showConfirmModal({
+                        title: isBanned ? 'Unban User' : 'Ban User',
+                        message: `Are you sure you want to ${isBanned ? 'unban' : 'ban'} this user?`,
+                        iconClass: `fas ${isBanned ? 'fa-undo text-green-500' : 'fa-ban text-yellow-600'}`,
+                        actionBtnClass: isBanned ? 'bg-green-500' : 'bg-yellow-600',
+                        onConfirm: async () => {
+                           await updateDoc(doc(db, "users", id), { banned: !isBanned });
+                           closeModal(confirmModal);
+                        }
+                    });
+                }
+            };
+            
+            const onUserTableBodyChange = async (e) => {
+                const target = e.target;
+                if (target.tagName === 'SELECT') {
+                    const id = target.dataset.id;
+                    const field = target.dataset.field;
+                    let value = target.value;
+                    if (value === 'true') value = true;
+                    if (value === 'false') value = false;
+                    try {
+                        await updateDoc(doc(db, "users", id), { [field]: value });
+                    } catch (error) {
+                        console.error("Error updating user:", error);
+                        showToast("Failed to update user.", "error");
+                    }
+                }
+            };
+            
+            const onSearchInputChange = (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const query = e.target.value.toLowerCase().trim();
+                    const filteredUsers = allUsers.filter(user => {
+                        const name = (user.displayName || '').toLowerCase();
+                        const email = (user.email || '').toLowerCase();
+                        const phone = (user.phone || '').toLowerCase();
+                        return name.includes(query) || email.includes(query) || phone.includes(query);
+                    });
+                    renderUsers(filteredUsers);
+                }, 300);
+            };
+            
+            const onCancelBtnClick = () => closeModal(userModal);
+            const onConfirmCancelBtnClick = () => closeModal(confirmModal);
+            const onUserModalCloseClick = () => closeModal(userModal);
+
+            // Add Listeners
+            addUserBtn.addEventListener('click', onAddUserBtnClick);
+            cancelBtn.addEventListener('click', onCancelBtnClick);
+            userModalClose.addEventListener('click', onUserModalCloseClick);
+            confirmCancelBtn.addEventListener('click', onConfirmCancelBtnClick);
+            userForm.addEventListener('submit', onUserFormSubmit);
+            userTableBody.addEventListener('click', onUserTableBodyClick);
+            userTableBody.addEventListener('change', onUserTableBodyChange);
+            searchInput.addEventListener('input', onSearchInputChange);
+
+            // Initial Fetch
+            fetchUsers();
+            
+            // Return Stop Function
+            return {
+                stop: () => {
+                    if (unsubscribe) unsubscribe();
+                    addUserBtn.removeEventListener('click', onAddUserBtnClick);
+                    cancelBtn.removeEventListener('click', onCancelBtnClick);
+                    userModalClose.removeEventListener('click', onUserModalCloseClick);
+                    confirmCancelBtn.removeEventListener('click', onConfirmCancelBtnClick);
+                    userForm.removeEventListener('submit', onUserFormSubmit);
+                    userTableBody.removeEventListener('click', onUserTableBodyClick);
+                    userTableBody.removeEventListener('change', onUserTableBodyChange);
+                    searchInput.removeEventListener('input', onSearchInputChange);
+                }
+            };
+        };
+        
+        // ====================================================================
+        // --- GLOBAL EVENT LISTENERS (for CMS) ---
+        // ====================================================================
+
+        document.getElementById('auth-form').addEventListener('submit', handleAuthForm);
+        document.getElementById('auth-toggle-link').addEventListener('click', toggleAuthMode);
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+        document.body.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-cancel-btn') || e.target.id === 'modal') {
+                hideModal();
+            }
+            if (e.target.classList.contains('add-btn')) {
+                const type = e.target.dataset.type;
+                if (managers[type]) {
+                    managers[type].handleAdd();
+                }
+            }
+        });
+
+        document.body.addEventListener('submit', (e) => {
+            if (e.target.id === 'crud-form') {
+                const type = e.target.dataset.type;
+                if (managers[type]) {
+                    managers[type].handleFormSubmit(e);
+                }
+            }
+        });
+        
+        // --- GLOBAL APP OBJECT (for inline onclicks) ---
+        window.app = {
+            editItem: (type, id) => {
+                let item;
+                if (type === 'subjects') item = availableSubjects.find(i => i.id === id);
+                else if (type === 'exams') item = availableExams.find(i => i.id === id);
+                else if (type === 'generalBooks') item = availableGeneralBooks.find(i => i.id === id);
+                else if (type === 'blogPosts') item = managers.blogPosts.start().localItems.find(i => i.id === id); // This is a bit of a hack, assumes manager is running
+                else if (type === 'blogCategories') item = availableBlogCategories.find(i => i.id === id);
+
+                if (item && managers[type]) {
+                    managers[type].handleEdit(item);
+                }
+            },
+            deleteItem: (type, id) => {
+                if (managers[type]) {
+                    managers[type].handleDelete(id);
+                }
+            },
+            copyToClipboard: async (path) => {
+                try {
+                    const url = await getDownloadURL(ref(storage, path));
+                    navigator.clipboard.writeText(url);
+                    showToast("Download URL copied to clipboard!");
+                } catch (error) {
+                    console.error("Error getting download URL:", error);
+                    showToast("Could not get download URL.", "error");
+                }
+            },
+            deletePdf: async (path) => {
+                if (confirm(`Are you sure you want to delete this file?\n${path}\n\nThis cannot be undone.`)) {
+                    try {
+                        await deleteObject(ref(storage, path));
+                        showToast("File deleted successfully!");
+                        allPdfFiles = allPdfFiles.filter(pdf => pdf.fullPath !== path);
+                        document.getElementById('pdf-search').dispatchEvent(new Event('input')); // Trigger re-render
+                    } catch (error) {
+                        console.error("Error deleting file:", error);
+                        showToast("Error deleting file.", "error");
+                    }
+                }
+            },
+            openAssignModal: (type, id, field, name) => {
+                openAssignModal(type, id, field, name);
+            },
+            assignPdf: (path) => {
+                assignPdf(path);
+            },
+            openAssignPdfToContentModal: (path, name) => {
+                openAssignPdfToContentModal(path, name);
+            },
+            assignPdfToContent: (type, id, field) => {
+                assignPdfToContent(type, id, field);
+            }
+        };
+
+    </script>
+</body>
+</html>
