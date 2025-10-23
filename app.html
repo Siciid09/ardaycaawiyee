@@ -1,4 +1,2032 @@
-<!DOCTYPE html>
+<!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            getDoc, 
+            addDoc, 
+            doc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            serverTimestamp,
+            query,
+            where,
+            orderBy,
+            writeBatch,
+            Timestamp
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        // Note: Firebase Storage is NOT imported. File uploads are mocked.
+        
+        // --- PASTE YOUR FIREBASE CONFIG HERE ---
+        // DO NOT use this config in production
+        // This is a placeholder config.
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuqswofpquk8aUbCOZCGjdYLUivBEh7a8",
+            authDomain: "ardaycaawiye-18b89.firebaseapp.com",
+            projectId: "ardaycaawiye-18b89",
+            storageBucket: "ardaycaawiye-18b89.firebasestorage.app",
+            messagingSenderId: "590874185284",
+            appId: "1:590874185284:web:6ee7df602c45068e38b611",
+            measurementId: "G-SBGSTJWDMR"
+        };
+        // -----------------------------------------
+
+        // --- Firebase Init ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const postsCollection = collection(db, "blogPosts"); // Collection for posts
+        const commentsCollection = collection(db, "blogComments"); // Separate collection for comments
+        const categoriesCollection = collection(db, "blogCategories"); // NEW: Collection for categories
+
+        // --- Global State ---
+        let currentView = 'list-posts';
+        let editingPostId = null;
+        let postToDeleteId = null;
+        let commentToReplyId = null;
+        let allPosts = []; // Local cache for posts
+        let allComments = []; // Local cache for comments
+        let allCategories = []; // NEW: Local cache for categories
+        let unsubscribePosts = () => {}; // Function to stop the posts listener
+        let unsubscribeComments = () => {}; // Function to stop the comments listener
+        let unsubscribeCategories = () => {}; // NEW: Function to stop the categories listener
+
+        // --- Lib Instances ---
+        let quill, tagify, schedulePicker;
+
+        // --- DOM Elements ---
+        const views = document.querySelectorAll('.app-view');
+        const sidebarLinks = document.querySelectorAll('.sidebar-link[data-view]');
+        const postsTableBody = document.getElementById('posts-table-body');
+        const postFormView = document.getElementById('post-form-view'); // Renamed view
+        const postForm = document.getElementById('blog-post-form');
+        const postFormTitle = document.getElementById('form-title');
+        const postIdInput = document.getElementById('post-id');
+        const postTitleInput = document.getElementById('post-title');
+        const postStatusSelect = document.getElementById('post-status');
+        const scheduleDateWrapper = document.getElementById('schedule-date-wrapper');
+        const postCategorySelect = document.getElementById('post-category');
+        const filterCategorySelect = document.getElementById('filter-category');
+        const imageDropzone = document.getElementById('image-dropzone');
+        const imageInput = document.getElementById('post-image');
+        const imagePreviewWrapper = document.getElementById('image-preview-wrapper');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const attachmentDropzone = document.getElementById('attachment-dropzone');
+        const attachmentInput = document.getElementById('post-attachments');
+        const attachmentList = document.getElementById('attachment-list');
+        const commentsListView = document.getElementById('comments-list');
+        const deleteModal = document.getElementById('delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const replyModal = document.getElementById('reply-modal');
+        const replyForm = document.getElementById('reply-form');
+        const cancelReplyBtn = document.getElementById('cancel-reply-btn');
+        const shareModal = document.getElementById('share-modal'); // NEW
+        const cancelShareBtn = document.getElementById('cancel-share-btn'); // NEW
+        const copyUrlBtn = document.getElementById('copy-url-btn'); // NEW
+        const toast = document.getElementById('toast');
+        const selectAllCheckbox = document.getElementById('select-all-posts');
+        const categoriesList = document.getElementById('categories-list'); // NEW
+        const addCategoryForm = document.getElementById('add-category-form'); // NEW
+        const sidebar = document.getElementById('sidebar'); // NEW
+        const menuToggle = document.getElementById('menu-toggle'); // NEW
+        const closeMenuBtn = document.getElementById('close-menu-btn'); // NEW
+        const mobileViewTitle = document.getElementById('mobile-view-title'); // NEW
+
+        // =============================================
+        // Initialization
+        // =============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initLibs();
+            setupEventListeners();
+            showView('list-posts'); // Start on the main page
+            lucide.createIcons();
+        });
+
+        function initLibs() {
+            quill = new Quill('#quill-editor', {
+                theme: 'snow',
+                modules: { toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image', 'video', 'code-block'],
+                    ['clean']
+                ]}
+            });
+            
+            const tagsInput = document.getElementById('post-tags');
+            tagify = new Tagify(tagsInput);
+            
+            schedulePicker = flatpickr("#post-schedule-date", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+            });
+        }
+        
+        // =============================================
+        // Toast Notification Utility
+        // =============================================
+        function showToast(message, isError = false) {
+            toast.textContent = message;
+            // Use descriptive classes for toast position and appearance
+            toast.className = `fixed bottom-5 right-5 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all transform ${isError ? 'toast-error' : 'toast-success'}`;
+            toast.classList.add('show');
+            
+            // Set timeout to hide the toast
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // =============================================
+        // Mock File Upload (!!! IMPORTANT !!!)
+        // =============================================
+        async function mockUploadFile(file) {
+            showToast(`Simulating upload for ${file.name}...`);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Create a mock URL
+            const mockUrl = `https://mockstorage.com/${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+            console.log(`Mock Upload: ${file.name} -> ${mockUrl}`);
+            showToast(`Upload complete for ${file.name}!`);
+            return { name: file.name, url: mockUrl };
+        }
+
+        // =============================================
+        // Navigation / View Switching
+        // =============================================
+        function showView(viewId) {
+            // Stop all active listeners
+            unsubscribePosts();
+            unsubscribeComments();
+            unsubscribeCategories();
+
+            views.forEach(view => view.classList.remove('active'));
+            const newView = document.getElementById(viewId);
+            if (newView) {
+                newView.classList.add('active');
+            }
+
+            // Handle 'add-post' view which is inside 'post-form-view'
+            if (viewId === 'add-post') {
+                document.getElementById('post-form-view').classList.add('active');
+                showPostForm(); // Special case for "Add New"
+            }
+
+            sidebarLinks.forEach(link => link.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar-link[data-view="${viewId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+                mobileViewTitle.textContent = activeLink.textContent.trim(); // Update mobile title
+            }
+            
+            // Start listeners for the new view
+            if (viewId === 'list-posts') {
+                initPostsListener();
+                initCategoriesListener(); // Need categories for filter
+            } else if (viewId === 'comments') {
+                initPostsListener(); // Need posts data for comment context
+                initCommentsListener();
+            } else if (viewId === 'analytics') {
+                fetchAllDataForAnalytics();
+            } else if (viewId === 'categories') {
+                initCategoriesListener(renderCategoriesList); // Pass render callback
+            } else if (viewId === 'add-post') {
+                initCategoriesListener(); // Need categories for dropdown
+            }
+        }
+
+        // =============================================
+        // Data Listeners
+        // =============================================
+        
+        function initPostsListener() {
+            unsubscribePosts = onSnapshot(query(postsCollection, orderBy("createdAt", "desc")), (snapshot) => {
+                allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderPostsTable(); // Re-render table on any change
+            }, error => {
+                console.error("Error fetching posts: ", error);
+                showToast("Error fetching posts.", true);
+                postsTableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Error loading posts.</td></tr>`;
+            });
+        }
+        
+        function initCommentsListener() {
+            unsubscribeComments = onSnapshot(query(commentsCollection, orderBy("date", "desc")), (snapshot) => {
+                allComments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderCommentsList(); // Re-render comments on any change
+            }, error => {
+                console.error("Error fetching comments: ", error);
+                showToast("Error fetching comments.", true);
+                commentsListView.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center text-red-500">Error loading comments.</div>`;
+            });
+        }
+
+        // NEW: Categories Listener
+        function initCategoriesListener(onUpdateCallback = null) {
+            unsubscribeCategories = onSnapshot(query(categoriesCollection, orderBy("name")), (snapshot) => {
+                allCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateCategoryDropdowns();
+                if (onUpdateCallback) {
+                    onUpdateCallback(); // e.g., renderCategoriesList
+                }
+            }, error => {
+                console.error("Error fetching categories: ", error);
+                showToast("Error fetching categories.", true);
+                if (onUpdateCallback) { // Show error in categories list if visible
+                    categoriesList.innerHTML = `<li class="p-6 text-center text-red-500">Error loading categories.</li>`;
+                }
+            });
+        }
+        
+        async function fetchAllDataForAnalytics() {
+            try {
+                const postSnapshot = await getDocs(postsCollection);
+                allPosts = postSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const commentSnapshot = await getDocs(commentsCollection);
+                allComments = commentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // NEW: Fetch categories for analytics if needed (though not used in cards)
+                const categorySnapshot = await getDocs(categoriesCollection);
+                allCategories = categorySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                renderAnalytics();
+            } catch (error) {
+                console.error("Error fetching analytics data:", error);
+                showToast("Error fetching analytics data.", true);
+            }
+        }
+
+        // =============================================
+        // Render Functions (Dynamic)
+        // =============================================
+        function renderPostsTable() {
+            postsTableBody.innerHTML = ''; // Clear table
+            
+            const search = document.getElementById('search-posts').value.toLowerCase();
+            const category = filterCategorySelect.value;
+            const status = document.getElementById('filter-status').value;
+
+            let filteredPosts = allPosts.filter(post => {
+                return (post.title.toLowerCase().includes(search) || (post.author || '').toLowerCase().includes(search)) &&
+                       (category === '' || post.category === category) &&
+                       (status === '' || post.status === status);
+            });
+            
+            if (filteredPosts.length === 0) {
+                postsTableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-500">No posts found matching criteria.</td></tr>`;
+                return;
+            }
+
+            filteredPosts.forEach(post => {
+                const statusColors = {
+                    Published: "bg-green-100 text-green-800",
+                    Draft: "bg-yellow-100 text-yellow-800",
+                    Scheduled: "bg-blue-100 text-blue-800"
+                };
+                
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-4"><input type="checkbox" class="post-checkbox" data-id="${post.id}"></td>
+                    <td class="p-4">
+                        <div class="font-medium text-gray-800">${post.title}</div>
+                        <div class="text-sm text-gray-500">${(post.tags || []).join(', ')}</div>
+                    </td>
+                    <td class="p-4 text-sm text-gray-600">${post.author || 'N/A'}</td>
+                    <td class="p-4 text-sm text-gray-600">${post.category || 'Uncategorized'}</td>
+                    <td class="p-4">
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full ${statusColors[post.status] || 'bg-gray-100 text-gray-800'}">
+                            ${post.status}
+                        </span>
+                    </td>
+                    <td class="p-4 text-sm text-gray-600">
+                        ${post.publishDate ? new Date(post.publishDate.toDate()).toLocaleDateString() : '—'}
+                    </td>
+                    <td class="p-4">
+                        <div class="flex space-x-2">
+                            <!-- NEW: View Button -->
+                            <button class="view-btn p-1 text-blue-600 hover:text-blue-900" data-id="${post.id}" title="View Post">
+                                <i data-lucide="eye" class="w-4 h-4 pointer-events-none"></i>
+                            </button>
+                            <button class="edit-btn p-1 text-indigo-600 hover:text-indigo-900" data-id="${post.id}" title="Edit">
+                                <i data-lucide="edit-2" class="w-4 h-4 pointer-events-none"></i>
+                            </button>
+                             <!-- NEW: Share Button -->
+                            <button class="share-btn p-1 text-green-600 hover:text-green-900" data-id="${post.id}" data-title="${post.title}" title="Share">
+                                <i data-lucide="share-2" class="w-4 h-4 pointer-events-none"></i>
+                            </button>
+                            <button class="delete-btn p-1 text-red-600 hover:text-red-900" data-id="${post.id}" title="Delete">
+                                <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                postsTableBody.appendChild(tr);
+            });
+
+            lucide.createIcons();
+            selectAllCheckbox.checked = false; // Uncheck "select all" on re-render
+        }
+
+        function renderCommentsList() {
+            commentsListView.innerHTML = ''; // Clear list
+            
+            const search = document.getElementById('search-comments').value.toLowerCase();
+            const status = document.getElementById('filter-comment-status').value;
+
+            let filteredComments = allComments.filter(comment => {
+                return (comment.author.toLowerCase().includes(search) || comment.text.toLowerCase().includes(search)) &&
+                       (status === '' || comment.status === status);
+            });
+            
+            if (filteredComments.length === 0) {
+                commentsListView.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center text-gray-500">No comments found matching criteria.</div>`;
+                return;
+            }
+
+            filteredComments.forEach(comment => {
+                const post = allPosts.find(p => p.id === comment.postId);
+                const statusColors = {
+                    Approved: "border-green-500",
+                    Pending: "border-yellow-500",
+                    Spam: "border-red-500"
+                };
+
+                const div = document.createElement('div');
+                div.className = `bg-white rounded-lg shadow-sm border-l-4 ${statusColors[comment.status] || 'border-gray-300'}`;
+                div.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-semibold text-gray-800">${comment.author} <span class="text-sm text-gray-500 font-normal">(${comment.email})</span></div>
+                                <div class="text-sm text-gray-500 mt-1">${comment.date ? new Date(comment.date.toDate()).toLocaleString() : 'No date'}</div>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                On: <span class="text-indigo-600">${post ? post.title : 'Deleted Post'}</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 my-4">${comment.text}</p>
+                        ${comment.reply ? `
+                            <div class="bg-gray-50 p-3 rounded-lg border ml-8">
+                                <p class="text-sm font-semibold text-gray-700">Reply from Admin:</p>
+                                <p class="text-sm text-gray-600 mt-1">${comment.reply}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="bg-gray-50 px-6 py-3 rounded-b-lg flex flex-wrap gap-2">
+                        ${comment.status !== 'Approved' ? `<button class="approve-comment-btn text-sm font-medium text-green-600 hover:text-green-800" data-id="${comment.id}"><i data-lucide="check" class="w-4 h-4 inline-block mr-1 pointer-events-none"></i> Approve</button>` : ''}
+                        ${comment.status === 'Approved' && !comment.reply ? `<button class="reply-comment-btn text-sm font-medium text-blue-600 hover:text-blue-800" data-id="${comment.id}"><i data-lucide="corner-up-left" class="w-4 h-4 inline-block mr-1 pointer-events-none"></i> Reply</button>` : ''}
+                        ${comment.status !== 'Spam' ? `<button class="spam-comment-btn text-sm font-medium text-yellow-600 hover:text-yellow-800" data-id="${comment.id}"><i data-lucide="shield-alert" class="w-4 h-4 inline-block mr-1 pointer-events-none"></i> Spam</button>` : ''}
+                        <button class="delete-comment-btn text-sm font-medium text-red-600 hover:text-red-800 ml-auto" data-id="${comment.id}"><i data-lucide="trash-2" class="w-4 h-4 inline-block mr-1 pointer-events-none"></i> Delete</button>
+                    </div>
+                `;
+                commentsListView.appendChild(div);
+            });
+            
+            lucide.createIcons();
+        }
+
+        // NEW: Render Category List
+        function renderCategoriesList() {
+            categoriesList.innerHTML = ''; // Clear list
+            if (allCategories.length === 0) {
+                categoriesList.innerHTML = `<li class="p-6 text-center text-gray-500">No categories added yet.</li>`;
+                return;
+            }
+            allCategories.forEach(cat => {
+                const li = document.createElement('li');
+                li.className = "flex items-center justify-between p-4";
+                li.innerHTML = `
+                    <span class="font-medium text-gray-700">${cat.name}</span>
+                    <button class="delete-category-btn text-red-600 hover:text-red-800" data-id="${cat.id}" title="Delete Category">
+                        <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                    </button>
+                `;
+                categoriesList.appendChild(li);
+            });
+            lucide.createIcons();
+        }
+
+        // NEW: Update Category Dropdowns
+        function updateCategoryDropdowns() {
+            const selects = [filterCategorySelect, postCategorySelect];
+            
+            selects.forEach(select => {
+                const currentValue = select.value;
+                // Clear existing options, preserving the first one ("All" or "Uncategorized")
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+
+                allCategories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.name;
+                    option.textContent = cat.name;
+                    select.appendChild(option);
+                });
+                
+                // Try to restore the previously selected value
+                select.value = currentValue;
+            });
+        }
+
+        function renderAnalytics() {
+            const totalPosts = allPosts.length;
+            // REAL DATA: Read 'views' field from Firestore posts
+            const totalViews = allPosts.reduce((acc, post) => acc + (post.views || 0), 0);
+            const pendingComments = allComments.filter(c => c.status === 'Pending').length;
+            const publishedCount = allPosts.filter(p => p.status === 'Published').length;
+            const draftCount = allPosts.filter(p => p.status === 'Draft').length;
+
+            document.getElementById('stats-total-posts').textContent = totalPosts;
+            document.getElementById('stats-total-views').textContent = totalViews.toLocaleString();
+            document.getElementById('stats-total-comments').textContent = pendingComments;
+            document.getElementById('stats-published-drafts').textContent = `${publishedCount} / ${draftCount}`;
+
+            const popularList = document.getElementById('popular-posts-list');
+            popularList.innerHTML = '';
+            // REAL DATA: Sort by 'views' field
+            const popularPosts = [...allPosts].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
+            
+            if(popularPosts.length === 0) {
+                 popularList.innerHTML = `<li class="py-3 text-center text-gray-500">No data available</li>`;
+                 return;
+            }
+
+            popularPosts.forEach(post => {
+                const li = document.createElement('li');
+                li.className = "py-4 flex justify-between items-center";
+                li.innerHTML = `
+                    <span class="font-medium text-gray-800">${post.title}</span>
+                    <span class="text-sm text-gray-500">${(post.views || 0).toLocaleString()} views</span>
+                `;
+                popularList.appendChild(li);
+            });
+        }
+        
+        // =============================================
+        // Form Handling
+        // =============================================
+        async function showPostForm(postId = null) {
+            postForm.reset();
+            quill.setContents([]);
+            tagify.removeAllTags();
+            imagePreview.src = "#";
+            imagePreviewWrapper.classList.add('hidden');
+            attachmentList.innerHTML = '';
+            
+            if (postId) {
+                // Edit Mode
+                editingPostId = postId;
+                postFormTitle.textContent = "Edit Post";
+                
+                try {
+                    const postRef = doc(db, "blogPosts", postId);
+                    const postSnap = await getDoc(postRef);
+                    
+                    if (postSnap.exists()) {
+                        const post = postSnap.data();
+                        postIdInput.value = postSnap.id;
+                        postTitleInput.value = post.title;
+                        
+                        // --- FIX: PARSE CONTENT ---
+                        if (post.content && typeof post.content === 'string') {
+                            try {
+                                quill.setContents(JSON.parse(post.content));
+                            } catch (e) {
+                                console.error("Error parsing content JSON:", e);
+                                quill.setText("Error loading content."); // Show error in editor
+                            }
+                        } else if (post.content && typeof post.content === 'object') {
+                             // It might already be an object if read from cache or similar
+                             quill.setContents(post.content);
+                        } else {
+                            quill.setText(""); // Clear if no content
+                        }
+                        // --- END FIX ---
+
+                        postStatusSelect.value = post.status;
+                        postCategorySelect.value = post.category || 'Uncategorized'; // Default if missing
+                        if (post.tags) {
+                            tagify.loadOriginalValues(post.tags);
+                        }
+                        if (post.publishDate && post.status === 'Scheduled') {
+                            schedulePicker.setDate(post.publishDate.toDate(), true);
+                            scheduleDateWrapper.classList.remove('hidden');
+                        } else {
+                             scheduleDateWrapper.classList.add('hidden');
+                             schedulePicker.clear();
+                        }
+                        if (post.featureImage) {
+                            imagePreview.src = post.featureImage;
+                            imagePreviewWrapper.classList.remove('hidden'); // SHOW preview
+                        } else {
+                            imagePreviewWrapper.classList.add('hidden'); // HIDE preview
+                        }
+                        (post.attachments || []).forEach(file => addAttachmentToList(file.name, file.url));
+                        
+                        // Load SEO fields
+                        document.getElementById('seo-title').value = post.seoTitle || '';
+                        document.getElementById('seo-description').value = post.seoDescription || '';
+                        document.getElementById('seo-keywords').value = post.seoKeywords || '';
+
+                    } else {
+                        showToast("Error: Post not found.", true);
+                        showView('list-posts');
+                        return; // Exit if post not found
+                    }
+                } catch (error) {
+                    console.error("Error loading post: ", error);
+                    showToast("Error loading post data.", true);
+                }
+                
+            } else {
+                // Add Mode
+                editingPostId = null;
+                postFormTitle.textContent = "Add New Post";
+                scheduleDateWrapper.classList.add('hidden');
+                schedulePicker.clear();
+            }
+            showView('post-form-view'); // Switch view AFTER loading/resetting
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const publishBtn = document.getElementById('publish-btn');
+            publishBtn.disabled = true;
+            publishBtn.textContent = "Saving...";
+            
+            const title = postTitleInput.value;
+            const status = postStatusSelect.value;
+            if (!title) {
+                showToast("Please enter a title.", true);
+                publishBtn.disabled = false;
+                publishBtn.textContent = "Publish";
+                return;
+            }
+            
+            // --- FIX: STRINGIFY CONTENT ---
+            const contentString = JSON.stringify(quill.getContents());
+            // --- END FIX ---
+
+            let publishDate = null;
+            if (status === 'Scheduled') {
+                if (schedulePicker.selectedDates[0]) {
+                    publishDate = Timestamp.fromDate(schedulePicker.selectedDates[0]);
+                } else {
+                    showToast("Please select a schedule date.", true);
+                    publishBtn.disabled = false;
+                    publishBtn.textContent = "Schedule";
+                    return;
+                }
+            } else if (status === 'Published' && editingPostId) {
+                // If editing and changing status TO published, check if it already had a date
+                const originalPost = allPosts.find(p => p.id === editingPostId);
+                if (!originalPost || !originalPost.publishDate) {
+                     publishDate = serverTimestamp(); // Set publish date only if it wasn't published before
+                } else {
+                    publishDate = originalPost.publishDate; // Keep original publish date
+                }
+            } else if (status === 'Published' && !editingPostId) {
+                publishDate = serverTimestamp(); // New post, publish now
+            }
+            
+            const postData = {
+                title: title,
+                content: contentString, // SAVE THE STRING
+                status: status,
+                category: postCategorySelect.value,
+                tags: tagify.value.map(tag => tag.value),
+                publishDate: publishDate,
+                featureImage: imagePreview.src.startsWith('http') ? imagePreview.src : null,
+                attachments: Array.from(attachmentList.children).map(item => ({
+                    name: item.dataset.name,
+                    url: item.dataset.url
+                })),
+                seoTitle: document.getElementById('seo-title').value,
+                seoDescription: document.getElementById('seo-description').value,
+                seoKeywords: document.getElementById('seo-keywords').value,
+                modifiedAt: serverTimestamp()
+            };
+
+            try {
+                if (editingPostId) {
+                    const postRef = doc(db, "blogPosts", editingPostId);
+                    await updateDoc(postRef, postData);
+                    showToast("Post updated successfully!");
+                } else {
+                    postData.createdAt = serverTimestamp();
+                    postData.author = "Admin"; // Hardcode author for new posts
+                    postData.views = 0; // Initialize views count
+                    postData.commentsCount = 0;
+                    await addDoc(postsCollection, postData);
+                    showToast("Post created successfully!");
+                }
+                
+                editingPostId = null;
+                showView('list-posts');
+                
+            } catch (error) {
+                console.error("Error saving post: ", error);
+                showToast(`Error saving post: ${error.message}`, true);
+            } finally {
+                publishBtn.disabled = false;
+                // Restore button text based on status
+                publishBtn.textContent = postStatusSelect.value === 'Scheduled' ? 'Schedule' : 'Publish';
+            }
+        }
+
+        // =============================================
+        // File / Image Handling
+        // =============================================
+        async function handleImageUpload(file) {
+            if (file) {
+                try {
+                    const { url } = await mockUploadFile(file); // MOCK UPLOAD
+                    imagePreview.src = url; // Use mock URL
+                    imagePreviewWrapper.classList.remove('hidden');
+                } catch(error) {
+                     showToast("Image upload simulation failed.", true);
+                }
+            }
+        }
+        
+        function addAttachmentToList(fileName, fileUrl) {
+            const div = document.createElement('div');
+            div.className = "flex items-center justify-between bg-gray-100 p-2 rounded-lg";
+            div.dataset.name = fileName;
+            div.dataset.url = fileUrl;
+            div.innerHTML = `
+                <div class="flex items-center">
+                    <i data-lucide="file-text" class="w-4 h-4 text-gray-500 mr-2"></i>
+                    <span class="text-sm font-medium text-gray-700">${fileName}</span>
+                </div>
+                <div>
+                    <button type="button" class="remove-attachment-btn text-sm text-red-600 hover:text-red-800">&times; Remove</button>
+                </div>
+            `;
+            attachmentList.appendChild(div);
+            lucide.createIcons();
+            
+            div.querySelector('.remove-attachment-btn').addEventListener('click', () => {
+                div.remove();
+                // If using real storage, you might want to delete the file here too
+            });
+        }
+        
+        async function handleAttachmentUpload(files) {
+            for (const file of files) {
+                try {
+                    const { name, url } = await mockUploadFile(file); // MOCK UPLOAD
+                    addAttachmentToList(name, url);
+                } catch(error) {
+                     showToast(`Attachment upload simulation failed for ${file.name}.`, true);
+                }
+            }
+        }
+        
+        // =============================================
+        // Post / Comment / Category Actions
+        // =============================================
+        function showDeleteModal(postId) {
+            postToDeleteId = postId;
+            deleteModal.classList.add('open');
+        }
+        
+        async function confirmDelete() {
+            if (postToDeleteId) {
+                confirmDeleteBtn.disabled = true;
+                confirmDeleteBtn.textContent = "Deleting...";
+                try {
+                    const batch = writeBatch(db);
+                    
+                    // 1. Delete the post itself
+                    const postRef = doc(db, "blogPosts", postToDeleteId);
+                    batch.delete(postRef);
+                    
+                    // 2. Find and delete all comments for that post
+                    const q = query(commentsCollection, where("postId", "==", postToDeleteId));
+                    const commentsSnapshot = await getDocs(q);
+                    commentsSnapshot.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    
+                    // 3. Commit the batch
+                    await batch.commit();
+                    
+                    showToast("Post and all its comments deleted!");
+                    
+                } catch (error) {
+                    console.error("Error deleting post: ", error);
+                    showToast(`Error deleting post: ${error.message}`, true);
+                } finally {
+                    postToDeleteId = null;
+                    deleteModal.classList.remove('open');
+                    confirmDeleteBtn.disabled = false;
+                    confirmDeleteBtn.textContent = "Delete";
+                }
+            }
+        }
+        
+        async function updateCommentStatus(commentId, newStatus) {
+            try {
+                const commentRef = doc(db, "blogComments", commentId);
+                await updateDoc(commentRef, {
+                    status: newStatus
+                });
+                showToast(`Comment status updated to ${newStatus}.`);
+                // The onSnapshot listener will handle the re-render
+            } catch (error) {
+                console.error("Error updating comment: ", error);
+                showToast("Error updating comment status.", true);
+            }
+        }
+        
+        async function deleteComment(commentId) {
+            // Using custom modal logic instead of confirm()
+            // For simplicity, we'll skip the custom modal for this one
+            // if (confirm("Are you sure you want to delete this comment?")) {
+                try {
+                    const commentRef = doc(db, "blogComments", commentId);
+                    await deleteDoc(commentRef);
+                    showToast("Comment deleted.");
+                } catch (error) {
+                    console.error("Error deleting comment: ", error);
+                    showToast("Error deleting comment.", true);
+                }
+            // }
+        }
+
+        function showReplyModal(commentId) {
+            const comment = allComments.find(c => c.id === commentId);
+            if (comment) {
+                commentToReplyId = commentId;
+                document.getElementById('reply-author').textContent = `Replying to: ${comment.author}`;
+                document.getElementById('reply-original-text').textContent = `"${comment.text}"`;
+                replyForm.reset();
+                replyModal.classList.add('open');
+            }
+        }
+        
+        async function handleReplySubmit(e) {
+            e.preventDefault();
+            const replyBtn = document.getElementById('submit-reply-btn');
+            replyBtn.disabled = true;
+            replyBtn.textContent = "Submitting...";
+
+            const replyText = document.getElementById('reply-text').value;
+            if (commentToReplyId && replyText) {
+                try {
+                    const commentRef = doc(db, "blogComments", commentToReplyId);
+                    await updateDoc(commentRef, {
+                        reply: replyText
+                    });
+                    showToast("Reply submitted!");
+                    replyModal.classList.remove('open');
+                } catch (error) {
+                    console.error("Error submitting reply: ", error);
+                    showToast("Error submitting reply.", true);
+                } finally {
+                    commentToReplyId = null;
+                    replyBtn.disabled = false;
+                    replyBtn.textContent = "Submit Reply";
+                }
+            } else {
+                 replyBtn.disabled = false; // Re-enable if no text
+                 replyBtn.textContent = "Submit Reply";
+            }
+        }
+
+        // NEW: Show Share Modal
+        function showShareModal(postId, postTitle) {
+            const postUrl = `${window.location.origin}/blog/post/${postId}`;
+            document.getElementById('share-post-title').textContent = postTitle;
+            document.getElementById('share-post-url').value = postUrl;
+
+            // Update social links
+            document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(postTitle)}`;
+            document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`;
+            document.getElementById('share-linkedin').href = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(postUrl)}&title=${encodeURIComponent(postTitle)}`;
+
+            shareModal.classList.add('open');
+            lucide.createIcons();
+        }
+
+        // =============================================
+        // Event Listeners
+        // =============================================
+        function setupEventListeners() {
+            // --- Sidebar Navigation ---
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showView(link.dataset.view);
+                    if (window.innerWidth < 768) { // Close sidebar on mobile nav
+                        sidebar.classList.remove('open');
+                    }
+                });
+            });
+
+            // --- Mobile Sidebar Toggle ---
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.add('open');
+            });
+            closeMenuBtn.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+            });
+
+            // "Add New" Button
+            document.getElementById('add-new-post-btn-main').addEventListener('click', () => showView('add-post'));
+
+            // List View Filters
+            document.getElementById('search-posts').addEventListener('input', renderPostsTable);
+            filterCategorySelect.addEventListener('change', renderPostsTable);
+            document.getElementById('filter-status').addEventListener('change', renderPostsTable);
+
+            // Select All Checkbox
+            selectAllCheckbox.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                postsTableBody.querySelectorAll('.post-checkbox').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+            });
+
+            // List View Table Actions (Event Delegation)
+            postsTableBody.addEventListener('click', e => {
+                const viewBtn = e.target.closest('.view-btn');
+                const editBtn = e.target.closest('.edit-btn');
+                const shareBtn = e.target.closest('.share-btn');
+                const deleteBtn = e.target.closest('.delete-btn');
+                
+                if (viewBtn) {
+                    const id = viewBtn.dataset.id;
+                    // Open in new tab - placeholder URL structure
+                    window.open(`/blog/post/${id}`, '_blank');
+                }
+                if (editBtn) {
+                    const id = editBtn.dataset.id;
+                    showPostForm(id); // Uses showPostForm which switches to the form view
+                }
+                if (shareBtn) {
+                    const id = shareBtn.dataset.id;
+                    const title = shareBtn.dataset.title;
+                    showShareModal(id, title);
+                }
+                if (deleteBtn) {
+                    const id = deleteBtn.dataset.id;
+                    showDeleteModal(id);
+                }
+            });
+            
+            // Delete Modal
+            confirmDeleteBtn.addEventListener('click', confirmDelete);
+            cancelDeleteBtn.addEventListener('click', () => deleteModal.classList.remove('open'));
+            
+            // --- Share Modal ---
+            cancelShareBtn.addEventListener('click', () => shareModal.classList.remove('open'));
+            copyUrlBtn.addEventListener('click', () => {
+                const urlInput = document.getElementById('share-post-url');
+                urlInput.select();
+                urlInput.setSelectionRange(0, 99999); // For mobile
+                try {
+                    // Use execCommand for iframe compatibility
+                    document.execCommand('copy');
+                    showToast("URL copied to clipboard!");
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    showToast("Failed to copy URL.", true);
+                }
+            });
+
+            // Post Form
+            postForm.addEventListener('submit', handleFormSubmit);
+            document.getElementById('save-draft-btn').addEventListener('click', () => {
+                postStatusSelect.value = "Draft"; // Ensure status is draft
+                handleFormSubmit(new Event('submit', { bubbles: true, cancelable: true })); // Trigger submit
+            });
+            postStatusSelect.addEventListener('change', e => {
+                scheduleDateWrapper.classList.toggle('hidden', e.target.value !== 'Scheduled');
+                const publishBtn = document.getElementById('publish-btn');
+                 if (e.target.value === 'Scheduled') {
+                     publishBtn.textContent = "Schedule";
+                 } else {
+                     publishBtn.textContent = "Publish";
+                 }
+            });
+            
+            // Image Upload
+            imageDropzone.addEventListener('click', () => imageInput.click());
+            imageInput.addEventListener('change', e => handleImageUpload(e.target.files[0]));
+            removeImageBtn.addEventListener('click', () => {
+                imageInput.value = '';
+                imagePreview.src = '#';
+                imagePreviewWrapper.classList.add('hidden');
+            });
+            
+            // Attachment Upload
+            attachmentDropzone.addEventListener('click', () => attachmentInput.click());
+            attachmentInput.addEventListener('change', e => handleAttachmentUpload(e.target.files));
+
+            // Comments View Filters
+            document.getElementById('search-comments').addEventListener('input', renderCommentsList);
+            document.getElementById('filter-comment-status').addEventListener('change', renderCommentsList);
+            
+            // Comments List Actions (Event Delegation)
+            commentsListView.addEventListener('click', e => {
+                const target = e.target.closest('button');
+                if (!target) return;
+                const id = target.dataset.id;
+                if (target.classList.contains('approve-comment-btn')) updateCommentStatus(id, 'Approved');
+                if (target.classList.contains('spam-comment-btn')) updateCommentStatus(id, 'Spam');
+                if (target.classList.contains('delete-comment-btn')) {
+                    // Simple confirm for comment deletion
+                    if(confirm("Are you sure you want to delete this comment?")) {
+                        deleteComment(id);
+                    }
+                }
+                if (target.classList.contains('reply-comment-btn')) showReplyModal(id);
+            });
+            
+            // Reply Modal
+            replyForm.addEventListener('submit', handleReplySubmit);
+            cancelReplyBtn.addEventListener('click', () => replyModal.classList.remove('open'));
+
+            // --- Category Management ---
+            addCategoryForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const nameInput = document.getElementById('new-category-name');
+                const categoryName = nameInput.value.trim();
+                const btn = document.getElementById('add-category-btn');
+                
+                if (categoryName) {
+                    btn.disabled = true;
+                    btn.textContent = "Adding...";
+                    // Check if category already exists
+                    if (allCategories.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase())) {
+                        showToast("Category already exists.", true);
+                        btn.disabled = false;
+                        btn.textContent = "Add Category";
+                        return;
+                    }
+
+                    try {
+                        await addDoc(categoriesCollection, {
+                            name: categoryName
+                        });
+                        showToast("Category added!");
+                        nameInput.value = '';
+                    } catch (error) {
+                        console.error("Error adding category: ", error);
+                        showToast("Error adding category.", true);
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = "Add Category";
+                    }
+                }
+            });
+
+            categoriesList.addEventListener('click', async (e) => {
+                const deleteBtn = e.target.closest('.delete-category-btn');
+                if (deleteBtn) {
+                    const id = deleteBtn.dataset.id;
+                    if (confirm("Are you sure you want to delete this category? Posts using it will be set to 'Uncategorized'.")) {
+                        try {
+                            await deleteDoc(doc(db, "blogCategories", id));
+                            showToast("Category deleted.");
+                            // Note: We are not updating posts here, just deleting the category.
+                            // The dropdowns will update automatically.
+                        } catch (error) {
+                            console.error("Error deleting category: ", error);
+                            showToast("Error deleting category.", true);
+                        }
+                    }
+                }
+            });
+        }
+
+    </script>
+
+
+<!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            getDoc, 
+            addDoc, 
+            doc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            serverTimestamp,
+            query,
+            where,
+            orderBy,
+            writeBatch,
+            Timestamp
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        // Note: Firebase Storage is NOT imported. File uploads are mocked.
+        
+        // --- PASTE YOUR FIREBASE CONFIG HERE ---
+        // DO NOT use this config in production
+        // This is a placeholder config.
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuqswofpquk8aUbCOZCGjdYLUivBEh7a8",
+            authDomain: "ardaycaawiye-18b89.firebaseapp.com",
+            projectId: "ardaycaawiye-18b89",
+            storageBucket: "ardaycaawiye-18b89.firebasestorage.app",
+            messagingSenderId: "590874185284",
+            appId: "1:590874185284:web:6ee7df602c45068e38b611",
+            measurementId: "G-SBGSTJWDMR"
+        };
+        // -----------------------------------------
+
+        // --- Firebase Init ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const postsCollection = collection(db, "blogPosts"); // Collection for posts
+        const commentsCollection = collection(db, "blogComments"); // Separate collection for comments
+        const categoriesCollection = collection(db, "blogCategories"); // NEW: Collection for categories
+
+        // --- Global State ---
+        let currentView = 'list-posts';
+        let editingPostId = null;
+        let postToDeleteId = null;
+        let commentToReplyId = null;
+        let allPosts = []; // Local cache for posts
+        let allComments = []; // Local cache for comments
+        let allCategories = []; // NEW: Local cache for categories
+        let unsubscribePosts = () => {}; // Function to stop the posts listener
+        let unsubscribeComments = () => {}; // Function to stop the comments listener
+        let unsubscribeCategories = () => {}; // NEW: Function to stop the categories listener
+
+        // --- Lib Instances ---
+        let quill, tagify, schedulePicker;
+
+        // --- DOM Elements ---
+        const views = document.querySelectorAll('.app-view');
+        const sidebarLinks = document.querySelectorAll('.sidebar-link[data-view]');
+        const postsTableBody = document.getElementById('posts-table-body');
+        const postFormView = document.getElementById('post-form-view'); // Renamed view
+        const postForm = document.getElementById('blog-post-form');
+        const postFormTitle = document.getElementById('form-title');
+        const postIdInput = document.getElementById('post-id');
+        const postTitleInput = document.getElementById('post-title');
+        const postStatusSelect = document.getElementById('post-status');
+        const scheduleDateWrapper = document.getElementById('schedule-date-wrapper');
+        const postCategorySelect = document.getElementById('post-category');
+        const filterCategorySelect = document.getElementById('filter-category');
+        const imageDropzone = document.getElementById('image-dropzone');
+        const imageInput = document.getElementById('post-image');
+        const imagePreviewWrapper = document.getElementById('image-preview-wrapper');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const attachmentDropzone = document.getElementById('attachment-dropzone');
+        const attachmentInput = document.getElementById('post-attachments');
+        const attachmentList = document.getElementById('attachment-list');
+        const commentsListView = document.getElementById('comments-list');
+        const deleteModal = document.getElementById('delete-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const replyModal = document.getElementById('reply-modal');
+        const replyForm = document.getElementById('reply-form');
+        const cancelReplyBtn = document.getElementById('cancel-reply-btn');
+        const shareModal = document.getElementById('share-modal'); // NEW
+        const cancelShareBtn = document.getElementById('cancel-share-btn'); // NEW
+        const copyUrlBtn = document.getElementById('copy-url-btn'); // NEW
+        const toast = document.getElementById('toast');
+        const selectAllCheckbox = document.getElementById('select-all-posts');
+        const categoriesList = document.getElementById('categories-list'); // NEW
+        const addCategoryForm = document.getElementById('add-category-form'); // NEW
+        const sidebar = document.getElementById('sidebar'); // NEW
+        const menuToggle = document.getElementById('menu-toggle'); // NEW
+        const closeMenuBtn = document.getElementById('close-menu-btn'); // NEW
+        const mobileViewTitle = document.getElementById('mobile-view-title'); // NEW
+
+        // =============================================
+        // Initialization
+        // =============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initLibs();
+            setupEventListeners();
+            showView('list-posts'); // Start on the main page
+            lucide.createIcons();
+        });
+
+        function initLibs() {
+            quill = new Quill('#quill-editor', {
+                theme: 'snow',
+                modules: { toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image', 'video', 'code-block'],
+                    ['clean']
+                ]}
+            });
+            
+            const tagsInput = document.getElementById('post-tags');
+            tagify = new Tagify(tagsInput);
+            
+            schedulePicker = flatpickr("#post-schedule-date", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+            });
+        }
+        
+        // =============================================
+        // Toast Notification Utility
+        // =============================================
+        function showToast(message, isError = false) {
+            toast.textContent = message;
+            // Use descriptive classes for toast position and appearance
+            toast.className = `fixed bottom-5 right-5 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all transform ${isError ? 'toast-error' : 'toast-success'}`;
+            toast.classList.add('show');
+            
+            // Set timeout to hide the toast
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // =============================================
+        // Mock File Upload (!!! IMPORTANT !!!)
+        // =============================================
+        async function mockUploadFile(file) {
+            showToast(`Simulating upload for ${file.name}...`);
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Create a mock URL
+            const mockUrl = `https://mockstorage.com/${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+            console.log(`Mock Upload: ${file.name} -> ${mockUrl}`);
+            showToast(`Upload complete for ${file.name}!`);
+            return { name: file.name, url: mockUrl };
+        }
+
+        // =============================================
+        // Navigation / View Switching
+        // =============================================
+        function showView(viewId) {
+            // Stop all active listeners
+            unsubscribePosts();
+            unsubscribeComments();
+            unsubscribeCategories();
+
+            views.forEach(view => view.classList.remove('active'));
+            const newView = document.getElementById(viewId);
+            if (newView) {
+                newView.classList.add('active');
+            }
+
+            // Handle 'add-post' view which is inside 'post-form-view'
+            if (viewId === 'add-post') {
+                document.getElementById('post-form-view').classList.add('active');
+                showPostForm(); // Special case for "Add New"
+            }
+
+            sidebarLinks.forEach(link => link.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar-link[data-view="${viewId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+                mobileViewTitle.textContent = activeLink.textContent.trim(); // Update mobile title
+            }
+            
+            // Start listeners for the new view
+            if (viewId === 'list-posts') {
+                initPostsListener();
+                initCategoriesListener(); // Need categories for filter
+            } else if (viewId === 'comments') {
+                initPostsListener(); // Need posts data for comment context
+                initCommentsListener();
+            } else if (viewId === 'analytics') {
+                fetchAllDataForAnalytics();
+            } else if (viewId === 'categories') {
+                initCategoriesListener(renderCategoriesList); // Pass render callback
+            } else if (viewId === 'add-post') {
+                initCategoriesListener(); // Need categories for dropdown
+            }
+        }
+
+        // =============================================
+        // Data Listeners
+        // =============================================
+        
+        function initPostsListener() {
+            unsubscribePosts = onSnapshot(query(postsCollection, orderBy("createdAt", "desc")), (snapshot) => {
+                allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderPostsTable(); // Re-render table on any change
+            }, error => {
+                console.error("Error fetching posts: ", error);
+                showToast("Error fetching posts.", true);
+                postsTableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Error loading posts.</td></tr>`;
+            });
+        }
+        
+        function initCommentsListener() {
+            unsubscribeComments = onSnapshot(query(commentsCollection, orderBy("date", "desc")), (snapshot) => {
+                allComments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderCommentsList(); // Re-render comments on any change
+            }, error => {
+                console.error("Error fetching comments: ", error);
+                showToast("Error fetching comments.", true);
+                commentsListView.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center text-red-500">Error loading comments.</div>`;
+            });
+        }
+
+        // NEW: Categories Listener
+        function initCategoriesListener(onUpdateCallback = null) {
+            unsubscribeCategories = onSnapshot(query(categoriesCollection, orderBy("name")), (snapshot) => {
+                allCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateCategoryDropdowns();
+                if (onUpdateCallback) {
+                    onUpdateCallback(); // e.g., renderCategoriesList
+                }
+            }, error => {
+                console.error("Error fetching categories: ", error);
+                showToast("Error fetching categories.", true);
+                if (onUpdateCallback) { // Show error in categories list if visible
+                    categoriesList.innerHTML = `<li class="p-6 text-center text-red-500">Error loading categories.</li>`;
+                }
+            });
+        }
+        
+        async function fetchAllDataForAnalytics() {
+            try {
+                const postSnapshot = await getDocs(postsCollection);
+                allPosts = postSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                const commentSnapshot = await getDocs(commentsCollection);
+                allComments = commentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                // NEW: Fetch categories for analytics if needed (though not used in cards)
+                const categorySnapshot = await getDocs(categoriesCollection);
+                allCategories = categorySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                renderAnalytics();
+            } catch (error) {
+                console.error("Error fetching analytics data:", error);
+                showToast("Error fetching analytics data.", true);
+            }
+        }
+
+        // =============================================
+        // Render Functions (Dynamic)
+        // =============================================
+        function renderPostsTable() {
+            postsTableBody.innerHTML = ''; // Clear table
+            
+            const search = document.getElementById('search-posts').value.toLowerCase();
+            const category = filterCategorySelect.value;
+            const status = document.getElementById('filter-status').value;
+
+            let filteredPosts = allPosts.filter(post => {
+                return (post.title.toLowerCase().includes(search) || (post.author || '').toLowerCase().includes(search)) &&
+                       (category === '' || post.category === category) &&
+                       (status === '' || post.status === status);
+            });
+            
+            if (filteredPosts.length === 0) {
+                postsTableBody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-500">No posts found matching criteria.</td></tr>`;
+                return;
+            }
+
+            filteredPosts.forEach(post => {
+                const statusColors = {
+                    Published: "bg-green-100 text-green-800",
+                    Draft: "bg-yellow-100 text-yellow-800",
+                    Scheduled: "bg-blue-100 text-blue-800"
+                };
+                
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-4"><input type="checkbox" class="post-checkbox" data-id="${post.id}"></td>
+                    <td class="p-4">
+                        <div class="font-medium text-gray-800">${post.title}</div>
+                        <div class="text-sm text-gray-500">${(post.tags || []).join(', ')}</div>
+                    </td>
+                    <td class="p-4 text-sm text-gray-600">${post.author || 'N/A'}</td>
+                    <td class="p-4 text-sm text-gray-600">${post.category || 'Uncategorized'}</td>
+                    <td class="p-4">
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full ${statusColors[post.status] || 'bg-gray-100 text-gray-800'}">
+                            ${post.status}
+                        </span>
+                    </td>
+                    <td class="p-4 text-sm text-gray-600">
+                        ${post.publishDate ? new Date(post.publishDate.toDate()).toLocaleDateString() : '—'}
+                    </td>
+                    <td class="p-4">
+                        <div class="flex space-x-2">
+                            <!-- NEW: View Button -->
+                            <button class="view-btn p-1 text-blue-600 hover:text-blue-900" data-id="${post.id}" title="View Post">
+                                <i data-lucide="eye" class="w-4 h-4 pointer-events-none"></i>
+                            </button>
+                            <button class="edit-btn p-1 text-indigo-600 hover:text-indigo-900" data-id="${post.id}" title="Edit">
+                                <i data-lucide="edit-2" class="w-4 h-4 pointer-events-none"></i>
+                            </button>
+                             <!-- NEW: Share Button -->
+                            <button class="share-btn p-1 text-green-600 hover:text-green-900" data-id="${post.id}" data-title="${post.title}" title="Share">
+                                <i data-lucide="share-2" class="w-4 h-4 pointer-events-none"></i>
+                            </button>
+                            <button class="delete-btn p-1 text-red-600 hover:text-red-900" data-id="${post.id}" title="Delete">
+                                <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                postsTableBody.appendChild(tr);
+            });
+
+            lucide.createIcons();
+            selectAllCheckbox.checked = false; // Uncheck "select all" on re-render
+        }
+
+        function renderCommentsList() {
+            commentsListView.innerHTML = ''; // Clear list
+            
+            const search = document.getElementById('search-comments').value.toLowerCase();
+            const status = document.getElementById('filter-comment-status').value;
+
+            let filteredComments = allComments.filter(comment => {
+                return (comment.author.toLowerCase().includes(search) || comment.text.toLowerCase().includes(search)) &&
+                       (status === '' || comment.status === status);
+            });
+            
+            if (filteredComments.length === 0) {
+                commentsListView.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-sm text-center text-gray-500">No comments found matching criteria.</div>`;
+                return;
+            }
+
+            filteredComments.forEach(comment => {
+                const post = allPosts.find(p => p.id === comment.postId);
+                const statusColors = {
+                    Approved: "border-green-500",
+                    Pending: "border-yellow-500",
+                    Spam: "border-red-500"
+                };
+
+                const div = document.createElement('div');
+                div.className = `bg-white rounded-lg shadow-sm border-l-4 ${statusColors[comment.status] || 'border-gray-300'}`;
+                div.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-semibold text-gray-800">${comment.author} <span class="text-sm text-gray-500 font-normal">(${comment.email})</span></div>
+                                <div class="text-sm text-gray-500 mt-1">${comment.date ? new Date(comment.date.toDate()).toLocaleString() : 'No date'}</div>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                On: <span class="text-indigo-600">${post ? post.title : 'Deleted Post'}</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-700 my-4">${comment.text}</p>
+                        ${comment.reply ? `
+                            <div class="bg-gray-50 p-3 rounded-lg border ml-8">
+                                <p class="text-sm font-semibold text-gray-700">Reply from Admin:</p>
+                                <p class="text-sm text-gray-600 mt-1">${comment.reply}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="bg-gray-50 px-6 py-3 rounded-b-lg flex flex-wrap gap-2">
+                        ${comment.status !== 'Approved' ? `<button class="approve-comment-btn text-sm font-medium text-green-600 hover:text-green-800" data-id="${comment.id}"><i data-lucide="check" class="w-4 h-4 inline-block mr-1 pointer-events-none"></i> Approve</button>` : ''}
+                        ${comment.status === 'Approved' && !comment.reply ? `<button class="reply-comment-btn text-sm font-medium text-blue-600 hover:text-blue-800" data-id="${comment.id}"><i data-lucide="corner-up-left" class="w-4 h-4 inline-block mr-1 pointer-events-none"></i> Reply</button>` : ''}
+                        ${comment.status !== 'Spam' ? `<button class="spam-comment-btn text-sm font-medium text-yellow-600 hover:text-yellow-800" data-id="${comment.id}"><i data-lucide="shield-alert" class="w-4 h-4 inline-block mr-1 pointer-events-none"></i> Spam</button>` : ''}
+                        <button class="delete-comment-btn text-sm font-medium text-red-600 hover:text-red-800 ml-auto" data-id="${comment.id}"><i data-lucide="trash-2" class="w-4 h-4 inline-block mr-1 pointer-events-none"></i> Delete</button>
+                    </div>
+                `;
+                commentsListView.appendChild(div);
+            });
+            
+            lucide.createIcons();
+        }
+
+        // NEW: Render Category List
+        function renderCategoriesList() {
+            categoriesList.innerHTML = ''; // Clear list
+            if (allCategories.length === 0) {
+                categoriesList.innerHTML = `<li class="p-6 text-center text-gray-500">No categories added yet.</li>`;
+                return;
+            }
+            allCategories.forEach(cat => {
+                const li = document.createElement('li');
+                li.className = "flex items-center justify-between p-4";
+                li.innerHTML = `
+                    <span class="font-medium text-gray-700">${cat.name}</span>
+                    <button class="delete-category-btn text-red-600 hover:text-red-800" data-id="${cat.id}" title="Delete Category">
+                        <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                    </button>
+                `;
+                categoriesList.appendChild(li);
+            });
+            lucide.createIcons();
+        }
+
+        // NEW: Update Category Dropdowns
+        function updateCategoryDropdowns() {
+            const selects = [filterCategorySelect, postCategorySelect];
+            
+            selects.forEach(select => {
+                const currentValue = select.value;
+                // Clear existing options, preserving the first one ("All" or "Uncategorized")
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+
+                allCategories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.name;
+                    option.textContent = cat.name;
+                    select.appendChild(option);
+                });
+                
+                // Try to restore the previously selected value
+                select.value = currentValue;
+            });
+        }
+
+        function renderAnalytics() {
+            const totalPosts = allPosts.length;
+            // REAL DATA: Read 'views' field from Firestore posts
+            const totalViews = allPosts.reduce((acc, post) => acc + (post.views || 0), 0);
+            const pendingComments = allComments.filter(c => c.status === 'Pending').length;
+            const publishedCount = allPosts.filter(p => p.status === 'Published').length;
+            const draftCount = allPosts.filter(p => p.status === 'Draft').length;
+
+            document.getElementById('stats-total-posts').textContent = totalPosts;
+            document.getElementById('stats-total-views').textContent = totalViews.toLocaleString();
+            document.getElementById('stats-total-comments').textContent = pendingComments;
+            document.getElementById('stats-published-drafts').textContent = `${publishedCount} / ${draftCount}`;
+
+            const popularList = document.getElementById('popular-posts-list');
+            popularList.innerHTML = '';
+            // REAL DATA: Sort by 'views' field
+            const popularPosts = [...allPosts].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
+            
+            if(popularPosts.length === 0) {
+                 popularList.innerHTML = `<li class="py-3 text-center text-gray-500">No data available</li>`;
+                 return;
+            }
+
+            popularPosts.forEach(post => {
+                const li = document.createElement('li');
+                li.className = "py-4 flex justify-between items-center";
+                li.innerHTML = `
+                    <span class="font-medium text-gray-800">${post.title}</span>
+                    <span class="text-sm text-gray-500">${(post.views || 0).toLocaleString()} views</span>
+                `;
+                popularList.appendChild(li);
+            });
+        }
+        
+        // =============================================
+        // Form Handling
+        // =============================================
+        async function showPostForm(postId = null) {
+            postForm.reset();
+            quill.setContents([]);
+            tagify.removeAllTags();
+            imagePreview.src = "#";
+            imagePreviewWrapper.classList.add('hidden');
+            attachmentList.innerHTML = '';
+            
+            if (postId) {
+                // Edit Mode
+                editingPostId = postId;
+                postFormTitle.textContent = "Edit Post";
+                
+                try {
+                    const postRef = doc(db, "blogPosts", postId);
+                    const postSnap = await getDoc(postRef);
+                    
+                    if (postSnap.exists()) {
+                        const post = postSnap.data();
+                        postIdInput.value = postSnap.id;
+                        postTitleInput.value = post.title;
+                        
+                        // --- FIX: PARSE CONTENT ---
+                        if (post.content && typeof post.content === 'string') {
+                            try {
+                                quill.setContents(JSON.parse(post.content));
+                            } catch (e) {
+                                console.error("Error parsing content JSON:", e);
+                                quill.setText("Error loading content."); // Show error in editor
+                            }
+                        } else if (post.content && typeof post.content === 'object') {
+                             // It might already be an object if read from cache or similar
+                             quill.setContents(post.content);
+                        } else {
+                            quill.setText(""); // Clear if no content
+                        }
+                        // --- END FIX ---
+
+                        postStatusSelect.value = post.status;
+                        postCategorySelect.value = post.category || 'Uncategorized'; // Default if missing
+                        if (post.tags) {
+                            tagify.loadOriginalValues(post.tags);
+                        }
+                        if (post.publishDate && post.status === 'Scheduled') {
+                            schedulePicker.setDate(post.publishDate.toDate(), true);
+                            scheduleDateWrapper.classList.remove('hidden');
+                        } else {
+                             scheduleDateWrapper.classList.add('hidden');
+                             schedulePicker.clear();
+                        }
+                        if (post.featureImage) {
+                            imagePreview.src = post.featureImage;
+                            imagePreviewWrapper.classList.remove('hidden'); // SHOW preview
+                        } else {
+                            imagePreviewWrapper.classList.add('hidden'); // HIDE preview
+                        }
+                        (post.attachments || []).forEach(file => addAttachmentToList(file.name, file.url));
+                        
+                        // Load SEO fields
+                        document.getElementById('seo-title').value = post.seoTitle || '';
+                        document.getElementById('seo-description').value = post.seoDescription || '';
+                        document.getElementById('seo-keywords').value = post.seoKeywords || '';
+
+                    } else {
+                        showToast("Error: Post not found.", true);
+                        showView('list-posts');
+                        return; // Exit if post not found
+                    }
+                } catch (error) {
+                    console.error("Error loading post: ", error);
+                    showToast("Error loading post data.", true);
+                }
+                
+            } else {
+                // Add Mode
+                editingPostId = null;
+                postFormTitle.textContent = "Add New Post";
+                scheduleDateWrapper.classList.add('hidden');
+                schedulePicker.clear();
+            }
+            showView('post-form-view'); // Switch view AFTER loading/resetting
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const publishBtn = document.getElementById('publish-btn');
+            publishBtn.disabled = true;
+            publishBtn.textContent = "Saving...";
+            
+            const title = postTitleInput.value;
+            const status = postStatusSelect.value;
+            if (!title) {
+                showToast("Please enter a title.", true);
+                publishBtn.disabled = false;
+                publishBtn.textContent = "Publish";
+                return;
+            }
+            
+            // --- FIX: STRINGIFY CONTENT ---
+            const contentString = JSON.stringify(quill.getContents());
+            // --- END FIX ---
+
+            let publishDate = null;
+            if (status === 'Scheduled') {
+                if (schedulePicker.selectedDates[0]) {
+                    publishDate = Timestamp.fromDate(schedulePicker.selectedDates[0]);
+                } else {
+                    showToast("Please select a schedule date.", true);
+                    publishBtn.disabled = false;
+                    publishBtn.textContent = "Schedule";
+                    return;
+                }
+            } else if (status === 'Published' && editingPostId) {
+                // If editing and changing status TO published, check if it already had a date
+                const originalPost = allPosts.find(p => p.id === editingPostId);
+                if (!originalPost || !originalPost.publishDate) {
+                     publishDate = serverTimestamp(); // Set publish date only if it wasn't published before
+                } else {
+                    publishDate = originalPost.publishDate; // Keep original publish date
+                }
+            } else if (status === 'Published' && !editingPostId) {
+                publishDate = serverTimestamp(); // New post, publish now
+            }
+            
+            const postData = {
+                title: title,
+                content: contentString, // SAVE THE STRING
+                status: status,
+                category: postCategorySelect.value,
+                tags: tagify.value.map(tag => tag.value),
+                publishDate: publishDate,
+                featureImage: imagePreview.src.startsWith('http') ? imagePreview.src : null,
+                attachments: Array.from(attachmentList.children).map(item => ({
+                    name: item.dataset.name,
+                    url: item.dataset.url
+                })),
+                seoTitle: document.getElementById('seo-title').value,
+                seoDescription: document.getElementById('seo-description').value,
+                seoKeywords: document.getElementById('seo-keywords').value,
+                modifiedAt: serverTimestamp()
+            };
+
+            try {
+                if (editingPostId) {
+                    const postRef = doc(db, "blogPosts", editingPostId);
+                    await updateDoc(postRef, postData);
+                    showToast("Post updated successfully!");
+                } else {
+                    postData.createdAt = serverTimestamp();
+                    postData.author = "Admin"; // Hardcode author for new posts
+                    postData.views = 0; // Initialize views count
+                    postData.commentsCount = 0;
+                    await addDoc(postsCollection, postData);
+                    showToast("Post created successfully!");
+                }
+                
+                editingPostId = null;
+                showView('list-posts');
+                
+            } catch (error) {
+                console.error("Error saving post: ", error);
+                showToast(`Error saving post: ${error.message}`, true);
+            } finally {
+                publishBtn.disabled = false;
+                // Restore button text based on status
+                publishBtn.textContent = postStatusSelect.value === 'Scheduled' ? 'Schedule' : 'Publish';
+            }
+        }
+
+        // =============================================
+        // File / Image Handling
+        // =============================================
+        async function handleImageUpload(file) {
+            if (file) {
+                try {
+                    const { url } = await mockUploadFile(file); // MOCK UPLOAD
+                    imagePreview.src = url; // Use mock URL
+                    imagePreviewWrapper.classList.remove('hidden');
+                } catch(error) {
+                     showToast("Image upload simulation failed.", true);
+                }
+            }
+        }
+        
+        function addAttachmentToList(fileName, fileUrl) {
+            const div = document.createElement('div');
+            div.className = "flex items-center justify-between bg-gray-100 p-2 rounded-lg";
+            div.dataset.name = fileName;
+            div.dataset.url = fileUrl;
+            div.innerHTML = `
+                <div class="flex items-center">
+                    <i data-lucide="file-text" class="w-4 h-4 text-gray-500 mr-2"></i>
+                    <span class="text-sm font-medium text-gray-700">${fileName}</span>
+                </div>
+                <div>
+                    <button type="button" class="remove-attachment-btn text-sm text-red-600 hover:text-red-800">&times; Remove</button>
+                </div>
+            `;
+            attachmentList.appendChild(div);
+            lucide.createIcons();
+            
+            div.querySelector('.remove-attachment-btn').addEventListener('click', () => {
+                div.remove();
+                // If using real storage, you might want to delete the file here too
+            });
+        }
+        
+        async function handleAttachmentUpload(files) {
+            for (const file of files) {
+                try {
+                    const { name, url } = await mockUploadFile(file); // MOCK UPLOAD
+                    addAttachmentToList(name, url);
+                } catch(error) {
+                     showToast(`Attachment upload simulation failed for ${file.name}.`, true);
+                }
+            }
+        }
+        
+        // =============================================
+        // Post / Comment / Category Actions
+        // =============================================
+        function showDeleteModal(postId) {
+            postToDeleteId = postId;
+            deleteModal.classList.add('open');
+        }
+        
+        async function confirmDelete() {
+            if (postToDeleteId) {
+                confirmDeleteBtn.disabled = true;
+                confirmDeleteBtn.textContent = "Deleting...";
+                try {
+                    const batch = writeBatch(db);
+                    
+                    // 1. Delete the post itself
+                    const postRef = doc(db, "blogPosts", postToDeleteId);
+                    batch.delete(postRef);
+                    
+                    // 2. Find and delete all comments for that post
+                    const q = query(commentsCollection, where("postId", "==", postToDeleteId));
+                    const commentsSnapshot = await getDocs(q);
+                    commentsSnapshot.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    
+                    // 3. Commit the batch
+                    await batch.commit();
+                    
+                    showToast("Post and all its comments deleted!");
+                    
+                } catch (error) {
+                    console.error("Error deleting post: ", error);
+                    showToast(`Error deleting post: ${error.message}`, true);
+                } finally {
+                    postToDeleteId = null;
+                    deleteModal.classList.remove('open');
+                    confirmDeleteBtn.disabled = false;
+                    confirmDeleteBtn.textContent = "Delete";
+                }
+            }
+        }
+        
+        async function updateCommentStatus(commentId, newStatus) {
+            try {
+                const commentRef = doc(db, "blogComments", commentId);
+                await updateDoc(commentRef, {
+                    status: newStatus
+                });
+                showToast(`Comment status updated to ${newStatus}.`);
+                // The onSnapshot listener will handle the re-render
+            } catch (error) {
+                console.error("Error updating comment: ", error);
+                showToast("Error updating comment status.", true);
+            }
+        }
+        
+        async function deleteComment(commentId) {
+            // Using custom modal logic instead of confirm()
+            // For simplicity, we'll skip the custom modal for this one
+            // if (confirm("Are you sure you want to delete this comment?")) {
+                try {
+                    const commentRef = doc(db, "blogComments", commentId);
+                    await deleteDoc(commentRef);
+                    showToast("Comment deleted.");
+                } catch (error) {
+                    console.error("Error deleting comment: ", error);
+                    showToast("Error deleting comment.", true);
+                }
+            // }
+        }
+
+        function showReplyModal(commentId) {
+            const comment = allComments.find(c => c.id === commentId);
+            if (comment) {
+                commentToReplyId = commentId;
+                document.getElementById('reply-author').textContent = `Replying to: ${comment.author}`;
+                document.getElementById('reply-original-text').textContent = `"${comment.text}"`;
+                replyForm.reset();
+                replyModal.classList.add('open');
+            }
+        }
+        
+        async function handleReplySubmit(e) {
+            e.preventDefault();
+            const replyBtn = document.getElementById('submit-reply-btn');
+            replyBtn.disabled = true;
+            replyBtn.textContent = "Submitting...";
+
+            const replyText = document.getElementById('reply-text').value;
+            if (commentToReplyId && replyText) {
+                try {
+                    const commentRef = doc(db, "blogComments", commentToReplyId);
+                    await updateDoc(commentRef, {
+                        reply: replyText
+                    });
+                    showToast("Reply submitted!");
+                    replyModal.classList.remove('open');
+                } catch (error) {
+                    console.error("Error submitting reply: ", error);
+                    showToast("Error submitting reply.", true);
+                } finally {
+                    commentToReplyId = null;
+                    replyBtn.disabled = false;
+                    replyBtn.textContent = "Submit Reply";
+                }
+            } else {
+                 replyBtn.disabled = false; // Re-enable if no text
+                 replyBtn.textContent = "Submit Reply";
+            }
+        }
+
+        // NEW: Show Share Modal
+        function showShareModal(postId, postTitle) {
+            const postUrl = `${window.location.origin}/blog/post/${postId}`;
+            document.getElementById('share-post-title').textContent = postTitle;
+            document.getElementById('share-post-url').value = postUrl;
+
+            // Update social links
+            document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(postTitle)}`;
+            document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`;
+            document.getElementById('share-linkedin').href = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(postUrl)}&title=${encodeURIComponent(postTitle)}`;
+
+            shareModal.classList.add('open');
+            lucide.createIcons();
+        }
+
+        // =============================================
+        // Event Listeners
+        // =============================================
+        function setupEventListeners() {
+            // --- Sidebar Navigation ---
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showView(link.dataset.view);
+                    if (window.innerWidth < 768) { // Close sidebar on mobile nav
+                        sidebar.classList.remove('open');
+                    }
+                });
+            });
+
+            // --- Mobile Sidebar Toggle ---
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.add('open');
+            });
+            closeMenuBtn.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+            });
+
+            // "Add New" Button
+            document.getElementById('add-new-post-btn-main').addEventListener('click', () => showView('add-post'));
+
+            // List View Filters
+            document.getElementById('search-posts').addEventListener('input', renderPostsTable);
+            filterCategorySelect.addEventListener('change', renderPostsTable);
+            document.getElementById('filter-status').addEventListener('change', renderPostsTable);
+
+            // Select All Checkbox
+            selectAllCheckbox.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                postsTableBody.querySelectorAll('.post-checkbox').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+            });
+
+            // List View Table Actions (Event Delegation)
+            postsTableBody.addEventListener('click', e => {
+                const viewBtn = e.target.closest('.view-btn');
+                const editBtn = e.target.closest('.edit-btn');
+                const shareBtn = e.target.closest('.share-btn');
+                const deleteBtn = e.target.closest('.delete-btn');
+                
+                if (viewBtn) {
+                    const id = viewBtn.dataset.id;
+                    // Open in new tab - placeholder URL structure
+                    window.open(`/blog/post/${id}`, '_blank');
+                }
+                if (editBtn) {
+                    const id = editBtn.dataset.id;
+                    showPostForm(id); // Uses showPostForm which switches to the form view
+                }
+                if (shareBtn) {
+                    const id = shareBtn.dataset.id;
+                    const title = shareBtn.dataset.title;
+                    showShareModal(id, title);
+                }
+                if (deleteBtn) {
+                    const id = deleteBtn.dataset.id;
+                    showDeleteModal(id);
+                }
+            });
+            
+            // Delete Modal
+            confirmDeleteBtn.addEventListener('click', confirmDelete);
+            cancelDeleteBtn.addEventListener('click', () => deleteModal.classList.remove('open'));
+            
+            // --- Share Modal ---
+            cancelShareBtn.addEventListener('click', () => shareModal.classList.remove('open'));
+            copyUrlBtn.addEventListener('click', () => {
+                const urlInput = document.getElementById('share-post-url');
+                urlInput.select();
+                urlInput.setSelectionRange(0, 99999); // For mobile
+                try {
+                    // Use execCommand for iframe compatibility
+                    document.execCommand('copy');
+                    showToast("URL copied to clipboard!");
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    showToast("Failed to copy URL.", true);
+                }
+            });
+
+            // Post Form
+            postForm.addEventListener('submit', handleFormSubmit);
+            document.getElementById('save-draft-btn').addEventListener('click', () => {
+                postStatusSelect.value = "Draft"; // Ensure status is draft
+                handleFormSubmit(new Event('submit', { bubbles: true, cancelable: true })); // Trigger submit
+            });
+            postStatusSelect.addEventListener('change', e => {
+                scheduleDateWrapper.classList.toggle('hidden', e.target.value !== 'Scheduled');
+                const publishBtn = document.getElementById('publish-btn');
+                 if (e.target.value === 'Scheduled') {
+                     publishBtn.textContent = "Schedule";
+                 } else {
+                     publishBtn.textContent = "Publish";
+                 }
+            });
+            
+            // Image Upload
+            imageDropzone.addEventListener('click', () => imageInput.click());
+            imageInput.addEventListener('change', e => handleImageUpload(e.target.files[0]));
+            removeImageBtn.addEventListener('click', () => {
+                imageInput.value = '';
+                imagePreview.src = '#';
+                imagePreviewWrapper.classList.add('hidden');
+            });
+            
+            // Attachment Upload
+            attachmentDropzone.addEventListener('click', () => attachmentInput.click());
+            attachmentInput.addEventListener('change', e => handleAttachmentUpload(e.target.files));
+
+            // Comments View Filters
+            document.getElementById('search-comments').addEventListener('input', renderCommentsList);
+            document.getElementById('filter-comment-status').addEventListener('change', renderCommentsList);
+            
+            // Comments List Actions (Event Delegation)
+            commentsListView.addEventListener('click', e => {
+                const target = e.target.closest('button');
+                if (!target) return;
+                const id = target.dataset.id;
+                if (target.classList.contains('approve-comment-btn')) updateCommentStatus(id, 'Approved');
+                if (target.classList.contains('spam-comment-btn')) updateCommentStatus(id, 'Spam');
+                if (target.classList.contains('delete-comment-btn')) {
+                    // Simple confirm for comment deletion
+                    if(confirm("Are you sure you want to delete this comment?")) {
+                        deleteComment(id);
+                    }
+                }
+                if (target.classList.contains('reply-comment-btn')) showReplyModal(id);
+            });
+            
+            // Reply Modal
+            replyForm.addEventListener('submit', handleReplySubmit);
+            cancelReplyBtn.addEventListener('click', () => replyModal.classList.remove('open'));
+
+            // --- Category Management ---
+            addCategoryForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const nameInput = document.getElementById('new-category-name');
+                const categoryName = nameInput.value.trim();
+                const btn = document.getElementById('add-category-btn');
+                
+                if (categoryName) {
+                    btn.disabled = true;
+                    btn.textContent = "Adding...";
+                    // Check if category already exists
+                    if (allCategories.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase())) {
+                        showToast("Category already exists.", true);
+                        btn.disabled = false;
+                        btn.textContent = "Add Category";
+                        return;
+                    }
+
+                    try {
+                        await addDoc(categoriesCollection, {
+                            name: categoryName
+                        });
+                        showToast("Category added!");
+                        nameInput.value = '';
+                    } catch (error) {
+                        console.error("Error adding category: ", error);
+                        showToast("Error adding category.", true);
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = "Add Category";
+                    }
+                }
+            });
+
+            categoriesList.addEventListener('click', async (e) => {
+                const deleteBtn = e.target.closest('.delete-category-btn');
+                if (deleteBtn) {
+                    const id = deleteBtn.dataset.id;
+                    if (confirm("Are you sure you want to delete this category? Posts using it will be set to 'Uncategorized'.")) {
+                        try {
+                            await deleteDoc(doc(db, "blogCategories", id));
+                            showToast("Category deleted.");
+                            // Note: We are not updating posts here, just deleting the category.
+                            // The dropdowns will update automatically.
+                        } catch (error) {
+                            console.error("Error deleting category: ", error);
+                            showToast("Error deleting category.", true);
+                        }
+                    }
+                }
+            });
+        }
+
+    </script>
+    
+    
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
