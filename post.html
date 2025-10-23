@@ -78,6 +78,25 @@
             margin: 2rem 0;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+        
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: -100px; /* Start hidden */
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            transition: all 0.3s ease-in-out;
+        }
+        #toast.show {
+            bottom: 20px; /* Slide in */
+        }
+        .toast-success { background-color: #10b981; }
+        .toast-error { background-color: #ef4444; }
     </style>
 </head>
 <body class="text-gray-800">
@@ -331,7 +350,10 @@
         // --- Toast Notification ---
         function showToast(message, isError = false) {
             toast.textContent = message;
-            toast.className = `fixed bottom-5 right-5 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all transform ${isError ? 'toast-error' : 'toast-success'}`;
+            toast.className = `fixed bottom-5 left-50 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all transform ${isError ? 'toast-error' : 'toast-success'}`;
+            // Correct transform from translateX(-50%)
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)'; 
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
@@ -348,7 +370,7 @@
             });
         }
 
-        // --- **FIX**: Moved QuillDeltaToHtmlConverter class definition *before* it is used ---
+        // --- Quill Content to HTML Renderer ---
         
         // This is a basic Delta to HTML converter. A more robust library might be needed for full features.
         class QuillDeltaToHtmlConverter {
@@ -365,56 +387,88 @@
                             if (op.attributes.italic) text = `<em>${text}</em>`;
                             if (op.attributes.underline) text = `<u>${text}</u>`;
                             if (op.attributes.strike) text = `<s>${text}</s>`;
-                            if (op.attributes.link) text = `<a href="${op.attributes.link}" target="_blank">${text}</a>`;
+                            if (op.attributes.link) text = `<a href="${op.attributes.link}" target="_blank" rel="noopener noreferrer">${text}</a>`;
                         }
                         
                         // Handle newlines
                         const lines = text.split('\n');
+                        let currentHtml = '';
+
                         lines.forEach((line, index) => {
-                            if (index > 0) html += '</p><p>'; // Close previous and open new paragraph
-                            
-                            if(op.attributes && op.attributes.header) {
-                                html = html.replace(/<p>$/, ''); // Remove opening p tag
-                                html += `<h${op.attributes.header}>${line}</h${op.attributes.header}>`;
-                                if(index < lines.length - 1) html += '<p>'; // Add p tag for next line if not header
+                            if (index > 0) {
+                                // Close previous tag and open a new one
+                                if (currentHtml.startsWith('<h')) currentHtml += `</h${op.attributes.header}>`;
+                                else if (currentHtml.startsWith('<blockquote')) currentHtml += `</p></blockquote>`;
+                                else if (currentHtml.startsWith('<pre')) currentHtml += `</code></pre>`;
+                                else if (currentHtml.startsWith('<li')) currentHtml += `</li>`;
+                                else if (currentHtml.startsWith('<p')) currentHtml += `</p>`;
+                                
+                                html += currentHtml;
+                                currentHtml = '';
+                            }
+
+                            if (op.attributes && op.attributes.header) {
+                                currentHtml = `<h${op.attributes.header}>${line}`;
                             } else if (op.attributes && op.attributes.blockquote) {
-                                html = html.replace(/<p>$/, '');
-                                html += `<blockquote><p>${line}</p></blockquote>`;
-                                if(index < lines.length - 1) html += '<p>';
+                                currentHtml = `<blockquote><p>${line}`;
                             } else if (op.attributes && op.attributes['code-block']) {
-                                html = html.replace(/<p>$/, ''); 
-                                html += `<pre><code>${line}</code></pre>`;
-                                if(index < lines.length - 1) html += '<p>';
+                                currentHtml = `<pre><code>${line}`;
                             } else if (op.attributes && op.attributes.list === 'ordered') {
-                                html = html.replace(/<p>$/, '');
-                                html += `<ol><li>${line}</li></ol>`; // Very basic list
-                                if(index < lines.length - 1) html += '<p>';
+                                currentHtml = `<li>${line}`; // Note: This basic converter doesn't wrap in <ol>
                             } else if (op.attributes && op.attributes.list === 'bullet') {
-                                html = html.replace(/<p>$/, '');
-                                html += `<ul><li>${line}</li></ul>`; // Very basic list
-                                if(index < lines.length - 1) html += '<p>';
+                                currentHtml = `<li>${line}`; // Note: This basic converter doesn't wrap in <ul>
                             } else {
-                                if (!html.endsWith('</p>') && !html.endsWith('</blockquote>') && !html.endsWith('</pre>') && !html.endsWith('</ul>') && !html.endsWith('</ol>') && !/<\/h\d>>$/.test(html)) {
-                                    html += '<p>';
-                                }
-                                html += line;
+                                currentHtml = `<p>${line}`;
                             }
                         });
+
+                        // Close the last tag
+                        if (currentHtml.startsWith('<h')) currentHtml += `</h${op.attributes.header}>`;
+                        else if (currentHtml.startsWith('<blockquote')) currentHtml += `</p></blockquote>`;
+                        else if (currentHtml.startsWith('<pre')) currentHtml += `</code></pre>`;
+                        else if (currentHtml.startsWith('<li')) currentHtml += `</li>`;
+                        else if (currentHtml.startsWith('<p')) currentHtml += `</p>`;
                         
+                        html += currentHtml;
+
                     } else if (op.insert && op.insert.image) {
-                        html += `<img src="${op.insert.image}" alt="Post image">`;
+                        html += `<p><img src="${op.insert.image}" alt="Post image"></p>`;
                     }
                 });
                 
-                // Close any open paragraph
-                if(html.endsWith('<p>')) html = html.substring(0, html.length - 3);
-                else html += '</p>';
+                // --- Group list items ---
+                html = html.replace(/<\/li><li>/g, '</li><li>'); // Consolidate list items
+                
+                // Wrap list items in <ul> or <ol>
+                // This is a simplified approach. A true delta converter is more complex.
+                // Regex to wrap consecutive <li> items
+                const wrapLists = (html, listType, tag) => {
+                    const regex = new RegExp(`(<li>.*?<\/li>)+`, 'g');
+                    return html.replace(regex, (match) => {
+                        if (match.includes('<' + tag + '>')) return match; // Already wrapped (avoid nesting)
+                        // Check if the <li> items are from the correct list type (a bit of a hack)
+                        // This logic is flawed if lists are mixed, but it's better than nothing.
+                        if (listType === 'bullet' && op.attributes && op.attributes.list === 'bullet') {
+                           return `<ul>${match}</ul>`;
+                        }
+                        if (listType === 'ordered' && op.attributes && op.attributes.list === 'ordered') {
+                           return `<ol>${match}</ol>`;
+                        }
+                        // Fallback for simple cases
+                        if (!match.includes('<ul>') && !match.includes('<ol>')) {
+                             return `<${tag}>${match}</${tag}>`;
+                        }
+                        return match;
+                    });
+                };
+                
+                // A very basic way to wrap lists.
+                // A better parser would track state.
+                html = html.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
+                html = html.replace(/<\/ul><ul>/g, ''); // Consolidate
 
                 // Clean up empty paragraphs
                 html = html.replace(/<p><\/p>/g, '');
-                // Consolidate lists
-                html = html.replace(/<\/ol><ol>/g, '');
-                html = html.replace(/<\/ul><ul>/g, '');
                 return html;
             }
             escapeHtml(text) {
@@ -422,14 +476,23 @@
             }
         }
         
-        // --- Quill Content to HTML Renderer ---
         function renderQuillContent(contentString) {
             try {
+                // Check if content is already a plain string (legacy)
+                if (typeof contentString === 'string' && !contentString.trim().startsWith('{"ops":')) {
+                    // Treat as plain text and wrap in paragraphs
+                    return contentString.split('\n').map(p => `<p>${p}</p>`).join('');
+                }
+                
                 const ops = JSON.parse(contentString).ops;
                 const converter = new QuillDeltaToHtmlConverter(ops, {});
                 return converter.convert(); 
             } catch (e) {
                 console.error("Error parsing Quill content:", e);
+                // Fallback if JSON is malformed but not plain text
+                if (typeof contentString === 'string') {
+                    return `<p>${contentString.replace('\n', '</p><p>')}</p>`;
+                }
                 return "<p>Error displaying post content.</p>";
             }
         }
@@ -448,13 +511,17 @@
                         <p class="text-gray-600">This post may have been removed or is not available.</p>
                         <a href="/blog.html" class="mt-8 inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold">Back to Blog</a>
                     </div>`;
+                    lucide.createIcons();
                     return;
                 }
 
                 const post = postSnap.data();
 
                 // 2. Increment View Count (do this async, don't wait)
-                updateDoc(postRef, { views: increment(1) });
+                // We don't await this, just fire and forget
+                updateDoc(postRef, { views: increment(1) }).catch(err => {
+                    console.warn("Failed to increment view count:", err);
+                });
 
                 // 3. Populate Page Content
                 document.title = post.title;
@@ -499,6 +566,9 @@
             } catch (error) {
                 console.error("Error loading post:", error);
                 postContentEl.innerHTML = "<p>Error loading post. Please try again later.</p>";
+            } finally {
+                // Ensure icons are always created
+                lucide.createIcons();
             }
         }
 
@@ -507,19 +577,38 @@
                 const q = query(postsCollection, 
                     where("status", "==", "Published"),
                     where("category", "==", category),
-                    orderBy("publishDate", "desc"),
-                    limit(4) // Get 3 related + current one
+                    // We can't order by publishDate here without an index
+                    // So we'll fetch and sort in JS
+                    limit(5) // Get a few extra to be safe
                 );
                 const snapshot = await getDocs(q);
                 relatedPostsListEl.innerHTML = ''; // Clear loader
                 
-                let count = 0;
+                let relatedPosts = [];
                 snapshot.docs.forEach(doc => {
-                    if (doc.id === currentPostId || count >= 3) return; // Skip self, limit to 3
-                    
-                    const post = doc.data();
+                    if (doc.id !== currentPostId) {
+                        relatedPosts.push({ id: doc.id, ...doc.data() });
+                    }
+                });
+
+                // Sort by date in JS
+                relatedPosts.sort((a, b) => {
+                    const dateA = a.publishDate ? a.publishDate.toDate() : new Date(0);
+                    const dateB = b.publishDate ? b.publishDate.toDate() : new Date(0);
+                    return dateB - dateA; // Newest first
+                });
+
+                // Take the top 3
+                const top3 = relatedPosts.slice(0, 3);
+
+                if (top3.length === 0) {
+                    relatedPostsListEl.innerHTML = '<p class="text-gray-500 text-sm">No related posts found.</p>';
+                    return;
+                }
+
+                top3.forEach(post => {
                     const postEl = document.createElement('a');
-                    postEl.href = `/post.html?id=${doc.id}`;
+                    postEl.href = `/post.html?id=${post.id}`;
                     postEl.className = "flex items-center space-x-3 group";
                     postEl.innerHTML = `
                         <img src="${post.featureImage || 'https://placehold.co/100x100/e2e8f0/64748b?text=Post'}" alt="${post.title}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
@@ -529,12 +618,7 @@
                         </div>
                     `;
                     relatedPostsListEl.appendChild(postEl);
-                    count++;
                 });
-
-                if (count === 0) {
-                    relatedPostsListEl.innerHTML = '<p class="text-gray-500 text-sm">No related posts found.</p>';
-                }
 
             } catch (error) {
                 console.error("Error loading related posts:", error);
@@ -544,24 +628,35 @@
 
         async function loadComments(postId) {
             try {
+                // This query requires an index on postId (ASC) and date (DESC)
+                // Or postId (ASC), status (ASC), date (DESC)
+                // Let's simplify to avoid index issues, and sort in JS
                 const q = query(commentsCollection, 
                     where("postId", "==", postId),
-                    where("status", "==", "Approved"),
-                    orderBy("date", "desc")
+                    where("status", "==", "Approved")
                 );
                 const snapshot = await getDocs(q);
                 
                 commentsLoaderEl.style.display = 'none';
                 commentListEl.innerHTML = ''; // Clear
-                commentCountEl.textContent = `${snapshot.size} Comment${snapshot.size === 1 ? '' : 's'}`;
+                
+                let comments = snapshot.docs.map(doc => doc.data());
 
-                if (snapshot.empty) {
+                // Sort in JS by date, newest first
+                comments.sort((a, b) => {
+                    const dateA = a.date ? a.date.toDate() : new Date(0);
+                    const dateB = b.date ? b.date.toDate() : new Date(0);
+                    return dateB - dateA;
+                });
+
+                commentCountEl.textContent = `${comments.length} Comment${comments.length === 1 ? '' : 's'}`;
+
+                if (comments.length === 0) {
                     commentListEl.innerHTML = '<p class="text-gray-500">Be the first to comment!</p>';
                     return;
                 }
 
-                snapshot.docs.forEach(doc => {
-                    const comment = doc.data();
+                comments.forEach(comment => {
                     const commentEl = document.createElement('div');
                     commentEl.className = "flex space-x-4";
                     commentEl.innerHTML = `
@@ -610,7 +705,7 @@
                 await addDoc(commentsCollection, newComment);
                 
                 commentForm.reset();
-                showToast("Comment submitted! It will appear after moderation.");
+                showToast("Comment submitted! It will appear after moderation.", false); // false for success
 
             } catch (error) {
                 console.error("Error submitting comment:", error);
@@ -638,6 +733,7 @@
                     <p class="text-gray-600">A post ID is required to view this page.</p>
                     <a href="/blog.html" class="mt-8 inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold">Back to Blog</a>
                 </div>`;
+                lucide.createIcons();
             }
         });
     </script>
