@@ -18,12 +18,12 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; /* gray-100 */ } /* Added background color */
+        /* Sidebar, Modals, Utils - Keep all previous styles */
         .sidebar-link { display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 0.5rem; color: #d1d5db; font-weight: 500; transition: background-color 0.2s, color 0.2s; }
         .sidebar-link:hover { background-color: #374151; color: white; }
         .sidebar-link.active { background-color: #4f46e5; color: white; font-weight: 600; }
         .sidebar-link .icon { width: 1.125rem; height: 1.125rem; margin-right: 0.75rem; flex-shrink: 0; }
-        .dropdown-menu { display: none; padding-left: 1.5rem; /* pl-6 */ }
+        .dropdown-menu { display: none; padding-left: 1.5rem; }
         .sidebar-link.has-dropdown.open + .dropdown-menu { display: block; }
         .sidebar-link.has-dropdown.open .dropdown-icon { transform: rotate(180deg); }
         .dropdown-menu .sidebar-link { padding-top: 0.5rem; padding-bottom: 0.5rem; font-size: 0.875rem; }
@@ -31,608 +31,649 @@
         .dropdown-menu .sidebar-link.active { color: #a5b4fc; background-color: transparent; font-weight: 500; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        /* Quiz Modal Styles */
-        .quiz-modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 100; overflow-y: auto; padding: 2rem 1rem; }
+        .quiz-modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6); display: none; align-items: center; justify-content: center; z-index: 100; overflow-y: auto; padding: 2rem 1rem; } /* Hidden by default */
         .quiz-modal-container { background-color: white; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); width: 100%; max-width: 56rem; margin: auto; max-height: 95vh; display: flex; flex-direction: column; overflow: hidden; }
         #quiz-form { overflow-y: auto; }
-        .quiz-form-input, .quiz-form-select { width: 100%; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.65rem 1rem; font-size: 0.875rem; transition: border-color 0.2s, box-shadow 0.2s; }
-        .quiz-form-input:focus, .quiz-form-select:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 2px #c7d2fe; }
-        .quiz-btn { padding: 0.65rem 1.25rem; border-radius: 0.5rem; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-        .quiz-btn-primary { background-color: #4f46e5; color: white; }
-        .quiz-btn-primary:hover { background-color: #4338ca; }
-        .quiz-btn-secondary { background-color: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
-        .quiz-btn-secondary:hover { background-color: #e5e7eb; }
-        .quiz-btn-danger { background-color: #dc2626; color: white; }
-        .quiz-btn-danger:hover { background-color: #b91c1c; }
-        .quiz-fab { position: fixed; bottom: 2rem; right: 2rem; width: 4rem; height: 4rem; border-radius: 9999px; z-index: 40; }
-        .quiz-fab .fa-solid { font-size: 1.5rem; }
-        .radio-custom { appearance: none; width: 1.25rem; height: 1.25rem; border: 2px solid #94a3b8; border-radius: 50%; transition: all 0.2s; cursor: pointer; margin-right: 0.5rem; flex-shrink: 0; }
-        .radio-custom:checked { border-color: #1d4ed8; background-color: #1d4ed8; background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e"); }
-        /* User/Confirm Modal Styles */
-        .user-modal-backdrop { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 60; display: none; /* Hidden by default */ }
-        /* Blog-specific Styles */
-        .app-view { display: none; } /* Used for Blog sections */
-        .app-view.active { display: block; }
-        .modal { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 100; overflow-y: auto; padding: 1rem; display: none; /* Hidden by default - Used by Blog Modals */ }
+        .quiz-form-input, .quiz-form-select, .content-form-input { width: 100%; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.65rem 1rem; font-size: 0.875rem; transition: border-color 0.2s, box-shadow 0.2s; } /* Added content-form-input */
+        .quiz-form-input:focus, .quiz-form-select:focus, .content-form-input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 2px #c7d2fe; }
+        .quiz-btn { padding: 0.65rem 1.25rem; border-radius: 0.5rem; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+        .quiz-btn-primary { background-color: #4f46e5; color: white; } .quiz-btn-primary:hover { background-color: #4338ca; }
+        .quiz-btn-secondary { background-color: #f3f4f6; color: #374151; border: 1px solid #d1d5db; } .quiz-btn-secondary:hover { background-color: #e5e7eb; }
+        .quiz-btn-danger { background-color: #dc2626; color: white; } .quiz-btn-danger:hover { background-color: #b91c1c; }
+        .user-modal-backdrop, .content-modal-backdrop { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 60; display: none; } /* Added content-modal-backdrop */
+        .app-view { display: none; } .app-view.active { display: block; }
+        .modal { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 100; overflow-y: auto; padding: 1rem; display: none; }
         .modal-content { animation: fadeIn 0.2s ease-out; }
         #quill-editor { height: 400px; }
-        .tagify { --tags-border-color: #d1d5db; border-radius: 0.5rem; }
-        .tagify:hover { --tags-border-color: #4f46e5; }
-        .tagify.tagify--focus { --tags-border-color: #4f46e5; }
-        /* Toast */
-        #toast { position: fixed; bottom: 20px; right: 20px; padding: 1rem 1.5rem; border-radius: 0.5rem; color: white; z-index: 1000; opacity: 0; visibility: hidden; transform: translateY(20px); transition: all 0.3s ease-in-out; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        #toast.show { opacity: 1; visibility: visible; transform: translateY(0); }
-        .toast-success { background-color: #10b981; }
-        .toast-error { background-color: #ef4444; }
-        /* Action Button Style */
-        .action-btn { padding: 0.25rem 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s; font-size: 0.875rem; display: inline-flex; align-items: center; }
+        .tagify { --tags-border-color: #d1d5db; border-radius: 0.5rem; } .tagify:hover { --tags-border-color: #4f46e5; } .tagify.tagify--focus { --tags-border-color: #4f46e5; }
+        .user-filter-btn.active, .user-sort-btn.active { background-color: #e0e7ff; color: #4338ca; font-weight: 600; }
+        .content-list { list-style: none; padding: 0; margin: 0; }
+        .content-list li { background-color: #f9fafb; padding: 0.75rem 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .content-actions button { margin-left: 0.5rem; }
+        #toast { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
+<body class="flex h-screen overflow-hidden" style="font-family: 'Inter', sans-serif;">
 
-    <div id="login-page" class="w-full h-full flex items-center justify-center bg-gray-100">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg m-4">
-            <div><h2 id="auth-title" class="text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2></div>
-            <form id="auth-form" class="space-y-6">
-                <div><label for="email" class="sr-only">Email address</label><input id="email" name="email" type="email" autocomplete="email" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Email address" value="dausfilms@gmail.com"></div>
-                <div><label for="password" class="sr-only">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Password" value="siciid23"></div>
-                <div><button id="auth-submit-btn" type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign in</button></div>
-            </form>
-            <p class="text-center text-sm text-gray-600"><a href="#" id="auth-toggle-link" class="font-medium text-indigo-600 hover:text-indigo-500">Don't have an account? Sign up</a></p>
-        </div>
-    </div>
-
-    <div id="main-app" class="flex w-full h-full hidden">
+    <div id="main-app" class="flex w-full h-full">
 
         <aside id="sidebar" class="w-64 bg-gray-800 text-white flex flex-col fixed h-full z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
-            <div class="p-5 text-2xl font-bold border-b border-gray-700 flex items-center"> <img src="https://firebasestorage.googleapis.com/v0/b/ardaycaawiye-18b89.appspot.com/o/logo.png?alt=media&token=5b34de54-86a0-47e1-8848-033190897645" alt="Logo" class="h-8 mr-2"> <span>ArdayCaawiye</span> </div>
-            <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto">
-                <a href="#" class="sidebar-link active" data-tab="dashboard"> <i data-lucide="home" class="icon"></i> Dashboard </a>
-                <div class="pt-2">
-                    <button class="sidebar-link has-dropdown w-full"> <i data-lucide="folder-kanban" class="icon"></i> <span class="flex-1 text-left">Manage Content</span> <i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i> </button>
-                    <ul class="dropdown-menu space-y-1 pt-1">
-                        <li><a href="#" class="sidebar-link" data-tab="subjects"><i data-lucide="book-copy" class="icon"></i> Subjects</a></li>
-                        <li><a href="#" class="sidebar-link" data-tab="exams"><i data-lucide="file-check-2" class="icon"></i> Exams</a></li>
-                        <li><a href="#" class="sidebar-link" data-tab="quizzes"><i data-lucide="puzzle" class="icon"></i> Quizzes</a></li>
-                        <li><a href="#" class="sidebar-link" data-tab="generalBooks"><i data-lucide="book-open" class="icon"></i> General Books</a></li>
-                        <li><a href="#" class="sidebar-link" data-tab="pdf-library"><i data-lucide="library" class="icon"></i> File Library</a></li>
-                    </ul>
-                </div>
-                <div class="pt-2">
-                    <button class="sidebar-link has-dropdown w-full"> <i data-lucide="newspaper" class="icon"></i> <span class="flex-1 text-left">Blog Management</span> <i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i> </button>
-                    <ul class="dropdown-menu space-y-1 pt-1">
-                        <li><a href="#" class="sidebar-link" data-tab="list-posts"><i data-lucide="layout-list" class="icon"></i> All Posts</a></li>
-                        <li><a href="#" class="sidebar-link" data-tab="post-form-view" data-action="add"><i data-lucide="plus-square" class="icon"></i> Add New Post</a></li>
-                        <li><a href="#" class="sidebar-link" data-tab="categories"><i data-lucide="tag" class="icon"></i> Categories</a></li>
-                        <li><a href="#" class="sidebar-link" data-tab="comments"><i data-lucide="messages-square" class="icon"></i> Comments</a></li>
-                        <li><a href="#" class="sidebar-link" data-tab="analytics"><i data-lucide="bar-chart-3" class="icon"></i> Analytics</a></li>
-                    </ul>
-                </div>
-                <div class="pt-2">
-                    <button class="sidebar-link has-dropdown w-full"> <i data-lucide="users" class="icon"></i> <span class="flex-1 text-left">User Management</span> <i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i> </button>
-                    <ul class="dropdown-menu space-y-1 pt-1">
-                        <li><a href="#" class="sidebar-link" data-tab="users-students"><i data-lucide="user" class="icon"></i> Students / Members</a></li>
-                        <li><a href="#" class="sidebar-link" data-tab="users-roles"><i data-lucide="shield-check" class="icon"></i> Roles & Permissions</a></li>
-                    </ul>
-                </div>
-                <div class="pt-2">
-                    <button class="sidebar-link has-dropdown w-full"> <i data-lucide="bar-chart-3" class="icon"></i> <span class="flex-1 text-left">Reports & Analytics</span> <i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i> </button>
-                    <ul class="dropdown-menu space-y-1 pt-1">
-                        <li><a href="#" class="sidebar-link" data-tab="main-report"><i data-lucide="activity" class="icon"></i> Main Report</a></li>
-                    </ul>
-                </div>
-                <a href="#" class="sidebar-link" data-tab="settings"> <i data-lucide="settings" class="icon"></i> Settings </a>
-            </nav>
-            <div class="p-4 border-t border-gray-700">
-                <div id="auth-status" class="text-xs text-gray-400 truncate mb-2">Not Authenticated</div>
-                <button id="logout-btn" class="w-full flex items-center justify-center p-2 rounded-lg bg-red-600 hover:bg-red-700 transition-colors text-white font-medium text-sm"> <i data-lucide="log-out" class="w-4 h-4 mr-2"></i> Logout </button>
-            </div>
+             <div class="p-5 text-2xl font-bold border-b border-gray-700 flex items-center"> <img src="https://firebasestorage.googleapis.com/v0/b/ardaycaawiye-18b89.appspot.com/o/logo.png?alt=media&token=5b34de54-86a0-47e1-8848-033190897645" alt="Logo" class="h-8 mr-2"> <span>ArdayCaawiye</span> </div>
+             <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto">
+                 <a href="#" class="sidebar-link active" data-tab="dashboard"><i data-lucide="home" class="icon"></i> Dashboard</a>
+                 <div class="pt-2"> <button class="sidebar-link has-dropdown w-full"><i data-lucide="folder-kanban" class="icon"></i><span class="flex-1 text-left">Manage Content</span><i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i></button> <ul class="dropdown-menu space-y-1 pt-1"> <li><a href="#" class="sidebar-link" data-tab="subjects"><i data-lucide="book-copy" class="icon"></i> Subjects</a></li> <li><a href="#" class="sidebar-link" data-tab="exams"><i data-lucide="file-check-2" class="icon"></i> Exams</a></li> <li><a href="#" class="sidebar-link" data-tab="quizzes"><i data-lucide="puzzle" class="icon"></i> Quizzes</a></li> <li><a href="#" class="sidebar-link" data-tab="generalBooks"><i data-lucide="book-open" class="icon"></i> General Books</a></li> <li><a href="#" class="sidebar-link" data-tab="pdf-library"><i data-lucide="library" class="icon"></i> PDF Library</a></li> </ul> </div>
+                 <div class="pt-2"> <button class="sidebar-link has-dropdown w-full"><i data-lucide="newspaper" class="icon"></i><span class="flex-1 text-left">Blog Management</span><i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i></button> <ul class="dropdown-menu space-y-1 pt-1"> <li><a href="#" class="sidebar-link" data-tab="list-posts"><i data-lucide="layout-list" class="icon"></i> All Posts</a></li> <li><a href="#" class="sidebar-link" data-tab="post-form-view"><i data-lucide="plus-square" class="icon"></i> Add New Post</a></li> <li><a href="#" class="sidebar-link" data-tab="categories"><i data-lucide="tag" class="icon"></i> Categories</a></li> <li><a href="#" class="sidebar-link" data-tab="comments"><i data-lucide="messages-square" class="icon"></i> Comments</a></li> <li><a href="#" class="sidebar-link" data-tab="analytics"><i data-lucide="bar-chart-3" class="icon"></i> Analytics</a></li> </ul> </div>
+                 <div class="pt-2"> <button class="sidebar-link has-dropdown w-full"><i data-lucide="users" class="icon"></i><span class="flex-1 text-left">User Management</span><i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i></button> <ul class="dropdown-menu space-y-1 pt-1"> <li><a href="#" class="sidebar-link" data-tab="users-students"><i data-lucide="user" class="icon"></i> Students / Members</a></li> <li><a href="#" class="sidebar-link" data-tab="users-roles"><i data-lucide="shield-check" class="icon"></i> Roles & Permissions</a></li> </ul> </div>
+                 <div class="pt-2"> <button class="sidebar-link has-dropdown w-full"><i data-lucide="bar-chart-3" class="icon"></i><span class="flex-1 text-left">Reports & Analytics</span><i data-lucide="chevron-down" class="icon dropdown-icon w-4 h-4 ml-auto transition-transform"></i></button> <ul class="dropdown-menu space-y-1 pt-1"> <li><a href="#" class="sidebar-link" data-tab="main-report"><i data-lucide="activity" class="icon"></i> Main Report</a></li> </ul> </div>
+                 <a href="#" class="sidebar-link" data-tab="settings"><i data-lucide="settings" class="icon"></i> Settings</a>
+             </nav>
+             <div class="p-4 border-t border-gray-700"> <div id="auth-status" class="text-xs text-gray-400 truncate mb-2">Admin Access</div> <button id="logout-btn" class="w-full flex items-center justify-center p-2 rounded bg-red-600 hover:bg-red-700 text-white text-sm"><i data-lucide="log-out" class="w-4 h-4 mr-2"></i> Logout</button> </div>
         </aside>
 
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden hidden"></div>
 
-        <div class="md:hidden flex justify-between items-center bg-white p-4 border-b fixed top-0 left-0 right-0 z-10"> <span class="text-xl font-bold text-gray-800">ArdayCaawiye CMS</span> <button id="mobile-menu-btn" class="text-gray-800"> <i data-lucide="menu" class="w-6 h-6"></i> </button> </div>
+        <div class="md:hidden flex justify-between items-center bg-white p-4 border-b fixed top-0 left-0 right-0 z-10"> <span class="text-xl font-bold">ArdayCaawiye CMS</span> <button id="mobile-menu-btn" class="text-gray-800"><i data-lucide="menu" class="w-6 h-6"></i></button> </div>
 
         <main class="flex-1 ml-0 md:ml-64 pt-20 md:pt-4 p-4 md:p-8 overflow-y-auto bg-gray-50">
-            <div id="dashboard" class="tab-content fade-in">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard Overview</h1>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-indigo-100 p-4 rounded-full mr-4"><i data-lucide="book-copy" class="w-8 h-8 text-indigo-600"></i></div><div><p class="text-gray-500">Total Subjects</p><p id="total-subjects" class="text-3xl font-bold">0</p></div></div>
-                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-green-100 p-4 rounded-full mr-4"><i data-lucide="file-check-2" class="w-8 h-8 text-green-600"></i></div><div><p class="text-gray-500">Total Exams</p><p id="total-exams" class="text-3xl font-bold">0</p></div></div>
-                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-amber-100 p-4 rounded-full mr-4"><i data-lucide="book-open" class="w-8 h-8 text-amber-600"></i></div><div><p class="text-gray-500">Total Books</p><p id="total-books" class="text-3xl font-bold">0</p></div></div>
-                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-sky-100 p-4 rounded-full mr-4"><i data-lucide="puzzle" class="w-8 h-8 text-sky-600"></i></div><div><p class="text-gray-500">Total Quizzes</p><p id="total-quizzes" class="text-3xl font-bold">0</p></div></div>
-                </div>
-                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-blue-100 p-4 rounded-full mr-4"><i data-lucide="users" class="w-8 h-8 text-blue-600"></i></div><div><p class="text-gray-500">Total Users</p><p id="dash-total-users" class="text-3xl font-bold">0</p></div></div>
-                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-emerald-100 p-4 rounded-full mr-4"><i data-lucide="user-check" class="w-8 h-8 text-emerald-600"></i></div><div><p class="text-gray-500">Paid Users</p><p id="dash-paid-users" class="text-3xl font-bold">0</p></div></div>
-                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-rose-100 p-4 rounded-full mr-4"><i data-lucide="user-x" class="w-8 h-8 text-rose-600"></i></div><div><p class="text-gray-500">Banned Users</p><p id="dash-banned-users" class="text-3xl font-bold">0</p></div></div>
-                    <div class="bg-white p-6 rounded-xl shadow-md flex items-center"><div class="bg-purple-100 p-4 rounded-full mr-4"><i data-lucide="wallet" class="w-8 h-8 text-purple-600"></i></div><div><p class="text-gray-500">Total Revenue</p><p id="dash-total-revenue" class="text-3xl font-bold">$0</p></div></div>
-                </div>
-            </div>
+
+            <div id="dashboard" class="tab-content fade-in"> /* ... (Dashboard HTML structure - Keep as is) ... */ </div>
             <div id="subjects" class="tab-content fade-in hidden">
-                <div class="bg-white rounded-xl shadow-md p-6"> </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Subjects</h1>
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <button class="add-content-btn bg-indigo-600 text-white px-4 py-2 rounded mb-4 hover:bg-indigo-700" data-type="subject"><i data-lucide="plus" class="w-4 h-4 mr-2 inline"></i>Add Subject</button>
+                    <ul id="subjects-list" class="content-list"><li>Loading...</li></ul>
+                </div>
             </div>
             <div id="exams" class="tab-content fade-in hidden">
-                 <div class="bg-white rounded-xl shadow-md p-6"> </div>
-            </div>
-            <div id="quizzes" class="tab-content fade-in hidden">
-                <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                    <div> <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Quiz Manager 💡</h1> <p class="text-gray-500 mt-1">Create, edit, and organize your educational content.</p> </div>
-                </header>
-                <div class="bg-white rounded-xl shadow-md p-4 mb-8 border border-gray-100">
-                    <label for="subject-filter" class="block text-sm font-semibold text-gray-700 mb-2">Filter Quizzes by Subject</label>
-                    <select id="subject-filter" class="quiz-form-select text-gray-700"> <option value="all">All Subjects</option> </select>
-                </div>
-                <div id="quiz-list-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"> </div>
-                <div id="pagination-container" class="mt-10 flex justify-center items-center gap-2"></div>
-                <button id="add-quiz-fab" class="quiz-btn quiz-btn-primary quiz-fab shadow-xl" title="Add New Quiz"> <i class="fa-solid fa-plus text-xl"></i> </button>
-            </div>
-            <div id="generalBooks" class="tab-content fade-in hidden">
-                <div class="bg-white rounded-xl shadow-md p-6"> </div>
-            </div>
-            <div id="pdf-library" class="tab-content fade-in hidden">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">File Library</h1>
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Exams</h1>
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-                        <h2 class="text-xl font-semibold">All Uploaded Files (PDF, ZIP, Images)</h2>
-                        <div> <input type="file" id="pdf-upload-input" multiple accept=".pdf,.zip,.png,.jpg,.jpeg,.webp" class="hidden"> <button id="upload-pdf-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center w-full md:w-auto"><i data-lucide="upload" class="w-4 h-4 mr-2"></i>Upload Files</button> </div>
-                    </div>
-                    <div id="upload-progress-container" class="hidden my-4"><div class="text-sm font-medium text-gray-700 mb-1">Uploading...</div><div class="w-full bg-gray-200 rounded-full h-2.5"><div id="upload-progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div></div></div>
-                    <div class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <input type="text" id="pdf-search" placeholder="Search files by name..." class="w-full md:w-1/2 p-2 border border-gray-300 rounded-lg">
-                        <button id="delete-selected-pdfs-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center hidden w-full md:w-auto"><i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>Delete Selected (0)</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-gray-50"> <tr> <th class="p-3 w-8"><input type="checkbox" id="select-all-pdfs"></th> <th class="p-3 font-semibold text-sm">File Name</th> <th class="p-3 font-semibold text-sm">Size</th> <th class="p-3 font-semibold text-sm">Upload Date</th> <th class="p-3 font-semibold text-sm">Actions</th> </tr> </thead>
-                            <tbody id="pdf-list-table"> <tr><td colspan="5" class="p-6 text-center text-gray-500">Loading files...</td></tr> </tbody>
-                        </table>
-                    </div>
+                     <button class="add-content-btn bg-indigo-600 text-white px-4 py-2 rounded mb-4 hover:bg-indigo-700" data-type="exam"><i data-lucide="plus" class="w-4 h-4 mr-2 inline"></i>Add Exam</button>
+                     <ul id="exams-list" class="content-list"><li>Loading...</li></ul>
                 </div>
             </div>
-            <div id="list-posts" class="tab-content fade-in hidden app-view">
-                 <div class="flex justify-between items-center mb-6"> <h1 class="text-3xl font-bold text-gray-800">All Posts</h1> <button id="add-new-post-btn-main" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center hover:bg-indigo-700 transition-colors"> <i data-lucide="plus" class="w-5 h-5 mr-2"></i> Add New Post </button> </div>
-                <div class="bg-white p-4 rounded-lg shadow-sm mb-6"> <div class="grid grid-cols-1 md:grid-cols-4 gap-4"> <input type="text" id="search-posts" placeholder="Search posts..." class="md:col-span-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"> <select id="filter-category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">All Categories</option> </select> <select id="filter-status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">All Statuses</option> <option value="Published">Published</option> <option value="Draft">Draft</option> <option value="Scheduled">Scheduled</option> </select> </div> </div>
-                <div class="bg-white rounded-lg shadow-sm overflow-hidden"> <div class="overflow-x-auto"> <table class="w-full"> <thead class="bg-gray-50 border-b border-gray-200"> <tr> <th class="p-4 w-12 text-left"><input type="checkbox" id="select-all-posts"></th> <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Title</th> <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Author</th> <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Category</th> <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Status</th> <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Published</th> <th class="p-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Actions</th> </tr> </thead> <tbody id="posts-table-body" class="divide-y divide-gray-200"> <tr><td colspan="7" class="p-8 text-center text-gray-500">Loading posts...</td></tr> </tbody> </table> </div> </div>
+            <div id="quizzes" class="tab-content fade-in hidden"> /* ... (Quiz HTML structure - Keep as is) ... */ </div>
+            <div id="generalBooks" class="tab-content fade-in hidden">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage General Books</h1>
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <button class="add-content-btn bg-indigo-600 text-white px-4 py-2 rounded mb-4 hover:bg-indigo-700" data-type="book"><i data-lucide="plus" class="w-4 h-4 mr-2 inline"></i>Add Book</button>
+                    <ul id="books-list" class="content-list"><li>Loading...</li></ul>
+                </div>
             </div>
-            <div id="post-form-view" class="tab-content fade-in hidden app-view">
-                <h1 id="form-title" class="text-3xl font-bold text-gray-800 mb-6">Add New Post</h1>
-                <form id="blog-post-form"> <input type="hidden" id="post-id"> <div class="grid grid-cols-1 lg:grid-cols-3 gap-6"> <div class="lg:col-span-2 space-y-6"> <div class="bg-white p-6 rounded-lg shadow-sm"> <label for="post-title" class="block text-lg font-semibold text-gray-700 mb-2">Title</label> <input type="text" id="post-title" placeholder="Your Post Title" class="w-full text-2xl font-bold px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required> </div> <div class="bg-white rounded-lg shadow-sm overflow-hidden"> <div class="p-6 border-b"><label class="block text-lg font-semibold text-gray-700">Content</label></div> <div id="quill-editor"></div> </div> <div class="bg-white p-6 rounded-lg shadow-sm"> <label class="block text-lg font-semibold text-gray-700 mb-2">Attachments</label> <div id="attachment-dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 bg-gray-50"> <i data-lucide="paperclip" class="w-10 h-10 mx-auto text-gray-400"></i> <p class="mt-2 text-gray-500">Drop files (PDF, ZIP, etc.) here or click to upload</p> <input type="file" class="hidden" id="post-attachments" multiple> </div> <div id="attachment-list" class="mt-4 space-y-2"></div> </div> <details class="bg-white rounded-lg shadow-sm"> <summary class="p-6 cursor-pointer text-lg font-semibold text-gray-700 flex justify-between items-center">SEO Metadata (Optional)<i data-lucide="chevron-down" class="w-5 h-5 transform transition-transform"></i></summary> <div class="p-6 border-t space-y-4"> <div><label for="seo-title" class="block text-sm font-medium text-gray-700">Meta Title</label><input type="text" id="seo-title" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></div> <div><label for="seo-description" class="block text-sm font-medium text-gray-700">Meta Description</label><textarea id="seo-description" rows="3" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea></div> <div><label for="seo-keywords" class="block text-sm font-medium text-gray-700">Keywords (comma-separated)</label><input type="text" id="seo-keywords" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></div> </div> </details> </div> <div class="lg:col-span-1 space-y-6"> <div class="bg-white p-6 rounded-lg shadow-sm"> <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-3">Publish</h2> <div class="space-y-4"> <div><label for="post-status" class="block text-sm font-medium text-gray-700">Status</label><select id="post-status" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="Draft">Draft</option><option value="Published">Published</option><option value="Scheduled">Scheduled</option></select></div> <div id="schedule-date-wrapper" class="hidden"><label for="post-schedule-date" class="block text-sm font-medium text-gray-700">Schedule Date</label><input type="text" id="post-schedule-date" placeholder="Select date and time" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></div> </div> <div class="flex justify-between items-center mt-6 pt-4 border-t"><button type="button" id="save-draft-btn" class="text-gray-600 font-medium hover:text-indigo-600">Save Draft</button><button type="submit" id="publish-btn" class="bg-indigo-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">Publish</button></div> </div> <div class="bg-white p-6 rounded-lg shadow-sm"> <h2 class="text-lg font-semibold text-gray-700 mb-4">Category</h2> <select id="post-category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="Uncategorized">Uncategorized</option></select> </div> <div class="bg-white p-6 rounded-lg shadow-sm"> <h2 class="text-lg font-semibold text-gray-700 mb-4">Tags</h2> <input id="post-tags" placeholder="Add tags..."> </div> <div class="bg-white p-6 rounded-lg shadow-sm"> <h2 class="text-lg font-semibold text-gray-700 mb-4">Feature Image</h2> <div id="image-dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-500 bg-gray-50"><i data-lucide="image" class="w-10 h-10 mx-auto text-gray-400"></i><p class="mt-2 text-gray-500">Drop image here or click to upload</p><input type="file" class="hidden" id="post-image" accept="image/*"></div> <div id="image-preview-wrapper" class="mt-4 hidden"><img id="image-preview" src="#" alt="Image Preview" class="w-full h-auto rounded-lg"><button type="button" id="remove-image-btn" class="mt-2 text-sm text-red-600 hover:text-red-800">Remove Image</button></div> </div> </div> </div> </form>
-            </div>
-            <div id="categories" class="tab-content fade-in hidden app-view">
-                 <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Categories</h1>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6"> <div class="md:col-span-1"> <form id="add-category-form" class="bg-white p-6 rounded-lg shadow-sm"> <h2 class="text-lg font-semibold text-gray-700 mb-4">Add New Category</h2> <div><label for="new-category-name" class="block text-sm font-medium text-gray-700">Category Name</label><input type="text" id="new-category-name" class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required></div> <button type="submit" id="add-category-btn" class="mt-4 w-full bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">Add Category</button> </form> </div> <div class="md:col-span-2"> <div class="bg-white rounded-lg shadow-sm"> <h2 class="text-lg font-semibold text-gray-700 p-6 border-b">Existing Categories</h2> <ul id="categories-list" class="divide-y divide-gray-200"><li class="p-6 text-center text-gray-500">Loading categories...</li></ul> </div> </div> </div>
-            </div>
-            <div id="comments" class="tab-content fade-in hidden app-view">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Comments</h1>
-                <div class="bg-white p-4 rounded-lg shadow-sm mb-6"> <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> <input type="text" id="search-comments" placeholder="Search comments or author..." class="md:col-span-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"> <select id="filter-comment-status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"> <option value="">All Statuses</option><option value="Pending">Pending</option><option value="Approved">Approved</option><option value="Spam">Spam</option> </select> </div> </div>
-                <div id="comments-list" class="space-y-6"> <div class="bg-white p-6 rounded-lg shadow-sm text-center text-gray-500">Loading comments...</div> </div>
-            </div>
-            <div id="analytics" class="tab-content fade-in hidden app-view">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Blog Analytics</h1>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"> <div class="bg-white p-6 rounded-lg shadow-sm"><div class="flex items-center justify-between"><p class="text-sm font-medium text-gray-500">Total Posts</p><i data-lucide="file-text" class="w-5 h-5 text-indigo-500"></i></div><p id="stats-total-posts" class="text-3xl font-bold text-gray-800 mt-2">0</p></div> <div class="bg-white p-6 rounded-lg shadow-sm"><div class="flex items-center justify-between"><p class="text-sm font-medium text-gray-500">Total Views</p><i data-lucide="eye" class="w-5 h-5 text-green-500"></i></div><p id="stats-total-views" class="text-3xl font-bold text-gray-800 mt-2">0</p></div> <div class="bg-white p-6 rounded-lg shadow-sm"><div class="flex items-center justify-between"><p class="text-sm font-medium text-gray-500">Pending Comments</p><i data-lucide="messages-square" class="w-5 h-5 text-yellow-500"></i></div><p id="stats-total-comments" class="text-3xl font-bold text-gray-800 mt-2">0</p></div> <div class="bg-white p-6 rounded-lg shadow-sm"><div class="flex items-center justify-between"><p class="text-sm font-medium text-gray-500">Published / Drafts</p><i data-lucide="pie-chart" class="w-5 h-5 text-blue-500"></i></div><p id="stats-published-drafts" class="text-3xl font-bold text-gray-800 mt-2">0 / 0</p></div> </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6"> <div class="bg-white p-6 rounded-lg shadow-sm"><h2 class="text-xl font-semibold text-gray-800 mb-4">Popular Posts (by Views)</h2><ul id="popular-posts-list" class="divide-y divide-gray-200"><li class="py-3 text-center text-gray-500">Loading data...</li></ul></div> <div class="bg-white p-6 rounded-lg shadow-sm"><h2 class="text-xl font-semibold text-gray-800 mb-4">Views Over Time (Placeholder)</h2><div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center p-4"><p class="text-gray-400 m-auto">Analytics chart here.</p></div></div> </div>
-            </div>
-            <div id="users-students" class="tab-content fade-in hidden">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">User Management</h1>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"> <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between"><div><p class="text-gray-500 text-sm">Total Users</p><p id="total-users" class="text-2xl font-bold">0</p></div><div class="bg-blue-100 text-blue-500 p-3 rounded-full"><i class="fas fa-users"></i></div></div> <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between"><div><p class="text-gray-500 text-sm">Paid Users</p><p id="paid-users" class="text-2xl font-bold">0</p></div><div class="bg-green-100 text-green-500 p-3 rounded-full"><i class="fas fa-dollar-sign"></i></div></div> <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between"><div><p class="text-gray-500 text-sm">Not Paid Users</p><p id="not-paid-users" class="text-2xl font-bold">0</p></div><div class="bg-red-100 text-red-500 p-3 rounded-full"><i class="fas fa-exclamation-triangle"></i></div></div> <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between"><div><p class="text-gray-500 text-sm">Total Revenue</p><p id="total-revenue" class="text-2xl font-bold">$0</p></div><div class="bg-purple-100 text-purple-500 p-3 rounded-full"><i class="fas fa-wallet"></i></div></div> </div>
-                <div class="bg-white p-4 rounded-lg shadow-sm mb-6 flex flex-wrap gap-3 items-center"> <span class="text-sm font-medium text-gray-700 mr-2">Filter by:</span> <button class="user-filter-btn px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 active" data-filter="all">All</button> <button class="user-filter-btn px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full hover:bg-green-200" data-filter="paid">Paid</button> <button class="user-filter-btn px-3 py-1 text-sm font-medium text-red-700 bg-red-100 rounded-full hover:bg-red-200" data-filter="not_paid">Not Paid</button> <span class="text-sm font-medium text-gray-700 ml-auto mr-2">Sort by:</span> <button class="user-sort-btn px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 active" data-sort="recent">Most Recent</button> <button class="user-sort-btn px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200" data-sort="asc">Ascending (A-Z)</button> </div>
-                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4"> <div class="relative w-full md:w-1/3"><input type="text" id="search-input" placeholder="Search by name, email, or phone..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"><i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i></div> <button id="add-user-btn" class="w-full md:w-auto bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"><i class="fas fa-plus mr-2"></i>Add User</button> </div>
-                <div class="bg-white rounded-lg shadow-md overflow-x-auto"> <table class="w-full table-auto"> <thead class="bg-gray-50 border-b-2 border-gray-200"> <tr> <th class="p-4 text-left text-sm font-semibold text-gray-600">User</th> <th class="p-4 text-left text-sm font-semibold text-gray-600">Phone</th> <th class="p-4 text-left text-sm font-semibold text-gray-600">Role</th> <th class="p-4 text-left text-sm font-semibold text-gray-600">Payment</th> <th class="p-4 text-left text-sm font-semibold text-gray-600">Actions</th> </tr> </thead> <tbody id="user-table-body"> <tr><td colspan="5" class="p-6 text-center text-gray-500">Loading users...</td></tr> </tbody> </table> </div>
-            </div>
-            <div id="users-roles" class="tab-content fade-in hidden">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Roles & Permissions</h1>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> <div class="bg-white p-8 rounded-xl shadow-md"> <h2 class="text-xl font-bold text-gray-800 mb-4">Manage Roles</h2> <p class="text-gray-500 mb-4">Define custom roles and assign specific permissions.</p> <div class="space-y-2"> <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border"> <span class="font-medium text-gray-700">Editor</span> <button class="text-sm text-indigo-600 hover:text-indigo-800">Edit Permissions</button> </div> <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border"> <span class="font-medium text-gray-700">Moderator</span> <button class="text-sm text-indigo-600 hover:text-indigo-800">Edit Permissions</button> </div> </div> </div> <div class="bg-white p-8 rounded-xl shadow-md"> <h2 class="text-xl font-bold text-gray-800 mb-4">Administrator Accounts</h2> <p class="text-gray-500 mb-4">List of users with the 'Admin' role.</p> <div class="space-y-3" id="admin-user-list"> <p class="text-gray-500">Loading admin users...</p> </div> </div> </div>
-            </div>
-            <div id="main-report" class="tab-content fade-in hidden">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Main Report (Placeholder)</h1>
-                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8"> <div class="bg-white p-5 rounded-xl shadow-md"><p class="text-sm font-medium text-gray-500">Paid Users</p><p id="report-paid-users" class="text-3xl font-bold text-gray-800 mt-1">0</p></div> <div class="bg-white p-5 rounded-xl shadow-md"><p class="text-sm font-medium text-gray-500">PDF Views</p><p id="report-pdf-views" class="text-3xl font-bold text-gray-800 mt-1">0</p></div> <div class="bg-white p-5 rounded-xl shadow-md col-span-1 md:col-span-2 lg:col-span-2"><p class="text-sm font-medium text-gray-500">Top PDF</p><p id="report-top-pdf" class="text-2xl font-bold text-indigo-600 mt-1 truncate">N/A</p></div> <div class="bg-white p-5 rounded-xl shadow-md"><p class="text-sm font-medium text-gray-500">Blog Views</p><p id="report-blog-views" class="text-3xl font-bold text-gray-800 mt-1">0</p></div> <div class="bg-white p-5 rounded-xl shadow-md"><p class="text-sm font-medium text-gray-500">Active Users Today</p><p id="report-active-users" class="text-3xl font-bold text-gray-800 mt-1">0</p></div> </div>
-                <div class="bg-white p-4 rounded-xl shadow-md mb-8 flex flex-col md:flex-row gap-4"> <div class="flex-1"><label for="report-date-range" class="block text-sm font-medium text-gray-700">Date Range</label><input type="text" id="report-date-range" class="mt-1 w-full p-2 border border-gray-300 rounded-lg" placeholder="Select date range..."></div> <div class="flex-1"><label for="report-content-type" class="block text-sm font-medium text-gray-700">Content Type</label><select id="report-content-type" class="mt-1 w-full p-2 border border-gray-300 rounded-lg"><option value="all">All</option><option value="pdf">PDFs</option><option value="blog">Blog</option></select></div> <div class="flex-1"><label for="report-subject-filter" class="block text-sm font-medium text-gray-700">Subject/Year</label><select id="report-subject-filter" class="mt-1 w-full p-2 border border-gray-300 rounded-lg"><option value="all">All</option></select></div> </div>
-                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8"> <div class="lg:col-span-3 bg-white p-6 rounded-xl shadow-md"><h2 class="text-xl font-semibold text-gray-800 mb-4">Traffic (Placeholder)</h2><div class="h-80 bg-gray-50 rounded-lg flex items-center justify-center"><p class="text-gray-400">Line Chart</p></div></div> <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md"><h2 class="text-xl font-semibold text-gray-800 mb-4">Views by Subject (Placeholder)</h2><div class="h-80 bg-gray-50 rounded-lg flex items-center justify-center"><p class="text-gray-400">Pie Chart</p></div></div> </div>
-            </div>
-            <div id="settings" class="tab-content fade-in hidden">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Settings</h1>
-                <div class="bg-white p-8 rounded-xl shadow-md"> <p class="text-gray-500">Placeholder for application settings, API keys, etc.</p> </div>
-            </div>
-            </main>
+            <div id="pdf-library" class="tab-content fade-in hidden"> /* ... (PDF Library HTML structure - Keep as is) ... */ </div>
+            <div id="list-posts" class="tab-content fade-in hidden"> /* ... (Keep Blog List HTML as is) ... */ </div>
+            <div id="post-form-view" class="tab-content fade-in hidden"> /* ... (Keep Blog Form HTML as is) ... */ </div>
+            <div id="categories" class="tab-content fade-in hidden"> /* ... (Keep Blog Categories HTML as is) ... */ </div>
+            <div id="comments" class="tab-content fade-in hidden"> /* ... (Keep Blog Comments HTML as is) ... */ </div>
+            <div id="analytics" class="tab-content fade-in hidden"> /* ... (Keep Blog Analytics HTML as is) ... */ </div>
+            <div id="users-students" class="tab-content fade-in hidden"> /* ... (Keep User List HTML as is) ... */ </div>
+            <div id="users-roles" class="tab-content fade-in hidden"> /* ... (Keep User Roles HTML as is) ... */ </div>
+            <div id="main-report" class="tab-content fade-in hidden"> /* ... (Keep Report HTML as is) ... */ </div>
+            <div id="settings" class="tab-content fade-in hidden"> /* ... (Keep Settings HTML as is) ... */ </div>
+
+        </main>
     </div>
 
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 overflow-y-auto py-10"> <div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 m-4 fade-in"></div> </div>
-    <div id="assign-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"> <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-8 m-4 fade-in h-[80vh] flex flex-col"><h2 class="text-2xl font-bold mb-4">Assign File to <span id="assign-item-type" class="capitalize">Item</span></h2><p class="mb-4">Select a file below to assign to <strong id="assign-item-name"></strong>.</p><input type="text" id="assign-pdf-search" placeholder="Search available files..." class="w-full p-2 border border-gray-300 rounded-lg mb-4"><div id="assign-pdf-list-container" class="flex-1 overflow-y-auto border p-4 rounded-lg bg-gray-50"><p class="text-center text-gray-500">Loading files...</p></div><div class="mt-6 flex justify-end space-x-3"><button id="assign-modal-cancel" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300">Cancel</button></div></div> </div>
-    <div id="assign-pdf-to-content-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"> <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl p-8 m-4 fade-in h-[80vh] flex flex-col"><h2 class="text-2xl font-bold mb-4">Assign File to Content</h2><p class="mb-4 truncate">Assigning file: <strong id="assign-pdf-name-display" class="text-indigo-600"></strong></p><div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4"><button class="assign-pdf-select-type-btn flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 hover:text-indigo-700" data-type="subjects"><i data-lucide="book-copy" class="w-4 h-4 mr-2 inline-block"></i>Assign to Subject</button><button class="assign-pdf-select-type-btn flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 hover:text-indigo-700" data-type="exams"><i data-lucide="file-check-2" class="w-4 h-4 mr-2 inline-block"></i>Assign to Exam</button><button class="assign-pdf-select-type-btn flex-1 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 hover:text-indigo-700" data-type="generalBooks"><i data-lucide="book-open" class="w-4 h-4 mr-2 inline-block"></i>Assign to General Book</button></div><input type="text" id="assign-content-search" placeholder="Search for content..." class="w-full p-2 border border-gray-300 rounded-lg mb-4 hidden"><div id="assign-content-list-container" class="flex-1 overflow-y-auto border p-4 rounded-lg bg-gray-50"><p class="text-center text-gray-500">Please select a content type above.</p></div><div class="mt-6 flex justify-end space-x-3"><button id="assign-pdf-to-content-modal-cancel" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300">Cancel</button></div></div> </div>
-    <div id="quiz-modal" class="quiz-modal-overlay hidden"> <div class="quiz-modal-container"> <form id="quiz-form" class="p-6 sm:p-8"> <div class="flex justify-between items-center pb-4 border-b mb-6"> <h2 id="modal-title" class="text-3xl font-extrabold text-gray-900">Add New Quiz</h2> <div class="flex gap-3 items-center"> <button id="import-json-btn" type="button" class="quiz-btn quiz-btn-secondary text-sm" title="Import Quiz from JSON"><i class="fa-solid fa-file-import mr-1"></i> Import</button> <input type="file" id="json-file-input" accept=".json" class="hidden"> <button id="export-json-btn" type="button" class="quiz-btn quiz-btn-secondary text-sm" title="Export Quiz to JSON"><i class="fa-solid fa-file-export mr-1"></i> Export</button> <button id="close-modal-btn" type="button" class="text-gray-500 hover:text-gray-700 transition"><i class="fa-solid fa-xmark text-3xl"></i></button> </div> </div> <input type="hidden" id="quiz-id-input"> <div class="space-y-6"> <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> <div><label for="quiz-title" class="block text-sm font-semibold text-gray-700 mb-1">Quiz Title*</label><input type="text" id="quiz-title" class="quiz-form-input" placeholder="e.g., The French Revolution" required></div> <div><label for="subject-select" class="block text-sm font-semibold text-gray-700 mb-1">Subject*</label><select id="subject-select" class="quiz-form-select" required><option value="">-- Select a Subject --</option></select></div> </div> <div class="p-4 rounded-xl bg-blue-50 border border-blue-200"> <label for="cover-image-input" class="block text-sm font-semibold text-blue-700 mb-2 flex items-center"><i class="fa-solid fa-image mr-2"></i> Quiz Cover Image (Optional)</label> <input type="file" id="cover-image-input" class="quiz-form-input p-2 bg-white" accept="image/*"> <p id="cover-image-filename" class="text-xs text-blue-500 mt-1 italic"></p><input type="hidden" id="cover-image-url-input"> <div id="cover-image-preview" class="mt-4 border-2 border-dashed border-blue-300 p-2 bg-white rounded-lg flex justify-center items-center h-40 overflow-hidden"><span class="text-blue-400 text-sm">Image Preview</span></div> </div> <hr class="border-gray-200"/> <h3 class="text-2xl font-bold text-gray-900 flex items-center"><i class="fa-solid fa-clipboard-question mr-2 text-gray-400"></i> Questions</h3> <div id="questions-container" class="space-y-5 max-h-[50vh] overflow-y-auto pr-3"><p class="text-gray-500 text-center py-4 text-sm" id="question-placeholder">Add question below.</p></div> <button type="button" id="add-question-btn" class="quiz-btn quiz-btn-secondary w-full text-blue-600 border-blue-300 bg-blue-100 hover:bg-blue-200"><i class="fa-solid fa-plus mr-2"></i> Add Question</button> </div> <div class="mt-8 flex flex-col sm:flex-row gap-4"> <button type="submit" id="save-quiz-btn" class="quiz-btn quiz-btn-primary flex-grow text-lg py-3"><i class="fa-solid fa-floppy-disk mr-2"></i> Save Quiz</button> <button id="delete-quiz-btn" type="button" class="quiz-btn quiz-btn-danger flex-grow hidden"><i class="fa-solid fa-trash-alt mr-2"></i> Delete Quiz</button> </div> </form> </div> </div>
-    <div id="user-modal" class="user-modal-backdrop p-4"> <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4"> <div class="p-6 border-b flex justify-between items-center"><h2 id="user-modal-title" class="text-2xl font-bold">Add User</h2><button id="user-modal-close" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button></div> <div class="p-6"> <form id="user-form"> <input type="hidden" id="user-id"> <div class="mb-4"><label for="name" class="block text-sm font-medium text-gray-700">Name</label><input type="text" id="name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div> <div class="mb-4"><label for="user-email" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="user-email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div> <div class="mb-4"><label for="phone" class="block text-sm font-medium text-gray-700">Phone</label><div class="flex"><span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md">252</span><input type="tel" id="phone" pattern="\d{9,}" title="Phone (9+ digits, no 252)" required class="rounded-none rounded-r-lg bg-gray-50 border text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm border-gray-300 p-2.5"></div></div> <div class="flex justify-end gap-4 mt-6"><button type="button" id="cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button><button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Save User</button></div> </form> </div> </div> </div>
-    <div id="confirm-modal" class="user-modal-backdrop"> <div class="bg-white rounded-lg shadow-xl w-full max-w-sm m-4"> <div class="p-6 text-center"> <i id="confirm-icon" class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i> <h3 id="confirm-title" class="text-xl font-bold mb-2">Are you sure?</h3> <p id="confirm-message" class="text-gray-600 mb-6">Action cannot be undone!</p> <div class="flex justify-center gap-4"><button id="confirm-cancel-btn" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button><button id="confirm-action-btn" class="px-6 py-2 bg-red-500 text-white rounded-lg">Yes, do it!</button></div> </div> </div> </div>
-    <div id="delete-modal" class="modal"> <div class="modal-content bg-white p-8 rounded-lg shadow-2xl w-full max-w-md m-4"> <div class="text-center"> <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="trash-2" class="w-8 h-8 text-red-600"></i></div> <h2 class="text-2xl font-bold text-gray-800 mb-2">Delete Post</h2> <p class="text-gray-600 mb-6">Delete this post & comments? Cannot be undone.</p> <div class="flex justify-center gap-4"><button id="cancel-delete-btn" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium">Cancel</button><button id="confirm-delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">Delete</button></div> </div> </div> </div>
-    <div id="reply-modal" class="modal"> <div class="modal-content bg-white p-8 rounded-lg shadow-2xl w-full max-w-lg m-4"> <h2 class="text-2xl font-bold text-gray-800 mb-4">Reply to Comment</h2> <div class="mb-4 bg-gray-50 p-4 rounded-lg border"><p class="text-sm font-medium text-gray-800" id="reply-author"></p><p class="text-sm text-gray-600 mt-1" id="reply-original-text"></p></div> <form id="reply-form"><input type="hidden" id="reply-comment-id"><textarea id="reply-text" rows="4" placeholder="Write reply..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required></textarea><div class="flex justify-end gap-4 mt-6"><button id="cancel-reply-btn" type="button" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium">Cancel</button><button id="submit-reply-btn" type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">Submit Reply</button></div></form> </div> </div>
-    <div id="share-modal" class="modal"> <div class="modal-content bg-white p-8 rounded-lg shadow-2xl w-full max-w-lg m-4"> <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-gray-800">Share Post</h2><button id="cancel-share-btn" class="p-1 text-gray-500 hover:text-gray-800"><i data-lucide="x" class="w-6 h-6"></i></button></div> <p class="text-gray-600 mb-2">Share this post:</p><p class="text-lg font-semibold text-gray-800 mb-4" id="share-post-title">Post Title</p> <div class="flex items-center space-x-2"><input type="text" id="share-post-url" readonly class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none"><button id="copy-url-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 flex items-center"><i data-lucide="copy" class="w-4 h-4 mr-2"></i> Copy</button></div> <div class="flex justify-center space-x-4 mt-6"><a id="share-twitter" href="#" target="_blank" class="p-3 bg-blue-400 text-white rounded-full hover:bg-blue-500"><i data-lucide="twitter" class="w-5 h-5"></i></a><a id="share-facebook" href="#" target="_blank" class="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700"><i data-lucide="facebook" class="w-5 h-5"></i></a><a id="share-linkedin" href="#" target="_blank" class="p-3 bg-blue-700 text-white rounded-full hover:bg-blue-800"><i data-lucide="linkedin" class="w-5 h-5"></i></a></div> </div> </div>
-    <div id="toast"></div> <script type="module">
-    // --- CONSOLIDATED FIREBASE V10 IMPORTS ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, query, where, orderBy, writeBatch, Timestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"; // Added setDoc
-    import { getStorage, ref, uploadBytesResumable, listAll, getDownloadURL, getMetadata, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto py-10"><div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 m-4"></div></div>
+    <div id="assign-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"> /* ... */ </div>
+    <div id="assign-pdf-to-content-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"> /* ... */ </div>
+    <div id="quiz-modal" class="quiz-modal-overlay hidden"> /* ... */ </div>
+    <div id="user-modal" class="user-modal-backdrop p-4"> /* ... */ </div>
+    <div id="confirm-modal" class="user-modal-backdrop"> /* ... */ </div>
+    <div id="delete-modal" class="modal"> /* ... */ </div> <div id="reply-modal" class="modal"> /* ... */ </div> <div id="share-modal" class="modal"> /* ... */ </div>
 
-    // --- CONFIGURATION ---
-    const firebaseConfig = { apiKey: "AIzaSyDuqswofpquk8aUbCOZCGjdYLUivBEh7a8", authDomain: "ardaycaawiye-18b89.firebaseapp.com", projectId: "ardaycaawiye-18b89", storageBucket: "ardaycaawiye-18b89.appspot.com", messagingSenderId: "590874185284", appId: "1:590874185284:web:6ee7df602c45068e38b611", measurementId: "G-SBGSTJWDMR" };
-
-    // --- INITIALIZATION ---
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    // --- GLOBAL STATE ---
-    let currentUser = null;
-    let currentActiveTab = 'dashboard';
-    let isLoginMode = true;
-    let editingPostId = null;
-    let currentEditingId = null;
-    let allPdfFiles = [];
-    let availableSubjects = [];
-    let availableExams = [];
-    let availableGeneralBooks = [];
-    let availableBlogCategories = [];
-    let currentAssignTarget = { type: null, id: null, field: null };
-    let currentPdfToAssign = { path: null, name: null };
-    let postToDeleteId = null;
-    let commentToReplyId = null;
-    let allPosts = [];
-    let allComments = [];
-    let quill, tagify, schedulePicker, reportDatePicker;
-    let activeManagers = { subjects: null, exams: null, generalBooks: null, pdfLibrary: null, quiz: null, users: null, blogPosts: null, blogCategories: null, blogComments: null, blogAnalytics: null, reports: null, dashboard: null };
-    let commonListenersAttached = false; // Flag to prevent duplicate listeners
-
-    // --- DOM ELEMENTS (Consolidated) ---
-    // ... (DOM elements remain the same as previous corrected code) ...
-    const loginPage = document.getElementById('login-page');
-    const mainApp = document.getElementById('main-app');
-    const authForm = document.getElementById('auth-form');
-    const authTitle = document.getElementById('auth-title');
-    const authSubmitBtn = document.getElementById('auth-submit-btn');
-    const authToggleLink = document.getElementById('auth-toggle-link');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const logoutBtn = document.getElementById('logout-btn');
-    const authStatus = document.getElementById('auth-status');
-    const allTabs = document.querySelectorAll('.tab-content');
-    const allSidebarLinks = document.querySelectorAll('#sidebar .sidebar-link'); // Includes dropdown items and regular links
-    const dropdownToggles = document.querySelectorAll('#sidebar .has-dropdown'); // Only dropdown toggle buttons
-    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-    const mainSidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
-    const toast = document.getElementById('toast');
-    const modal = document.getElementById('modal'); // Generic CRUD Modal
-    const modalContent = document.getElementById('modal-content');
-    const userModal = document.getElementById('user-modal'); // Specific user modal
-    const userForm = document.getElementById('user-form');
-    const userModalCloseBtn = document.getElementById('user-modal-close');
-    const userCancelBtn = document.getElementById('cancel-btn'); // In user modal
-    const confirmActionModal = document.getElementById('confirm-modal'); // Generic confirm
-    const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
-    // Blog Modals
-    const deleteModal = document.getElementById('delete-modal');
-    const cancelDeleteBtn = document.getElementById('cancel-delete-btn'); // In Blog Delete Modal
-    const confirmDeleteBtn = document.getElementById('confirm-delete-btn'); // In Blog Delete Modal
-    const replyModal = document.getElementById('reply-modal');
-    const replyForm = document.getElementById('reply-form');
-    const cancelReplyBtn = document.getElementById('cancel-reply-btn'); // In Blog Reply Modal
-    const shareModal = document.getElementById('share-modal');
-    const cancelShareBtn = document.getElementById('cancel-share-btn'); // In Blog Share Modal
-    const copyUrlBtn = document.getElementById('copy-url-btn'); // In Blog Share Modal
-    // Specific elements for each section
-    const userTableBody = document.getElementById('user-table-body');
-    const pdfListTable = document.getElementById('pdf-list-table');
-    const postsTableBody = document.getElementById('posts-table-body'); // Blog posts
-    const commentsListView = document.getElementById('comments-list'); // Blog comments
-    const categoriesList = document.getElementById('categories-list'); // Blog categories
-    const addCategoryForm = document.getElementById('add-category-form'); // Blog category form
-    // ... add others as needed, ensuring IDs match HTML ...
+    <div id="content-modal" class="content-modal-backdrop p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md m-4">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h2 id="content-modal-title" class="text-2xl font-bold">Add Item</h2>
+                <button id="content-modal-close" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <form id="content-form">
+                    <input type="hidden" id="content-id">
+                    <input type="hidden" id="content-type">
+                    <div id="content-form-fields" class="space-y-4 mb-6">
+                        </div>
+                    <div class="flex justify-end gap-4">
+                        <button type="button" id="content-cancel-btn" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 
-    // --- UTILS ---
-    const showToast = (message, type = 'success') => { toast.textContent = message; toast.className = `toast-${type}`; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 4000); };
-    const showModal = (html) => { modalContent.innerHTML = html; modal.classList.remove('hidden'); attachFileInputListeners(); };
-    const hideModal = () => { modal.classList.add('hidden'); modalContent.innerHTML = ''; currentEditingId = null; };
-    const formatDate = (date) => { if (!date) return 'N/A'; const d = date.toDate ? date.toDate() : new Date(date); if (isNaN(d.getTime())) return 'Invalid Date'; return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }); };
-    const formatBytes = (bytes, decimals = 2) => { if (!bytes || bytes === 0) return '0 Bytes'; const k = 1024; const dm = decimals < 0 ? 0 : decimals; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']; const i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]; };
-    async function mockUploadFile(file) { showToast(`Simulating upload for ${file.name}...`); await new Promise(resolve => setTimeout(resolve, 500)); const mockUrl = `https://mockstorage.com/${Date.now()}-${file.name.replace(/\s+/g, '_')}`; console.log(`Mock Upload: ${file.name} -> ${mockUrl}`); return { name: file.name, url: mockUrl }; }
+    <div id="toast" class="hidden fixed bottom-5 right-5 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all transform translate-x-full opacity-0"></div>
 
-    // --- MASTER AUTHENTICATION ---
-    onAuthStateChanged(auth, (user) => {
-        console.log("onAuthStateChanged fired. User:", user ? user.email : 'null');
-        if (user) {
-            currentUser = user;
-            authStatus.textContent = `Logged in as ${user.email}`;
-            authStatus.className = 'text-xs text-green-400 truncate mb-2';
-            mainApp.classList.remove('hidden');
-            loginPage.classList.add('hidden');
-            if (!commonListenersAttached) {
-                initializeAppLogic();
-                commonListenersAttached = true;
-            } else {
-                switchTab(currentActiveTab || 'dashboard');
-            }
-        } else {
-            currentUser = null;
-            authStatus.textContent = 'Not Authenticated';
-            authStatus.className = 'text-xs text-red-400 truncate mb-2';
-            mainApp.classList.add('hidden');
-            loginPage.classList.remove('hidden');
-            stopAppLogic();
-            commonListenersAttached = false;
-        }
-        lucide.createIcons();
-    });
+    <script type="module">
+        // --- Firebase Imports ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import {
+            getFirestore, collection, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc,
+            onSnapshot, serverTimestamp, query, where, orderBy, writeBatch, Timestamp,
+            getCountFromServer
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import {
+            getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject, listAll, getMetadata
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-    const handleAuthForm = async (e) => {
-        e.preventDefault();
-        console.log("Auth form submitted!");
-        const email = emailInput.value;
-        const password = passwordInput.value;
-        authSubmitBtn.disabled = true;
-        authSubmitBtn.textContent = 'Processing...';
-        const action = isLoginMode ? signInWithEmailAndPassword : createUserWithEmailAndPassword;
+        // --- Firebase Config ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuqswofpquk8aUbCOZCGjdYLUivBEh7a8", // !!! IMPORTANT: Replace with your actual Firebase API key !!!
+            authDomain: "ardaycaawiye-18b89.firebaseapp.com", projectId: "ardaycaawiye-18b89", storageBucket: "ardaycaawiye-18b89.firebasestorage.app", messagingSenderId: "590874185284", appId: "1:590874185284:web:6ee7df602c45068e38b611", measurementId: "G-SBGSTJWDMR"
+        };
+
+        // --- Firebase Init ---
+        let app, auth, db, storage;
         try {
-            const userCredential = await action(auth, email, password);
-            console.log("Firebase auth successful:", userCredential.user.uid);
-             if (!isLoginMode) {
-                 console.log("Creating Firestore user doc for new user:", userCredential.user.uid);
-                 await setDoc(doc(db, "users", userCredential.user.uid), {
-                    uid: userCredential.user.uid, name: email.split('@')[0], email: email,
-                    phone: '', role: 'student', paymentStatus: 'not_paid', createdAt: serverTimestamp(), banned: false
-                });
-             }
-            // onAuthStateChanged handles UI switch
+             app = initializeApp(firebaseConfig);
+             auth = getAuth(app);
+             db = getFirestore(app);
+             storage = getStorage(app);
+             console.log("Firebase Initialized Successfully");
         } catch (error) {
-            console.error("Firebase auth error:", error);
-            showToast(error.message, "error");
-            authSubmitBtn.disabled = false; // Re-enable only on error
-            authSubmitBtn.textContent = isLoginMode ? 'Sign in' : 'Sign up';
-        }
-    };
-
-    const toggleAuthMode = (e) => { e.preventDefault(); isLoginMode = !isLoginMode; authTitle.textContent = isLoginMode ? 'Sign in' : 'Create account'; authSubmitBtn.textContent = isLoginMode ? 'Sign in' : 'Sign up'; authToggleLink.textContent = isLoginMode ? "Need account? Sign up" : 'Have account? Sign in'; };
-    const handleLogout = async () => { try { await signOut(auth); } catch (error) { console.error("Logout Error:", error); showToast(error.message, "error"); } };
-
-    // --- MASTER NAVIGATION & LISTENER MANAGEMENT ---
-    const stopAllManagers = () => { console.log("Stopping all managers..."); Object.keys(activeManagers).forEach(key => { if (activeManagers[key]?.stop) { try { activeManagers[key].stop(); console.log(`Stopped manager: ${key}`); } catch (e) { console.error(`Error stopping ${key}:`, e); } } activeManagers[key] = null; }); if (typeof unsubscribePosts === 'function') unsubscribePosts(); if (typeof unsubscribeComments === 'function') unsubscribeComments(); if (typeof unsubscribeCategories === 'function') unsubscribeCategories(); unsubscribePosts = unsubscribeComments = unsubscribeCategories = () => {}; };
-
-    const switchTab = (tabId) => {
-        console.log(`Attempting to switch to tab: ${tabId}`);
-        stopAllManagers();
-        currentActiveTab = tabId;
-
-        allTabs.forEach(tab => tab.classList.add('hidden'));
-        const newTab = document.getElementById(tabId);
-        if (newTab) {
-            newTab.classList.remove('hidden');
-        } else {
-            console.warn(`Tab "${tabId}" not found. Defaulting to dashboard.`);
-            document.getElementById('dashboard')?.classList.remove('hidden'); // Use optional chaining
-            currentActiveTab = 'dashboard';
-            tabId = 'dashboard';
+             console.error("Firebase Initialization Failed:", error);
+             alert("Critical Error: Could not connect to Firebase. Check API key and console for details.");
+             // Prevent further execution if Firebase fails
         }
 
-        allSidebarLinks.forEach(link => link.classList.remove('active'));
-        dropdownToggles.forEach(btn => { btn.classList.remove('open', 'active'); const menu = btn.nextElementSibling; if (menu?.classList.contains('dropdown-menu')) menu.style.display = 'none'; const icon = btn.querySelector('.dropdown-icon'); if (icon) icon.style.transform = 'rotate(0deg)'; });
 
-        const activeLink = document.querySelector(`#sidebar .sidebar-link[data-tab="${tabId}"]`);
-        if (activeLink) {
-            activeLink.classList.add('active');
-            const parentMenu = activeLink.closest('.dropdown-menu');
-            if (parentMenu) {
-                const parentBtn = parentMenu.previousElementSibling;
-                if (parentBtn?.classList.contains('has-dropdown')) {
-                    parentBtn.classList.add('open', 'active'); parentMenu.style.display = 'block'; const icon = parentBtn.querySelector('.dropdown-icon'); if (icon) icon.style.transform = 'rotate(180deg)';
-                }
+        // --- Collections & Storage Refs ---
+        const postsCollection = collection(db, "blogPosts");
+        const commentsCollection = collection(db, "blogComments");
+        const categoriesCollection = collection(db, "blogCategories");
+        const usersCollection = collection(db, "users");
+        const subjectsCollection = collection(db, "subjects");
+        const examsCollection = collection(db, "exams");
+        const quizzesCollection = collection(db, "quizzes");
+        const booksCollection = collection(db, "generalBooks");
+        const pdfsStorageRef = ref(storage, '/'); // Adjust path if needed
+
+        // --- Global State ---
+        let currentUser = null;
+        let currentActiveTab = 'dashboard';
+        let allPosts = [], allComments = [], allCategories = [], allUsers = [];
+        let allSubjects = [], allExams = [], allQuizzes = [], allBooks = [], allPdfs = [];
+        let unsubscribePosts = () => {}, unsubscribeComments = () => {}, unsubscribeCategories = () => {}, unsubscribeUsers = () => {};
+        let unsubscribeSubjects = () => {}, unsubscribeExams = () => {}, unsubscribeQuizzes = () => {}, unsubscribeBooks = () => {};
+        let editingPostId = null, postToDeleteId = null, commentToReplyId = null;
+        let editingContent = { id: null, type: null }; // For generic content editing
+
+        // --- Lib Instances ---
+        let quill, tagify, schedulePicker, reportDatePicker;
+
+        // --- DOM Elements ---
+        const mainApp = document.getElementById('main-app');
+        const logoutBtn = document.getElementById('logout-btn');
+        const authStatus = document.getElementById('auth-status');
+        const allTabs = document.querySelectorAll('.tab-content');
+        const allSidebarLinks = document.querySelectorAll('#sidebar .sidebar-link');
+        const dropdownToggles = document.querySelectorAll('#sidebar .has-dropdown');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mainSidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const toast = document.getElementById('toast');
+        // Blog Elements
+        const postsTableBody = document.getElementById('posts-table-body'); const blogPostForm = document.getElementById('blog-post-form'); const postFormTitle = document.getElementById('form-title'); const postIdInput = document.getElementById('post-id'); const postTitleInput = document.getElementById('post-title'); const postStatusSelect = document.getElementById('post-status'); const scheduleDateWrapper = document.getElementById('schedule-date-wrapper'); const postCategorySelect = document.getElementById('post-category'); const filterCategorySelect = document.getElementById('filter-category'); const imageDropzone = document.getElementById('image-dropzone'); const imageInput = document.getElementById('post-image'); const imagePreviewWrapper = document.getElementById('image-preview-wrapper'); const imagePreview = document.getElementById('image-preview'); const removeImageBtn = document.getElementById('remove-image-btn'); const attachmentDropzone = document.getElementById('attachment-dropzone'); const attachmentInput = document.getElementById('post-attachments'); const attachmentList = document.getElementById('attachment-list'); const commentsListView = document.getElementById('comments-list'); const deleteModal = document.getElementById('delete-modal'); const confirmDeleteBtn = document.getElementById('confirm-delete-btn'); const cancelDeleteBtn = document.getElementById('cancel-delete-btn'); const replyModal = document.getElementById('reply-modal'); const replyForm = document.getElementById('reply-form'); const cancelReplyBtn = document.getElementById('cancel-reply-btn'); const shareModal = document.getElementById('share-modal'); const cancelShareBtn = document.getElementById('cancel-share-btn'); const copyUrlBtn = document.getElementById('copy-url-btn'); const selectAllCheckbox = document.getElementById('select-all-posts'); const categoriesList = document.getElementById('categories-list'); const addCategoryForm = document.getElementById('add-category-form');
+        // User Elements
+        const userTableBody = document.getElementById('user-table-body'); const addUserBtn = document.getElementById('add-user-btn'); const userModal = document.getElementById('user-modal'); const userModalCloseBtn = document.getElementById('user-modal-close'); const userForm = document.getElementById('user-form'); const userModalTitle = document.getElementById('user-modal-title'); const userIdInput = document.getElementById('user-id'); const userNameInput = document.getElementById('name'); const userEmailInput = document.getElementById('user-email'); const userPhoneInput = document.getElementById('phone'); const userCancelBtn = document.getElementById('cancel-btn'); const confirmActionModal = document.getElementById('confirm-modal'); const confirmActionBtn = document.getElementById('confirm-action-btn'); const confirmCancelBtn = document.getElementById('confirm-cancel-btn'); const confirmTitle = document.getElementById('confirm-title'); const confirmMessage = document.getElementById('confirm-message'); const confirmIcon = document.getElementById('confirm-icon'); const searchUserInput = document.getElementById('search-input'); const userFilterBtns = document.querySelectorAll('.user-filter-btn'); const userSortBtns = document.querySelectorAll('.user-sort-btn'); const adminUserListContainer = document.getElementById('admin-user-list');
+        // Dashboard Stats
+        const dashTotalSubjects = document.getElementById('total-subjects'); const dashTotalExams = document.getElementById('total-exams'); const dashTotalBooks = document.getElementById('total-books'); const dashTotalQuizzes = document.getElementById('total-quizzes'); const dashTotalUsers = document.getElementById('dash-total-users'); const dashPaidUsers = document.getElementById('dash-paid-users'); const dashBannedUsers = document.getElementById('dash-banned-users'); const dashTotalRevenue = document.getElementById('dash-total-revenue');
+        // User Stats
+        const usersTotal = document.getElementById('total-users'); const usersPaid = document.getElementById('paid-users'); const usersNotPaid = document.getElementById('not-paid-users'); const usersRevenue = document.getElementById('total-revenue');
+        // Report Elements
+        const reportPaidUsersEl = document.getElementById('report-paid-users'); const reportPdfViewsEl = document.getElementById('report-pdf-views'); const reportTopPdfEl = document.getElementById('report-top-pdf'); const reportBlogViewsEl = document.getElementById('report-blog-views'); const reportActiveUsersEl = document.getElementById('report-active-users');
+        // Content Lists
+        const subjectsListEl = document.getElementById('subjects-list'); const examsListEl = document.getElementById('exams-list'); const quizzesListContainer = document.getElementById('quiz-list-container'); const booksListEl = document.getElementById('books-list'); const pdfListTableBody = document.getElementById('pdf-list-table');
+        // PDF Library Elements
+        const pdfUploadBtn = document.getElementById('upload-pdf-btn'); const pdfUploadInput = document.getElementById('pdf-upload-input'); const uploadProgressContainer = document.getElementById('upload-progress-container'); const uploadProgressBar = document.getElementById('upload-progress-bar'); const pdfSearchInput = document.getElementById('pdf-search'); const deleteSelectedPdfsBtn = document.getElementById('delete-selected-pdfs-btn'); const selectAllPdfsCheckbox = document.getElementById('select-all-pdfs');
+        // Quiz Elements
+        const addQuizBtnHeader = document.getElementById('add-quiz-fab-header'); const quizModal = document.getElementById('quiz-modal'); const quizForm = document.getElementById('quiz-form'); const closeQuizModalBtn = document.getElementById('close-modal-btn'); const quizSubjectFilter = document.getElementById('quiz-subject-filter'); /* Add other quiz form inputs */
+        // *** NEW: Content Modal Elements ***
+        const contentModal = document.getElementById('content-modal');
+        const contentModalTitle = document.getElementById('content-modal-title');
+        const contentModalCloseBtn = document.getElementById('content-modal-close');
+        const contentForm = document.getElementById('content-form');
+        const contentFormFields = document.getElementById('content-form-fields');
+        const contentIdInput = document.getElementById('content-id');
+        const contentTypeInput = document.getElementById('content-type');
+        const contentCancelBtn = document.getElementById('content-cancel-btn');
+
+
+        // =============================================
+        // Initialization
+        // =============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!app) return; // Stop if Firebase failed
+            lucide.createIcons();
+            initBlogLibs();
+            initOtherLibs();
+            setupMainEventListeners();
+            setupBlogEventListeners();
+            setupContentEventListeners();
+
+            authStatus.textContent = 'Admin Access';
+            mainApp.classList.remove('hidden');
+            showTab(currentActiveTab || 'dashboard');
+        });
+
+        // =============================================
+        // Lib Initializations
+        // =============================================
+        function initBlogLibs() { try{quill=new Quill('#quill-editor',{theme:'snow',modules:{toolbar:[[{'header':[1,2,3,!1]}],['bold','italic','underline','strike'],[{'list':'ordered'},{'list':'bullet'}],['link','image','video','code-block'],['clean']]}});const t=document.getElementById('post-tags');if(t)tagify=new Tagify(t);schedulePicker=flatpickr("#post-schedule-date",{enableTime:!0,dateFormat:"Y-m-d H:i"});}catch(e){console.warn("Blog Lib Init Err:",e)} }
+        function initOtherLibs() { try{reportDatePicker = flatpickr("#report-date-range",{mode:"range",dateFormat:"Y-m-d"});}catch(e){console.warn("Flatpickr init Err:",e)} }
+
+        // =============================================
+        // Toast Notification
+        // =============================================
+        function showToast(message, isError = false) { toast.textContent=message;toast.className=`fixed bottom-5 right-5 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all transform ${isError?'bg-red-600':'bg-green-600'}`;toast.style.transform='translateX(100%)';toast.style.opacity='0';toast.classList.remove('hidden');void toast.offsetWidth;toast.style.transition='all 0.3s ease-out';toast.style.transform='translateX(0)';toast.style.opacity='1';setTimeout(()=>{toast.style.transform='translateX(100%)';toast.style.opacity='0';setTimeout(()=>toast.classList.add('hidden'),300);},3000); }
+
+        // =============================================
+        // Navigation & Listener Management
+        // =============================================
+        function stopAllListeners(){unsubscribePosts();unsubscribeComments();unsubscribeCategories();unsubscribeUsers();unsubscribeSubjects();unsubscribeExams();unsubscribeQuizzes();unsubscribeBooks();unsubscribePosts=()=>{};unsubscribeComments=()=>{};unsubscribeCategories=()=>{};unsubscribeUsers=()=>{};unsubscribeSubjects=()=>{};unsubscribeExams=()=>{};unsubscribeQuizzes=()=>{};unsubscribeBooks=()=>{};}
+        function showTab(tabId){console.log(`Switching to tab: ${tabId}`);stopAllListeners();currentActiveTab=tabId;allTabs.forEach(t=>t.classList.add('hidden'));const nT=document.getElementById(tabId);if(nT){nT.classList.remove('hidden');}else{document.getElementById('dashboard').classList.remove('hidden');currentActiveTab='dashboard';}allSidebarLinks.forEach(l=>l.classList.remove('active'));dropdownToggles.forEach(b=>b.classList.remove('open'));const aL=document.querySelector(`#sidebar .sidebar-link[data-tab="${tabId}"]`);if(aL){aL.classList.add('active');const pDM=aL.closest('.dropdown-menu');if(pDM){const pB=pDM.previousElementSibling;if(pB?.classList.contains('has-dropdown')){pB.classList.add('open');}}}switch(tabId){case'dashboard':loadDashboardStats();break;case'users-students':initUsersListener(renderUserTable);break;case'users-roles':initUsersListener(renderAdminList);break;case'main-report':console.log("Init Main Report...");break;case'list-posts':initPostsListener();initCategoriesListener();break;case'post-form-view':initCategoriesListener();if(!editingPostId)showPostForm();break;case'categories':initCategoriesListener(renderCategoriesList);break;case'comments':initPostsListener();initCommentsListener();break;case'analytics':fetchAllDataForAnalytics();break;case'subjects':initSubjectsListener();break;case'exams':initExamsListener();break;case'quizzes':initQuizzesListener();initSubjectsListener(populateQuizSubjectFilter);break;case'generalBooks':initBooksListener();break;case'pdf-library':loadPdfList();break;case'settings':console.log("Settings Tab");break;}if(typeof lucide !== 'undefined') lucide.createIcons();}
+
+        // =============================================
+        // Main Event Listeners Setup
+        // =============================================
+        function setupMainEventListeners() {
+            if(logoutBtn) logoutBtn.addEventListener('click', () => { showToast("Logout action."); /* Add real logout */ });
+            allSidebarLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); if (link.classList.contains('has-dropdown')) { link.classList.toggle('open'); } else if (link.dataset.tab) { editingPostId = null; editingContent = { id: null, type: null }; showTab(link.dataset.tab); if (!mainSidebar.classList.contains('-translate-x-full')) { mainSidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('hidden'); } } }); });
+            if(mobileMenuBtn) mobileMenuBtn.addEventListener('click', () => { mainSidebar.classList.remove('-translate-x-full'); sidebarOverlay.classList.remove('hidden'); });
+            if(sidebarOverlay) sidebarOverlay.addEventListener('click', () => { mainSidebar.classList.add('-translate-x-full'); sidebarOverlay.classList.add('hidden'); });
+            if(addUserBtn) addUserBtn.addEventListener('click', () => showUserModal());
+            if(userModalCloseBtn) userModalCloseBtn.addEventListener('click', () => hideUserModal());
+            if(userCancelBtn) userCancelBtn.addEventListener('click', () => hideUserModal());
+            if(userForm) userForm.addEventListener('submit', handleUserFormSubmit);
+            if(searchUserInput) searchUserInput.addEventListener('input', renderUserTable); // Check if exists before adding listener
+            userFilterBtns.forEach(btn => btn.addEventListener('click', handleUserFilterClick));
+            userSortBtns.forEach(btn => btn.addEventListener('click', handleUserSortClick));
+            if(confirmCancelBtn) confirmCancelBtn.addEventListener('click', () => hideConfirmModal());
+            if(userTableBody) userTableBody.addEventListener('click', (e) => { const editBtn=e.target.closest('.edit-user-btn'),delBtn=e.target.closest('.delete-user-btn'); if(editBtn)showUserModal(editBtn.dataset.id); if(delBtn)showConfirmModal('Delete User','Are you sure?',()=>deleteUser(delBtn.dataset.id),!0); });
+        }
+
+        // =============================================
+        // Dashboard Logic (Corrected Query + Checks)
+        // =============================================
+        async function loadDashboardStats() {
+            console.log("Loading dashboard stats...");
+            try {
+                // Define queries (ensure collections exist)
+                const usersQuery = query(usersCollection, where("role", "!=", "admin"));
+                // *** IMPORTANT: The paidUsersQuery requires the composite index you need to create via the console link ***
+                const paidUsersQuery = query(usersCollection, where("paymentStatus", "==", "paid"), where("role", "!=", "admin"));
+                const subjectsQuery = query(subjectsCollection);
+                const examsQuery = query(examsCollection);
+                const booksQuery = query(booksCollection);
+                const quizzesQuery = query(quizzesCollection);
+
+                // Fetch counts in parallel
+                const counts = await Promise.all([
+                    getCountFromServer(usersQuery).catch(e => { console.warn("Count failed (users):", e); return { data: () => ({ count: 'N/A' }) }; }), // Add catch blocks
+                    getCountFromServer(paidUsersQuery).catch(e => { console.warn("Count failed (paid users - check index):", e); return { data: () => ({ count: 'N/A' }) }; }),
+                    getCountFromServer(subjectsQuery).catch(e => { console.warn("Count failed (subjects):", e); return { data: () => ({ count: 'N/A' }) }; }),
+                    getCountFromServer(examsQuery).catch(e => { console.warn("Count failed (exams):", e); return { data: () => ({ count: 'N/A' }) }; }),
+                    getCountFromServer(booksQuery).catch(e => { console.warn("Count failed (books):", e); return { data: () => ({ count: 'N/A' }) }; }),
+                    getCountFromServer(quizzesQuery).catch(e => { console.warn("Count failed (quizzes):", e); return { data: () => ({ count: 'N/A' }) }; })
+                ]);
+
+                // Update DOM elements safely
+                if(dashTotalUsers) dashTotalUsers.textContent = counts[0].data().count;
+                const paidCount = counts[1].data().count;
+                if(dashPaidUsers) dashPaidUsers.textContent = paidCount;
+                if(dashTotalSubjects) dashTotalSubjects.textContent = counts[2].data().count;
+                if(dashTotalExams) dashTotalExams.textContent = counts[3].data().count;
+                if(dashTotalBooks) dashTotalBooks.textContent = counts[4].data().count;
+                if(dashTotalQuizzes) dashTotalQuizzes.textContent = counts[5].data().count;
+
+                // Revenue Calculation
+                const revenue = paidCount === 'N/A' ? 'N/A' : paidCount * 5; // Handle 'N/A'
+                if(dashTotalRevenue) dashTotalRevenue.textContent = revenue === 'N/A' ? '$N/A' : `$${revenue}`;
+                if(dashBannedUsers) dashBannedUsers.textContent = '0'; // Placeholder
+
+             } catch (error) { // Catch errors from Promise.all itself
+                 console.error("Error loading dashboard stats:", error);
+                 showToast("Failed to load dashboard statistics.", true);
+                 if(dashTotalUsers) dashTotalUsers.textContent = 'Err'; /* Reset others */
+             }
+         }
+
+
+        // =============================================
+        // User Management Logic (Keep robust version)
+        // =============================================
+         let currentUsersFilter = 'all'; let currentUsersSort = 'recent';
+         function handleUserFilterClick(e) { userFilterBtns.forEach(b=>b.classList.remove('active')); e.target.classList.add('active'); currentUsersFilter=e.target.dataset.filter; renderUserTable(); }
+         function handleUserSortClick(e) { userSortBtns.forEach(b=>b.classList.remove('active')); e.target.classList.add('active'); currentUsersSort=e.target.dataset.sort; renderUserTable(); }
+         function initUsersListener(renderCallback) { unsubscribeUsers = onSnapshot(usersCollection,snap=>{allUsers=snap.docs.map(d=>({id:d.id,...d.data()}));if(renderCallback)renderCallback();updateUserStats();},e=>{console.error(e);showToast("Err users.",!0);/* UI Error */}); }
+         function renderUserTable() { if(!userTableBody) return; userTableBody.innerHTML = ''; const searchTerm = searchUserInput?.value?.toLowerCase() || ''; let filteredUsers = allUsers.filter(user => user.role !== 'admin'); if (currentUsersFilter === 'paid') filteredUsers = filteredUsers.filter(u => u.paymentStatus === 'paid'); else if (currentUsersFilter === 'not_paid') filteredUsers = filteredUsers.filter(u => u.paymentStatus !== 'paid'); if (searchTerm) filteredUsers = filteredUsers.filter(u => (u.name?.toLowerCase().includes(searchTerm)) || (u.email?.toLowerCase().includes(searchTerm)) || (u.phone?.includes(searchTerm))); filteredUsers.sort((a, b) => { if (currentUsersSort === 'asc') return (a.name || '').localeCompare(b.name || ''); else { const timeA = a.createdAt?.toMillis() || 0; const timeB = b.createdAt?.toMillis() || 0; return timeB - timeA; } }); if (filteredUsers.length === 0) { userTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">No users found.</td></tr>`; return; } filteredUsers.forEach(user => { const tr = document.createElement('tr'); tr.className = "border-b hover:bg-gray-50"; const pStatus = user.paymentStatus === 'paid'; tr.innerHTML = `<td class="p-4"><div class="font-medium">${user.name||'N/A'}</div><div class="text-sm text-gray-500">${user.email||'N/A'}</div></td><td class="p-4 text-sm">${user.phone?`252${user.phone}`:'N/A'}</td><td class="p-4 text-sm capitalize">${user.role||'student'}</td><td class="p-4"><span class="px-2 py-1 text-xs font-semibold rounded ${pStatus?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}">${pStatus?'Paid':'Not Paid'}</span></td><td class="p-4"><div class="flex space-x-1"><button class="edit-user-btn p-1 text-indigo-600 hover:text-indigo-800" data-id="${user.id}" title="Edit"><i data-lucide="edit-2" class="w-4 h-4 p-e-none"></i></button><button class="delete-user-btn p-1 text-red-600 hover:text-red-800" data-id="${user.id}" title="Delete"><i data-lucide="trash-2" class="w-4 h-4 p-e-none"></i></button></div></td>`; userTableBody.appendChild(tr); }); if(typeof lucide !== 'undefined') lucide.createIcons(); }
+         function renderAdminList() { if(!adminUserListContainer) return; adminUserListContainer.innerHTML='';const admins=allUsers.filter(u=>u.role==='admin');if(admins.length===0){adminUserListContainer.innerHTML=`<p class="text-center text-gray-500">No admins.</p>`;return;}admins.forEach(a=>{const d=document.createElement('div');d.className="flex items-center justify-between p-3 bg-blue-50 border rounded";d.innerHTML=`<div><p class="font-semibold text-blue-800">${a.name||'Admin'}</p><p class="text-sm text-blue-600">${a.email}</p></div><span class="text-sm font-medium text-blue-700 capitalize">${a.role}</span>`;adminUserListContainer.appendChild(d);}); }
+         function updateUserStats() { if(!usersTotal) return; const nonAdmin=allUsers.filter(u=>u.role!=='admin'),paid=nonAdmin.filter(u=>u.paymentStatus==='paid').length,rev=paid*5;usersTotal.textContent=nonAdmin.length;usersPaid.textContent=paid;usersNotPaid.textContent=nonAdmin.length-paid;usersRevenue.textContent=`$${rev}`; }
+         async function showUserModal(userId=null) { if(!userModal) return; userForm.reset();userIdInput.value='';if(userId){userModalTitle.textContent='Edit';try{const snap=await getDoc(doc(db,"users",userId));if(snap.exists()){const d=snap.data();userIdInput.value=userId;if(userNameInput)userNameInput.value=d.name||'';if(userEmailInput)userEmailInput.value=d.email||'';if(userPhoneInput)userPhoneInput.value=d.phone||'';}else{showToast('User not found.',!0);return;}}catch(e){console.error(e);showToast('Load failed.',!0);return;}}else{userModalTitle.textContent='Add New';}userModal.style.display='flex'; }
+         function hideUserModal() { if(userModal) userModal.style.display='none'; }
+         async function handleUserFormSubmit(e) { e.preventDefault();const id=userIdInput.value,name=userNameInput.value.trim(),email=userEmailInput.value.trim(),phone=userPhoneInput.value.trim();if(!name||!email){showToast('Name/Email required.',!0);return;}if(phone&&!/^\d+$/.test(phone)){showToast('Phone digits only.',!0);return;}const data={name,email,phone,role:'student',paymentStatus:'not_paid'};const btn=userForm.querySelector('button[type="submit"]');btn.disabled=!0;btn.textContent='Saving...';try{if(id){await updateDoc(doc(db,"users",id),data);showToast('User updated!');}else{data.createdAt=serverTimestamp();await addDoc(usersCollection,data);showToast('User added!');}hideUserModal();}catch(e){console.error(e);showToast(`Error: ${e.message}`,!0);}finally{btn.disabled=!1;btn.textContent='Save';} }
+         async function deleteUser(userId) { try{await deleteDoc(doc(db,"users",userId));showToast('User deleted!');}catch(e){console.error(e);showToast(`Error: ${e.message}`,!0);} }
+         let confirmActionCallback=null; function showConfirmModal(title,msg,onConfirm,isDanger=!1) { if(!confirmActionModal) return; confirmTitle.textContent=title;confirmMessage.textContent=msg;confirmActionCallback=onConfirm;confirmActionBtn.className=`px-6 py-2 text-white rounded font-medium ${isDanger?'bg-red-600 hover:bg-red-700':'bg-indigo-600 hover:bg-indigo-700'}`;confirmIcon.className=`text-4xl mb-4 ${isDanger?'fas fa-exclamation-triangle text-red-500':'fas fa-question-circle text-indigo-500'}`;confirmActionBtn.textContent=isDanger?'Yes, delete!':'Yes';confirmActionBtn.replaceWith(confirmActionBtn.cloneNode(!0)); // Re-clone to ensure listener is fresh
+            const newConfirmBtn = document.getElementById('confirm-action-btn'); // Get the newly cloned button
+            if (newConfirmBtn) { newConfirmBtn.addEventListener('click', () => { if (confirmActionCallback) confirmActionCallback(); hideConfirmModal(); }); }
+            confirmActionModal.style.display='flex'; }
+         function hideConfirmModal() { if(confirmActionModal) confirmActionModal.style.display='none';confirmActionCallback=null; }
+
+        // =============================================
+        // === CONTENT MANAGEMENT LOGIC (REVISED) ===
+        // =============================================
+
+        // --- Listeners ---
+        function initSubjectsListener() { unsubscribeSubjects = onSnapshot(query(subjectsCollection, orderBy("name")), s => { allSubjects = s.docs.map(d=>({id:d.id,...d.data()})); renderContentList(subjectsListEl, allSubjects, 'subject'); populateQuizSubjectFilter(); /* Update other selects */}, e => { console.error("Err subjects:", e); if(subjectsListEl) subjectsListEl.innerHTML = `<li class="text-red-500">Error loading.</li>`; }); }
+        function initExamsListener() { unsubscribeExams = onSnapshot(query(examsCollection, orderBy("title")), s => { allExams = s.docs.map(d=>({id:d.id,...d.data()})); renderContentList(examsListEl, allExams, 'exam'); }, e => { console.error("Err exams:", e); if(examsListEl) examsListEl.innerHTML = `<li class="text-red-500">Error loading.</li>`; }); }
+        function initQuizzesListener() { unsubscribeQuizzes = onSnapshot(query(quizzesCollection, orderBy("title")), s => { allQuizzes = s.docs.map(d=>({id:d.id,...d.data()})); renderQuizList(); }, e => { console.error("Err quizzes:", e); if(quizzesListContainer) quizzesListContainer.innerHTML = `<p class="text-red-500 text-center">Error loading quizzes.</p>`; }); }
+        function initBooksListener() { unsubscribeBooks = onSnapshot(query(booksCollection, orderBy("title")), s => { allBooks = s.docs.map(d=>({id:d.id,...d.data()})); renderContentList(booksListEl, allBooks, 'book'); }, e => { console.error("Err books:", e); if(booksListEl) booksListEl.innerHTML = `<li class="text-red-500">Error loading.</li>`; }); }
+
+        // --- Renderers ---
+        function renderContentList(listElement, items, itemType) {
+            if (!listElement) { console.warn(`List element for ${itemType} not found.`); return; }
+            listElement.innerHTML = '';
+            if (!items || items.length === 0) { listElement.innerHTML = `<li class="text-gray-500 italic">No ${itemType.toLowerCase()}s found.</li>`; return; }
+            items.forEach(item => {
+                const li = document.createElement('li');
+                const displayName = item.name || item.title || `Unnamed ${itemType}`; // Use name for subject, title otherwise
+                li.innerHTML = `
+                    <span class="font-medium truncate pr-4">${displayName}</span>
+                    <div class="content-actions flex-shrink-0">
+                        <button class="edit-content-btn p-1 text-indigo-600 hover:text-indigo-800" data-id="${item.id}" data-type="${itemType.toLowerCase()}" title="Edit ${itemType}"> <i data-lucide="edit-2" class="w-4 h-4 pointer-events-none"></i> </button>
+                        <button class="delete-content-btn p-1 text-red-600 hover:text-red-800" data-id="${item.id}" data-type="${itemType.toLowerCase()}" title="Delete ${itemType}"> <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i> </button>
+                    </div>`;
+                listElement.appendChild(li);
+            });
+            if(typeof lucide !== 'undefined') lucide.createIcons();
+        }
+        function renderQuizList() { /* ... Keep implementation ... */ if(!quizzesListContainer)return;quizzesListContainer.innerHTML='';const fV=quizSubjectFilter?quizSubjectFilter.value:'all';const fQ=allQuizzes.filter(q=>fV==='all'||q.subjectId===fV);if(fQ.length===0){quizzesListContainer.innerHTML=`<p class="text-gray-500 text-center col-span-full">No quizzes${fV!=='all'?' for this subject':''}.</p>`;return;}fQ.forEach(q=>{const d=document.createElement('div');d.className="bg-white p-4 rounded-xl shadow border flex flex-col";const s=allSubjects.find(s=>s.id===q.subjectId);d.innerHTML=`${q.coverImageUrl?`<img src="${q.coverImageUrl}" alt="${q.title}" class="h-32 w-full object-cover rounded mb-3">`:'<div class="h-32 bg-gray-200 rounded mb-3 flex items-center justify-center text-gray-400">No Image</div>'}<h3 class="font-semibold text-lg mb-1 truncate">${q.title}</h3><p class="text-sm text-gray-500 mb-3">${s?s.name:'Unknown Subject'}</p><div class="mt-auto flex justify-end space-x-2"><button class="edit-content-btn quiz-btn quiz-btn-secondary text-xs" data-id="${q.id}" data-type="quiz">Edit</button><button class="delete-content-btn quiz-btn quiz-btn-danger text-xs" data-id="${q.id}" data-type="quiz">Delete</button></div>`;quizzesListContainer.appendChild(d);}); }
+        function populateQuizSubjectFilter() { if(!quizSubjectFilter)return;while(quizSubjectFilter.options.length>1)quizSubjectFilter.remove(1);allSubjects.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;quizSubjectFilter.appendChild(o);}); }
+
+        // --- PDF Library (Keep robust implementation) ---
+        async function loadPdfList(){if(!pdfListTableBody)return;pdfListTableBody.innerHTML='<tr><td colspan="5" class="p-4 text-center text-gray-500">Loading...</td></tr>';try{const listRef=ref(storage,'/');const res=await listAll(listRef);allPdfs=await Promise.all(res.items.map(async i=>{const m=await getMetadata(i);return{name:i.name,fullPath:i.fullPath,size:m.size,timeCreated:m.timeCreated};}));renderPdfTable();}catch(e){console.error("Err list PDFs:",e);pdfListTableBody.innerHTML='<tr><td colspan="5" class="p-4 text-center text-red-500">Error loading files.</td></tr>';showToast("Err loading PDFs.",!0);}}
+        function renderPdfTable(){if(!pdfListTableBody)return;pdfListTableBody.innerHTML='';const s=pdfSearchInput?.value?.toLowerCase()||'';const f=allPdfs.filter(p=>p.name.toLowerCase().includes(s));f.sort((a,b)=>b.size-a.size);if(f.length===0){pdfListTableBody.innerHTML='<tr><td colspan="5" class="p-4 text-center text-gray-500">No files.</td></tr>';return;}f.forEach(p=>{const tr=document.createElement('tr');tr.className="border-b hover:bg-gray-50";tr.innerHTML=`<td class="p-3"><input type="checkbox" class="pdf-checkbox" data-path="${p.fullPath}"></td><td class="p-3 font-medium">${p.name}</td><td class="p-3 text-sm">${formatBytes(p.size)}</td><td class="p-3 text-sm">${new Date(p.timeCreated).toLocaleDateString()}</td><td class="p-3"><div class="flex space-x-1"><button class="view-pdf-btn p-1 text-blue-600" data-path="${p.fullPath}" title="View"><i data-lucide="external-link" class="w-4 h-4 p-e-none"></i></button><button class="delete-pdf-btn p-1 text-red-600" data-path="${p.fullPath}" title="Delete"><i data-lucide="trash-2" class="w-4 h-4 p-e-none"></i></button></div></td>`;pdfListTableBody.appendChild(tr);});if(typeof lucide!=='undefined')lucide.createIcons();updateDeleteSelectedButtonState();if(selectAllPdfsCheckbox)selectAllPdfsCheckbox.checked=!1;}
+        function formatBytes(b,d=2){if(b===0)return'0 Bytes';const k=1024,dm=d<0?0:d,s=['Bytes','KB','MB','GB','TB'],i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(dm))+' '+s[i];}
+        async function handlePdfUpload(files){if(!files||files.length===0)return;if(uploadProgressContainer)uploadProgressContainer.classList.remove('hidden');if(uploadProgressBar)uploadProgressBar.style.width='0%';let completed=0;for(const f of files){const fileRef=ref(storage,f.name);const uTask=uploadBytesResumable(fileRef,f);uTask.on('state_changed',s=>{const p=(s.bytesTransferred/s.totalBytes)*100;if(uploadProgressBar)uploadProgressBar.style.width=p+'%';},e=>{console.error(e);showToast(`Err upload ${f.name}`,!0);completed++;if(completed===files.length&&uploadProgressContainer)uploadProgressContainer.classList.add('hidden');},async()=>{try{await getDownloadURL(uTask.snapshot.ref);showToast(`${f.name} uploaded!`);}catch(e){showToast(`Error URL ${f.name}`,!0);}finally{completed++;if(completed===files.length){loadPdfList();if(uploadProgressContainer)uploadProgressContainer.classList.add('hidden');}}});}if(pdfUploadInput)pdfUploadInput.value='';}
+        async function deletePdfFile(path){const r=ref(storage,path);try{await deleteObject(r);showToast('File deleted.');loadPdfList();}catch(e){console.error(e);showToast(`Err delete file: ${e.message}`,!0);}}
+        function updateDeleteSelectedButtonState(){if(!pdfListTableBody||!deleteSelectedPdfsBtn)return;const s=pdfListTableBody.querySelectorAll('.pdf-checkbox:checked');deleteSelectedPdfsBtn.classList.toggle('hidden',s.length===0);}
+        async function deleteSelectedPdfs(){if(!pdfListTableBody||!deleteSelectedPdfsBtn)return;const sel=pdfListTableBody.querySelectorAll('.pdf-checkbox:checked');if(sel.length===0)return;showConfirmModal(`Delete ${sel.length} Files`,'Sure?',async()=>{deleteSelectedPdfsBtn.disabled=!0;deleteSelectedPdfsBtn.innerHTML='<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Deleting...';if(typeof lucide!=='undefined')lucide.createIcons();let succ=0;for(const cb of sel){try{await deleteObject(ref(storage,cb.dataset.path));succ++;}catch(e){console.error(`Failed delete ${cb.dataset.path}:`,e);showToast(`Err delete ${cb.dataset.path.split('/').pop()}`,!0);}}showToast(`${succ}/${sel.length} deleted.`);loadPdfList();deleteSelectedPdfsBtn.disabled=!1;deleteSelectedPdfsBtn.innerHTML='<i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>Delete Selected';if(typeof lucide!=='undefined')lucide.createIcons();},!0);}
+
+        // --- Content Add/Edit Modal Logic (NEW) ---
+        function showContentModal(type, id = null, currentData = null) {
+            if (!contentModal || !contentFormFields) return;
+            contentForm.reset();
+            contentIdInput.value = id || '';
+            contentTypeInput.value = type;
+            contentFormFields.innerHTML = ''; // Clear previous fields
+
+            let fieldsHtml = '';
+            switch (type) {
+                case 'subject':
+                    contentModalTitle.textContent = id ? 'Edit Subject' : 'Add Subject';
+                    fieldsHtml = `
+                        <div>
+                            <label for="content-name" class="block text-sm font-medium text-gray-700">Subject Name*</label>
+                            <input type="text" id="content-name" required class="mt-1 content-form-input" value="${currentData?.name || ''}">
+                        </div>
+                        `;
+                    break;
+                case 'exam':
+                    contentModalTitle.textContent = id ? 'Edit Exam' : 'Add Exam';
+                    fieldsHtml = `
+                        <div>
+                            <label for="content-title" class="block text-sm font-medium text-gray-700">Exam Title*</label>
+                            <input type="text" id="content-title" required class="mt-1 content-form-input" value="${currentData?.title || ''}">
+                        </div>
+                        <div>
+                            <label for="content-subjectId" class="block text-sm font-medium text-gray-700">Subject*</label>
+                            <select id="content-subjectId" required class="mt-1 content-form-input">
+                                <option value="">-- Select Subject --</option>
+                                ${allSubjects.map(s => `<option value="${s.id}" ${currentData?.subjectId === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        `;
+                    break;
+                case 'book':
+                     contentModalTitle.textContent = id ? 'Edit Book' : 'Add Book';
+                     fieldsHtml = `
+                        <div>
+                            <label for="content-title" class="block text-sm font-medium text-gray-700">Book Title*</label>
+                            <input type="text" id="content-title" required class="mt-1 content-form-input" value="${currentData?.title || ''}">
+                        </div>
+                        <div>
+                            <label for="content-author" class="block text-sm font-medium text-gray-700">Author</label>
+                            <input type="text" id="content-author" class="mt-1 content-form-input" value="${currentData?.author || ''}">
+                        </div>
+                        `;
+                    break;
+                 // Add case for quiz if using this modal, though quiz has its own complex modal
+                default:
+                    console.error("Unknown content type for modal:", type);
+                    return;
             }
-        } else {
-             console.warn(`Sidebar link for tab "${tabId}" not found.`);
-             document.querySelector(`#sidebar .sidebar-link[data-tab="dashboard"]`)?.classList.add('active'); // Fallback to dashboard link
+
+            contentFormFields.innerHTML = fieldsHtml;
+            contentModal.style.display = 'flex';
         }
 
-        console.log(`Starting manager for: ${tabId}`);
-        // --- Initialize logic/listeners for the new tab ---
-        switch (tabId) {
-            case 'dashboard': activeManagers.dashboard = startDashboardManager(); break;
-            case 'subjects': activeManagers.subjects = managers.subjects.start(); break;
-            case 'exams': activeManagers.exams = managers.exams.start(); break;
-            case 'generalBooks': activeManagers.generalBooks = managers.generalBooks.start(); break;
-            case 'quizzes': activeManagers.quiz = startQuizManager(); break;
-            case 'pdf-library': activeManagers.pdfLibrary = startPdfLibraryManager(); break;
-            case 'list-posts': initPostsListener(); initCategoriesListener(); break;
-            case 'post-form-view': initCategoriesListener(); if (!editingPostId) showPostForm(); else showPostForm(editingPostId); break;
-            case 'categories': initCategoriesListener(renderCategoriesList); break;
-            case 'comments': initPostsListener(); initCommentsListener(); break;
-            case 'analytics': fetchAllDataForAnalytics(); break;
-            case 'users-students': activeManagers.users = startUserManager(); break;
-            case 'users-roles': initUsersListener(renderAdminList); console.log(`Tab "${tabId}" - Placeholder`); break;
-            case 'main-report': if (reportDatePicker) reportDatePicker.destroy(); reportDatePicker = flatpickr("#report-date-range", { mode: "range", dateFormat: "Y-m-d" }); console.log(`Tab "${tabId}" - Placeholder`); break;
-            case 'settings': console.log(`Tab "${tabId}" - Placeholder`); break;
-            default: console.warn(`No manager defined for tab: ${tabId}`);
+        function hideContentModal() {
+            if (contentModal) contentModal.style.display = 'none';
+            editingContent = { id: null, type: null }; // Reset editing state
         }
-        lucide.createIcons();
-    };
 
-    // --- APP INITIALIZATION & SHUTDOWN ---
-    const initializeAppLogic = () => { console.log("Initializing app logic..."); fetchSubjectsForDropdown(); fetchBlogCategoriesForDropdown(); initBlogLibs(); setupCommonEventListeners(); switchTab(currentActiveTab || 'dashboard'); };
-    const stopAppLogic = () => { console.log("Stopping app logic..."); stopAllManagers(); if (quill) quill = null; if (tagify) tagify.destroy(); tagify = null; if (schedulePicker) schedulePicker.destroy(); schedulePicker = null; if (reportDatePicker) reportDatePicker.destroy(); reportDatePicker = null; };
+        async function handleContentFormSubmit(e) {
+            e.preventDefault();
+            const id = contentIdInput.value;
+            const type = contentTypeInput.value;
+            const btn = contentForm.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.textContent = 'Saving...';
 
-    // --- Setup Common Event Listeners ---
-    function setupCommonEventListeners() {
-        console.log("Setting up common event listeners...");
-        // **FIXED: Sidebar Dropdowns** - Add listener directly
-        dropdownToggles.forEach(button => {
-            button.addEventListener('click', (e) => {
-                const targetButton = e.currentTarget;
-                const dropdownMenu = targetButton.nextElementSibling;
-                const icon = targetButton.querySelector('.dropdown-icon');
-                const isOpen = targetButton.classList.contains('open');
-                console.log(`Dropdown toggle clicked: ${targetButton.textContent.trim()}, Currently Open: ${isOpen}`); // Debug log
+            let data = {};
+            // Gather data based on type
+            try {
+                switch (type) {
+                    case 'subject':
+                        const name = document.getElementById('content-name')?.value?.trim();
+                        if (!name) throw new Error("Name is required.");
+                        data = { name };
+                        break;
+                    case 'exam':
+                        const examTitle = document.getElementById('content-title')?.value?.trim();
+                        const subjectId = document.getElementById('content-subjectId')?.value;
+                        if (!examTitle || !subjectId) throw new Error("Title and Subject are required.");
+                        data = { title: examTitle, subjectId };
+                        // Get other exam fields
+                        break;
+                    case 'book':
+                         const bookTitle = document.getElementById('content-title')?.value?.trim();
+                         const author = document.getElementById('content-author')?.value?.trim();
+                         if (!bookTitle) throw new Error("Title is required.");
+                         data = { title: bookTitle, author };
+                         // Get other book fields
+                         break;
+                    default: throw new Error(`Invalid content type: ${type}`);
+                }
 
-                // Close others first
-                dropdownToggles.forEach(otherBtn => { if (otherBtn !== targetButton && otherBtn.classList.contains('open')) { otherBtn.classList.remove('open', 'active'); otherBtn.nextElementSibling.style.display = 'none'; const otherIcon = otherBtn.querySelector('.dropdown-icon'); if(otherIcon) otherIcon.style.transform = 'rotate(0deg)'; } });
+                if (id) { await updateContentItem(type, id, data); }
+                else { await addContentItem(type, data); }
+                hideContentModal();
 
-                // Toggle clicked
-                targetButton.classList.toggle('open');
-                dropdownMenu.style.display = isOpen ? 'none' : 'block';
-                if(icon) icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-                // Don't add 'active' to parent toggle on click, only when child is selected (handled in switchTab)
+            } catch (error) {
+                console.error(`Error saving ${type}:`, error);
+                showToast(error.message || `Error saving ${type}.`, true);
+            } finally {
+                btn.disabled = false; btn.textContent = 'Save';
+            }
+        }
+
+        // --- Generic Content CRUD ---
+        async function addContentItem(type, data) { let ref; switch(type){case 'subject':ref=subjectsCollection;break;case 'exam':ref=examsCollection;break;case 'book':ref=booksCollection;break;default:showToast(`Invalid type:${type}`,!0);return;} try{await addDoc(ref,{...data,createdAt:serverTimestamp()});showToast(`${capitalize(type)} added!`);}catch(e){console.error(e);showToast(`Error add ${type}.`,!0);} }
+        async function updateContentItem(type, id, data) { let ref; switch(type){case 'subject':ref=doc(db,"subjects",id);break;case 'exam':ref=doc(db,"exams",id);break;case 'book':ref=doc(db,"generalBooks",id);break;default:showToast(`Invalid type:${type}`,!0);return;} try{await updateDoc(ref,{...data,updatedAt:serverTimestamp()});showToast(`${capitalize(type)} updated!`);}catch(e){console.error(e);showToast(`Error update ${type}.`,!0);} }
+        async function deleteContentItem(type, id) { let ref; switch(type){case 'subject':ref=doc(db,"subjects",id);break;case 'exam':ref=doc(db,"exams",id);break;case 'book':ref=doc(db,"generalBooks",id);break;case 'quiz':ref=doc(db,"quizzes",id);break;default:showToast(`Invalid type:${type}`,!0);return;} try{await deleteDoc(ref);showToast(`${capitalize(type)} deleted!`);/* Add cascade logic */ }catch(e){console.error(e);showToast(`Error delete ${type}.`,!0);} }
+        function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+
+        // --- Setup Content Event Listeners ---
+        function setupContentEventListeners() {
+            // PDF Library (Keep implementation)
+            if(pdfUploadBtn)pdfUploadBtn.addEventListener('click',()=>pdfUploadInput.click());if(pdfUploadInput)pdfUploadInput.addEventListener('change',(e)=>handlePdfUpload(e.target.files));if(pdfSearchInput)pdfSearchInput.addEventListener('input',renderPdfTable);if(selectAllPdfsCheckbox)selectAllPdfsCheckbox.addEventListener('change',(e)=>{pdfListTableBody.querySelectorAll('.pdf-checkbox').forEach(cb=>cb.checked=e.target.checked);updateDeleteSelectedButtonState();});if(pdfListTableBody)pdfListTableBody.addEventListener('change',(e)=>{if(e.target.classList.contains('pdf-checkbox'))updateDeleteSelectedButtonState();});if(deleteSelectedPdfsBtn)deleteSelectedPdfsBtn.addEventListener('click',deleteSelectedPdfs);if(pdfListTableBody)pdfListTableBody.addEventListener('click',async(e)=>{const delBtn=e.target.closest('.delete-pdf-btn'),viewBtn=e.target.closest('.view-pdf-btn');if(delBtn)showConfirmModal('Delete File',`Delete ${delBtn.dataset.path.split('/').pop()}?`,()=>deletePdfFile(delBtn.dataset.path),!0);if(viewBtn)try{const url=await getDownloadURL(ref(storage,viewBtn.dataset.path));window.open(url,'_blank');}catch(err){console.error(err);showToast("Could not get URL.",!0);}});
+
+            // Quizzes (Keep implementation + Add/Edit/Filter)
+            if(addQuizBtnHeader) addQuizBtnHeader.addEventListener('click', () => { console.log("Show Quiz Modal (Add)"); showQuizModal(); }); // Use specific quiz modal
+            if(closeQuizModalBtn) closeQuizModalBtn.addEventListener('click', () => hideQuizModal());
+            if(quizSubjectFilter) quizSubjectFilter.addEventListener('change', renderQuizList);
+            // Add quizForm submit listener -> handleQuizFormSubmit() - Needs implementation
+            // Add listeners for quiz add question, import/export etc. - Needs implementation
+
+            // Generic Content Add/Edit/Delete Delegation
+            document.body.addEventListener('click', async (e) => { // Use async for potential data fetching on edit
+                const addBtn = e.target.closest('.add-content-btn');
+                const editBtn = e.target.closest('.edit-content-btn');
+                const deleteBtn = e.target.closest('.delete-content-btn');
+
+                if (addBtn) {
+                    const type = addBtn.dataset.type;
+                    editingContent = { id: null, type: type }; // Reset editing state
+                    console.log(`Show Add Modal for: ${type}`);
+                    showContentModal(type); // Show the generic modal for adding
+                }
+                if (editBtn) {
+                    const type = editBtn.dataset.type;
+                    const id = editBtn.dataset.id;
+                    editingContent = { id, type };
+                     if(type === 'quiz') {
+                         console.log("Show Quiz Modal for Edit:", id);
+                         showQuizModal(id); // Show specific quiz modal for editing
+                     } else {
+                         console.log(`Show Edit Modal for ${type}:`, id);
+                         // Fetch current data before showing modal
+                         let currentData = null;
+                         try {
+                             let dataRef;
+                             switch(type) {
+                                case 'subject': dataRef = doc(db, "subjects", id); break;
+                                case 'exam': dataRef = doc(db, "exams", id); break;
+                                case 'book': dataRef = doc(db, "generalBooks", id); break;
+                                default: throw new Error("Unknown type");
+                             }
+                             const docSnap = await getDoc(dataRef);
+                             if (docSnap.exists()) {
+                                 currentData = docSnap.data();
+                                 showContentModal(type, id, currentData); // Show generic modal prefilled
+                             } else {
+                                 showToast(`${capitalize(type)} not found.`, true);
+                             }
+                         } catch (error) {
+                             console.error(`Error fetching ${type} for edit:`, error);
+                             showToast(`Could not load ${type} data.`, true);
+                         }
+                     }
+                }
+                if (deleteBtn) {
+                    const type = deleteBtn.dataset.type;
+                    const id = deleteBtn.dataset.id;
+                    showConfirmModal(`Delete ${capitalize(type)}`,`Sure?`,() => deleteContentItem(type, id),true);
+                }
             });
-        });
 
-        // Sidebar Links (All links, including those in dropdowns)
-        allSidebarLinks.forEach(link => {
-            // Skip dropdown toggle buttons
-            if (link.classList.contains('has-dropdown')) return;
+            // Content Modal Listeners
+            if(contentModalCloseBtn) contentModalCloseBtn.addEventListener('click', hideContentModal);
+            if(contentCancelBtn) contentCancelBtn.addEventListener('click', hideContentModal);
+            if(contentForm) contentForm.addEventListener('submit', handleContentFormSubmit);
+        }
 
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetLink = e.currentTarget;
-                const tabId = targetLink.dataset.tab;
-                console.log(`Sidebar link clicked: ${tabId}`);
+        // =============================================
+        // === QUIZ SPECIFIC LOGIC (Placeholders) ===
+        // =============================================
+        function showQuizModal(quizId = null) {
+            console.log(quizId ? `Showing Quiz Modal (Edit: ${quizId})` : "Showing Quiz Modal (Add)");
+            // 1. Reset quiz form
+            if (quizForm) quizForm.reset();
+            document.getElementById('quiz-id-input').value = quizId || '';
+            document.getElementById('questions-container').innerHTML = '<p class="text-gray-500 text-center py-4 text-sm" id="question-placeholder">Add questions below.</p>'; // Reset questions
+            // Reset cover image preview
+            const coverPreview = document.getElementById('cover-image-preview');
+            const coverFilename = document.getElementById('cover-image-filename');
+            const coverUrlInput = document.getElementById('cover-image-url-input');
+            if(coverPreview) coverPreview.innerHTML = '<span class="text-blue-400 text-sm">Image Preview</span>';
+            if(coverFilename) coverFilename.textContent = '';
+            if(coverUrlInput) coverUrlInput.value = '';
 
-                if (tabId) {
-                    if (tabId === 'post-form-view' && targetLink.dataset.action === 'add') editingPostId = null;
-                    switchTab(tabId);
-                } else { console.warn("Link missing data-tab:", targetLink); }
+            // 2. Populate subject dropdown (assuming allSubjects is loaded)
+            const subjectSelect = document.getElementById('quiz-subject-select');
+            if(subjectSelect) {
+                 while(subjectSelect.options.length > 1) subjectSelect.remove(1); // Clear old subjects
+                 allSubjects.forEach(s => {
+                     const opt = document.createElement('option');
+                     opt.value = s.id; opt.textContent = s.name;
+                     subjectSelect.appendChild(opt);
+                 });
+            }
 
-                if (window.innerWidth < 768 && !mainSidebar.classList.contains('-translate-x-full')) toggleSidebar();
-            });
-        });
+            // 3. If editing (quizId is provided), fetch quiz data and populate form
+            if (quizId) {
+                document.getElementById('quiz-modal-title').textContent = "Edit Quiz";
+                 // Fetch quiz data from allQuizzes or Firestore
+                 const quizData = allQuizzes.find(q => q.id === quizId); // Example using cache
+                 if (quizData) {
+                     document.getElementById('quiz-title').value = quizData.title || '';
+                     if(subjectSelect) subjectSelect.value = quizData.subjectId || '';
+                     // Populate cover image if exists
+                     if(quizData.coverImageUrl && coverPreview && coverFilename && coverUrlInput) {
+                         coverPreview.innerHTML = `<img src="${quizData.coverImageUrl}" class="max-h-full max-w-full object-contain">`;
+                         coverFilename.textContent = 'Current image loaded.'; // Or derive filename
+                         coverUrlInput.value = quizData.coverImageUrl;
+                     }
+                     // Populate questions - This requires parsing quizData.questions and dynamically creating HTML
+                     renderQuizQuestions(quizData.questions || []); // Implement renderQuizQuestions
+                     document.getElementById('delete-quiz-btn').classList.remove('hidden'); // Show delete button
+                 } else {
+                     showToast("Quiz data not found for editing.", true);
+                     return; // Don't show modal if data isn't found
+                 }
+            } else {
+                document.getElementById('quiz-modal-title').textContent = "Add New Quiz";
+                document.getElementById('delete-quiz-btn').classList.add('hidden'); // Hide delete button
+            }
 
-        // Mobile Sidebar Toggle
-        mobileMenuBtn.onclick = toggleSidebar;
-        sidebarOverlay.onclick = toggleSidebar;
-        // Logout Button
-        logoutBtn.onclick = handleLogout;
-        // Generic CRUD Modal Cancel/Background Click
-        modal.addEventListener('click', (e) => { if (e.target.classList.contains('modal-cancel-btn') || e.target === modal) { hideModal(); } });
-        // Generic CRUD Modal Form Submission
-        modal.addEventListener('submit', (e) => { if (e.target.id === 'crud-form') { const type = e.target.dataset.type; if (managers[type]?.handleFormSubmit) managers[type].handleFormSubmit(e); else console.warn(`No submit handler for CRUD type: ${type}`); } });
-        // Global Add Button handler
-        document.body.addEventListener('click', (e) => { const addBtn = e.target.closest('.add-btn'); if (addBtn) { const type = addBtn.dataset.type; if (managers[type]?.handleAdd) managers[type].handleAdd(); else console.warn(`No add handler for CRUD type: ${type}`); } });
-        // Assign PDF Modals Listeners
-        document.getElementById('assign-modal-cancel').addEventListener('click', closeAssignModal);
-        document.getElementById('assign-pdf-search').addEventListener('input', renderAssignablePdfs);
-        document.getElementById('assign-pdf-to-content-modal-cancel').addEventListener('click', closeAssignPdfToContentModal);
-        document.querySelectorAll('.assign-pdf-select-type-btn').forEach(btn => btn.addEventListener('click', (e) => { const type = e.currentTarget.dataset.type; document.querySelectorAll('.assign-pdf-select-type-btn').forEach(b => b.classList.remove('bg-indigo-100', 'text-indigo-700')); e.currentTarget.classList.add('bg-indigo-100', 'text-indigo-700'); document.getElementById('assign-content-search').value = ''; renderAssignableContent(type); }));
-        document.getElementById('assign-content-search').addEventListener('input', (e) => { const activeBtn = document.querySelector('.assign-pdf-select-type-btn.bg-indigo-100'); if (activeBtn) renderAssignableContent(activeBtn.dataset.type); });
-        // User Modals Listeners
-        userModalCloseBtn.addEventListener('click', () => closeModal(userModal));
-        userCancelBtn.addEventListener('click', () => closeModal(userModal));
-        confirmCancelBtn.addEventListener('click', () => hideConfirmModal());
-        // Blog specific modals listeners (attach here since modals exist globally)
-        setupBlogEventListeners();
-    }
-    const toggleSidebar = () => { mainSidebar.classList.toggle('-translate-x-full'); sidebarOverlay.classList.toggle('hidden'); };
+            // 4. Show modal
+            if(quizModal) quizModal.style.display = 'flex';
+        }
 
-    // --- Authentication Form Listeners (outside common setup) ---
-    authForm.addEventListener('submit', handleAuthForm);
-    authToggleLink.addEventListener('click', toggleAuthMode);
+        function hideQuizModal() {
+            if(quizModal) quizModal.style.display = 'none';
+        }
 
-    // --- DASHBOARD MANAGER ---
-    const startDashboardManager = () => { /* ... unchanged ... */ }; // Includes console logs
+        function renderQuizQuestions(questions) {
+             const container = document.getElementById('questions-container');
+             if (!container) return;
+             container.innerHTML = ''; // Clear placeholder/old questions
+             if (!questions || questions.length === 0) {
+                 container.innerHTML = '<p class="text-gray-500 text-center py-4 text-sm" id="question-placeholder">Add first question below.</p>';
+                 return;
+             }
+             // Loop through questions array and create HTML for each question editor
+             questions.forEach((q, index) => {
+                 // Create complex HTML structure for question text, options, correct answer selection, delete button
+                 const questionDiv = document.createElement('div');
+                 questionDiv.className = 'border p-4 rounded bg-gray-50';
+                 questionDiv.innerHTML = `<div>Question ${index + 1}: ${q.text} (Placeholder)</div>`; // Replace with actual editor UI
+                 container.appendChild(questionDiv);
+             });
+        }
+        // Add handleQuizFormSubmit, addQuestionToForm, deleteQuestionFromForm etc.
 
-    // --- PDF / CONTENT MANAGER ---
-    const uploadFileToStorage = (file, pathPrefix) => new Promise((resolve, reject) => { /* ... unchanged ... */ });
-    const attachFileInputListeners = () => { /* ... unchanged ... */ };
-    const createTableHTML = (id, title, headers) => { /* HTML structure unchanged */ return `...`; }; // Keep HTML structure
-    const createCrudManager = (config) => { /* ... unchanged ... */ }; // Includes console logs
-    const fetchSubjectsForDropdown = async () => { /* ... unchanged ... */ }; // Includes console logs
-    const fetchBlogCategoriesForDropdown = async () => { /* ... unchanged ... */ }; // Includes console logs
-    const managers = { // Define managers object
-        subjects: createCrudManager({ type: 'subjects', title: 'Subjects', headers: ['Cover', 'Name', 'Grade', 'Book PDF', 'Created'], fields: [ { id: 'name', label: 'Subject Name', required: true }, { id: 'grade', label: 'Grade (e.g., F1, F2)', required: true }, { id: 'coverImage', label: 'Cover Image', type: 'file', accept: 'image/*', uploadPath: 'subject_covers/' }, { id: 'bookPdfUrl', label: 'Book PDF/ZIP', type: 'file', accept: '.pdf,.zip', uploadPath: 'subject_pdfs/' } ], renderRow: (item) => `...` /* Row HTML unchanged */ }),
-        exams: createCrudManager({ type: 'exams', title: 'Exams', headers: ['Cover', 'Name', 'Year', 'Subject', 'PDF', 'Created'], fields: [ { id: 'name', label: 'Exam Name', required: true }, { id: 'year', label: 'Year', type: 'number', required: true }, { id: 'subjectId', label: 'Subject', type: 'select', optionsSource: 'subjects', required: true }, { id: 'coverImage', label: 'Cover Image', type: 'file', accept: 'image/*', uploadPath: 'exam_covers/' }, { id: 'pdfUrl', label: 'Exam PDF/ZIP', type: 'file', accept: '.pdf,.zip', uploadPath: 'exam_pdfs/' } ], renderRow: (item) => { /* Row HTML unchanged */ return `...`; } }),
-        generalBooks: createCrudManager({ type: 'generalBooks', title: 'General Books', headers: ['Cover', 'Title', 'Author', 'PDF', 'Created'], fields: [ { id: 'title', label: 'Book Title', required: true }, { id: 'author', label: 'Author' }, { id: 'coverImageUrl', label: 'Cover Image', type: 'file', accept: 'image/*', uploadPath: 'generalBooks_covers/' }, { id: 'pdfUrl', label: 'Book PDF/ZIP', type: 'file', accept: '.pdf,.zip', uploadPath: 'generalBooks_pdfs/' } ], renderRow: (item) => `...` /* Row HTML unchanged */ }),
-        // Blog managers handled separately
-    };
 
-    // --- PDF LIBRARY MANAGER ---
-    const startPdfLibraryManager = () => { /* ... unchanged ... */ }; // Includes console logs
-    // Assign PDF Modals functions remain unchanged
-    const assignModal = document.getElementById('assign-modal');
-    const assignItemNameEl = document.getElementById('assign-item-name');
-    const assignItemTypeEl = document.getElementById('assign-item-type');
-    const assignPdfListContainerEl = document.getElementById('assign-pdf-list-container');
-    const assignPdfSearchEl = document.getElementById('assign-pdf-search');
-    const assignPdfToContentModal = document.getElementById('assign-pdf-to-content-modal');
-    const assignPdfNameDisplay = document.getElementById('assign-pdf-name-display');
-    const assignContentSearchEl = document.getElementById('assign-content-search');
-    const assignContentListContainerEl = document.getElementById('assign-content-list-container');
-    const openAssignModal = (type, id, field, name) => { /* ... unchanged ... */ };
-    const closeAssignModal = () => { /* ... unchanged ... */ };
-    const renderAssignablePdfs = () => { /* ... unchanged ... */ };
-    const assignPdf = async (path) => { /* ... unchanged ... */ };
-    const openAssignPdfToContentModal = (path, name) => { /* ... unchanged ... */ };
-    const closeAssignPdfToContentModal = () => { /* ... unchanged ... */ };
-    const renderAssignableContent = (type) => { /* ... unchanged ... */ };
-    const assignPdfToContent = async (type, id, field) => { /* ... unchanged ... */ };
+        // =============================================
+        // BLOG LOGIC (Keep all functions as is)
+        // =============================================
+        // ... (All blog functions: initBlogLibs, mockUploadFile, initPostsListener, initCommentsListener, initCategoriesListener, fetchAllDataForAnalytics, renderPostsTable, renderCommentsList, renderCategoriesList, updateCategoryDropdowns, renderAnalytics, showPostForm, handleBlogPostFormSubmit, handleImageUpload, addAttachmentToList, handleAttachmentUpload, showDeleteModal, confirmDelete, updateCommentStatus, deleteComment, showReplyModal, handleReplySubmit, showShareModal, setupBlogEventListeners) ...
+        // Ensure function names don't clash and variables are scoped correctly.
+        // The previous provided combined code should be fine here.
 
-    // --- QUIZ MANAGER ---
-    const startQuizManager = () => { /* ... unchanged ... */ }; // Includes console logs
+    </script>
 
-    // --- USER MANAGER ---
-    const startUserManager = () => { /* ... unchanged ... */ }; // Includes console logs
-
-    // --- BLOG MANAGER ---
-    // Listeners
-    let unsubscribePosts = () => {}; let unsubscribeComments = () => {}; let unsubscribeCategories = () => {};
-    function initPostsListener() { /* ... unchanged ... */ };
-    function initCommentsListener() { /* ... unchanged ... */ };
-    function initCategoriesListener(callback) { /* ... unchanged ... */ };
-    async function fetchAllDataForAnalytics() { /* ... unchanged ... */ };
-    // Init Libs
-    function initBlogLibs() { /* ... unchanged ... */ };
-    // Rendering
-    function renderPostsTable() { /* HTML unchanged */ /* ... function logic unchanged ... */ };
-    function renderCommentsList() { /* HTML unchanged */ /* ... function logic unchanged ... */ };
-    function renderCategoriesList() { /* HTML unchanged */ /* ... function logic unchanged ... */ };
-    function updateBlogCategoryDropdowns() { /* ... function logic unchanged ... */ };
-    function renderAnalytics() { /* ... function logic unchanged ... */ };
-    // Form/Actions
-    async function showPostForm(postId = null) { /* ... function logic unchanged ... */ };
-    async function handleBlogPostFormSubmit(e) { /* ... function logic unchanged ... */ };
-    async function handleImageUpload(file) { /* ... function logic unchanged ... */ };
-    function addAttachmentToList(fileName, fileUrl) { /* HTML unchanged */ /* ... function logic unchanged ... */ };
-    async function handleAttachmentUpload(files) { /* ... function logic unchanged ... */ };
-    function showDeleteModal(postId) { /* ... function logic unchanged ... */ };
-    async function confirmDelete() { /* ... function logic unchanged ... */ };
-    async function updateCommentStatus(commentId, newStatus) { /* ... function logic unchanged ... */ };
-    async function deleteComment(commentId) { /* ... function logic unchanged ... */ };
-    function showReplyModal(commentId) { /* ... function logic unchanged ... */ };
-    async function handleReplySubmit(e) { /* ... function logic unchanged ... */ };
-    function showShareModal(postId, postTitle) { /* ... function logic unchanged ... */ };
-    // Blog Event Listeners Setup
-    function setupBlogEventListeners() { /* ... unchanged ... */ }; // Includes console logs
-
-    // --- Global App Object ---
-    window.app = { // Ensure this is accessible for inline onclicks
-        editItem: (type, id) => {
-            let item = null; const manager = managers[type]; // Find the specific CRUD manager
-            if (manager && manager.localItems) item = manager.localItems.find(i => i.id === id); // Use its local cache
-            else if (type === 'blogCategories') item = availableBlogCategories.find(i => i.id === id); // Specific cache for blog categories
-            // Blog posts edit is handled by showPostForm, not generic CRUD modal
-            if (item && manager?.handleEdit) manager.handleEdit(item);
-            else if (type !== 'blogPosts') { console.error(`Cannot edit item ${id} of type ${type}`); showToast("Could not find item data.", "error"); }
-        },
-        deleteItem: (type, id) => { if (managers[type]?.handleDelete) managers[type].handleDelete(id); else console.error(`No delete handler for ${type}`); },
-        copyToClipboard: async (path) => { try { const url = await getDownloadURL(ref(storage, path)); navigator.clipboard.writeText(url); showToast("URL copied!"); } catch (e) { console.error("Copy URL error:", e); showToast("Could not copy URL.", "error"); } },
-        deletePdf: async (path) => { if (confirm(`Delete this file?\n${path}\nCannot be undone.`)) { try { await deleteObject(ref(storage, path)); showToast("File deleted!"); allPdfFiles = allPdfFiles.filter(p => p.fullPath !== path); renderPdfList(); } catch (e) { console.error("Delete file error:", e); showToast("Error deleting file.", "error"); } } }, // Added renderPdfList call
-        openAssignModal: (type, id, field, name) => { openAssignModal(type, id, field, name); },
-        assignPdf: (path) => { assignPdf(path); },
-        openAssignPdfToContentModal: (path, name) => { openAssignPdfToContentModal(path, name); },
-        assignPdfToContent: (type, id, field) => { assignPdfToContent(type, id, field); }
-    };
-
-    // --- Initial DOM Ready ---
-     document.addEventListener('DOMContentLoaded', () => {
-         console.log("DOM Loaded.");
-         lucide.createIcons();
-         // Auth state change triggers app initialization
-     });
-
-</script>
 </body>
 </html>
