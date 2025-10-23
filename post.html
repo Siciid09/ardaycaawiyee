@@ -1,1 +1,743 @@
-<h1>hiiiiiiiiiiiiiiiiiiiiiiii</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Post Title</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb; /* gray-50 */
+        }
+        /* Styles for content rendered from Quill */
+        .post-content {
+            color: #374151; /* gray-700 */
+        }
+        .post-content p {
+            line-height: 1.75;
+            margin-bottom: 1.5rem;
+            font-size: 1.125rem; /* 18px */
+        }
+        .post-content h2 {
+            font-size: 1.875rem; /* 30px */
+            font-weight: 700;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb; /* gray-200 */
+        }
+        .post-content h3 {
+            font-size: 1.5rem; /* 24px */
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        .post-content ul, .post-content ol {
+            margin-bottom: 1.5rem;
+            margin-left: 1.5rem;
+            font-size: 1.125rem;
+            line-height: 1.75;
+        }
+        .post-content ul {
+            list-style-type: disc;
+        }
+        .post-content ol {
+            list-style-type: decimal;
+        }
+        .post-content li {
+            margin-bottom: 0.5rem;
+        }
+        .post-content a {
+            color: #4f46e5; /* indigo-600 */
+            text-decoration: underline;
+        }
+        .post-content blockquote {
+            border-left: 4px solid #a5b4fc; /* indigo-300 */
+            padding-left: 1rem;
+            margin-left: 0;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            color: #4b5563; /* gray-600 */
+        }
+        .post-content pre {
+            background-color: #1f2937; /* gray-800 */
+            color: #f3f4f6; /* gray-100 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .post-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: -100px; /* Start hidden */
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            transition: all 0.3s ease-in-out;
+        }
+        #toast.show {
+            bottom: 20px; /* Slide in */
+        }
+        .toast-success { background-color: #10b981; }
+        .toast-error { background-color: #ef4444; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-indigo-600">MyBlog</div>
+            <div class="flex items-center space-x-4">
+                <a href="/" class="text-gray-600 hover:text-indigo-600 font-medium">Home</a>
+                <a href="/blog.html" class="text-indigo-600 font-bold">Blog</a>
+                <a href="#" class="text-gray-600 hover:text-indigo-600 font-medium">About</a>
+                <a href="#" class="text-gray-600 hover:text-indigo-600 font-medium">Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Breadcrumbs -->
+        <nav class="text-sm text-gray-500 mb-4" aria-label="Breadcrumb">
+            <ol class="list-none p-0 inline-flex">
+                <li class="flex items-center">
+                    <a href="/" class="hover:text-indigo-600">Home</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
+                </li>
+                <li class="flex items-center">
+                    <a href="/blog.html" class="hover:text-indigo-600">Blog</a>
+                    <i data-lucide="chevron-right" class="w-4 h-4 mx-1"></i>
+                </li>
+                <li class="truncate max-w-[200px] md:max-w-none">
+                    <span id="breadcrumb-title" class="font-medium text-gray-700">Loading Post...</span>
+                </li>
+            </ol>
+        </nav>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Main Post Content -->
+            <article class="lg:col-span-2 bg-white p-6 md:p-10 rounded-lg shadow-sm">
+                
+                <!-- Post Header -->
+                <header class="mb-8">
+                    <h1 id="post-title" class="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+                        Loading Post Title...
+                    </h1>
+                    <div class="flex items-center space-x-4 text-gray-500">
+                        <img id="post-author-avatar" src="https://placehold.co/40x40/e2e8f0/64748b?text=A" alt="Author" class="w-10 h-10 rounded-full">
+                        <div>
+                            <span id="post-author-name" class="font-medium text-gray-700">Admin</span>
+                            <span class="mx-1">&bull;</span>
+                            <span id="post-date">January 1, 2024</span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Featured Image -->
+                <img id="post-image" src="https://placehold.co/1200x600/e2e8f0/64748b?text=Loading+Image" alt="Post feature image" class="w-full h-auto rounded-lg mb-8 shadow-lg">
+
+                <!-- Post Body -->
+                <div id="post-content" class="post-content">
+                    <p>Loading post content...</p>
+                </div>
+
+                <!-- Tags -->
+                <div id="post-tags" class="mt-8 pt-6 border-t border-gray-200">
+                    <h4 class="font-semibold mb-2">Tags:</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <!-- Tags loaded by JS -->
+                    </div>
+                </div>
+
+                <!-- Share Buttons -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h4 class="font-semibold mb-3 text-center text-lg">Share this post</h4>
+                    <div class="flex justify-center space-x-4">
+                        <a id="share-twitter" href="#" target="_blank" class="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500 transition-colors">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                            <span>Twitter</span>
+                        </a>
+                        <a id="share-facebook" href="#" target="_blank" class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i data-lucide="facebook" class="w-5 h-5"></i>
+                            <span>Facebook</span>
+                        </a>
+                        <a id="share-linkedin" href="#" target="_blank" class="flex items-center space-x-2 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i>
+                            <span>LinkedIn</span>
+                        </a>
+                        <a id="share-whatsapp" href="#" target="_blank" class="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                            <i data-lucide="message-circle" class="w-5 h-5"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Author Box -->
+                <div class="mt-12 p-6 bg-gray-50 rounded-lg flex items-center space-x-4">
+                    <img id="author-box-avatar" src="https://placehold.co/80x80/e2e8f0/64748b?text=A" alt="Author" class="w-16 h-16 md:w-20 md:h-20 rounded-full flex-shrink-0">
+                    <div>
+                        <h4 class="text-xl font-semibold text-gray-800 mb-1" id="author-box-name">About Admin</h4>
+                        <p class="text-gray-600 text-sm">
+                            The author of this post. More bio information could be stored and displayed here.
+                        </p>
+                        <!-- <a href="#" class="text-indigo-600 text-sm font-medium hover:underline mt-2 inline-block">More posts by Admin &rarr;</a> -->
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <section id="comments" class="mt-12">
+                    <h3 id="comment-count" class="text-2xl font-semibold mb-6">0 Comments</h3>
+                    
+                    <!-- Comment Form -->
+                    <form id="comment-form" class="mb-8">
+                        <h4 class="text-xl font-semibold mb-4">Leave a Comment</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="comment-name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                <input type="text" id="comment-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            </div>
+                            <div>
+                                <label for="comment-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input type="email" id="comment-email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="comment-text" class="block text-sm font-medium text-gray-700 mb-1">Comment</label>
+                            <textarea id="comment-text" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required></textarea>
+                        </div>
+                        <button type="submit" id="comment-submit-btn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">
+                            Submit Comment
+                        </button>
+                    </form>
+                    
+                    <!-- Comment List -->
+                    <div id="comment-list" class="space-y-6">
+                        <!-- Comments loaded by JS -->
+                        <p id="comments-loader" class="text-gray-500">Loading comments...</p>
+                    </div>
+                </section>
+                
+            </article>
+
+            <!-- Sidebar -->
+            <aside class="lg:col-span-1 space-y-8">
+                
+                <!-- Related Posts -->
+                <section class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-3">Related Posts</h3>
+                    <div id="related-posts-list" class="space-y-4">
+                        <!-- Related posts will be loaded by JS -->
+                        <p class="text-gray-500 text-sm">Loading related posts...</p>
+                    </div>
+                </section>
+                
+            </aside>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 mt-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+                <h4 class="text-lg font-semibold text-white mb-3">About MyBlog</h4>
+                <p class="text-sm">Your go-to source for the latest insights, tutorials, and news on a variety of topics.</p>
+            </div>
+            <div>
+                <h4 class="text-lg font-semibold text-white mb-3">Quick Links</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="/" class="hover:text-white">Home</a></li>
+                    <li><a href="/blog.html" class="hover:text-white">Blog</a></li>
+                    <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                    <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-lg font-semibold text-white mb-3">Follow Us</h4>
+                <div class="flex space-x-4">
+                    <a href="#" class="hover:text-white"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+                    <a href="#" class="hover:text-white"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                    <a href="#" class="hover:text-white"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                    <a href="#" class="hover:text-white"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-900 py-4">
+            <p class="text-center text-sm text-gray-400">&copy; 2024 MyBlog. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <!-- Toast Notification (for comment submission) -->
+    <div id="toast"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs,
+            doc,
+            getDoc,
+            addDoc,
+            updateDoc,
+            increment,
+            query,
+            where,
+            orderBy,
+            limit,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- PASTE YOUR FIREBASE CONFIG HERE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuqswofpquk8aUbCOZCGjdYLUivBEh7a8",
+            authDomain: "ardaycaawiye-18b89.firebaseapp.com",
+            projectId: "ardaycaawiye-18b89",
+            storageBucket: "ardaycaawiye-18b89.firebasestorage.app",
+            messagingSenderId: "590874185284",
+            appId: "1:590874185284:web:6ee7df602c45068e38b611",
+            measurementId: "G-SBGSTJWDMR"
+        };
+        // -----------------------------------------
+
+        // --- Firebase Init ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const postsCollection = collection(db, "blogPosts");
+        const commentsCollection = collection(db, "blogComments");
+
+        // --- DOM Elements ---
+        const breadcrumbTitleEl = document.getElementById('breadcrumb-title');
+        const postTitleEl = document.getElementById('post-title');
+        const postAuthorAvatarEl = document.getElementById('post-author-avatar');
+        const postAuthorNameEl = document.getElementById('post-author-name');
+        const postDateEl = document.getElementById('post-date');
+        const postImageEl = document.getElementById('post-image');
+        const postContentEl = document.getElementById('post-content');
+        const postTagsEl = document.getElementById('post-tags');
+        const authorBoxAvatarEl = document.getElementById('author-box-avatar');
+        const authorBoxNameEl = document.getElementById('author-box-name');
+        const relatedPostsListEl = document.getElementById('related-posts-list');
+        const commentForm = document.getElementById('comment-form');
+        const commentSubmitBtn = document.getElementById('comment-submit-btn');
+        const commentCountEl = document.getElementById('comment-count');
+        const commentListEl = document.getElementById('comment-list');
+        const commentsLoaderEl = document.getElementById('comments-loader');
+        const toast = document.getElementById('toast');
+
+        let currentPostId = null;
+
+        // --- Toast Notification ---
+        function showToast(message, isError = false) {
+            toast.textContent = message;
+            toast.className = `fixed bottom-5 left-50 px-6 py-3 rounded-lg text-white font-semibold shadow-lg transition-all transform ${isError ? 'toast-error' : 'toast-success'}`;
+            // Correct transform from translateX(-50%)
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)'; 
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Utility Functions ---
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Someday';
+            return new Date(timestamp.toDate()).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        // --- Quill Content to HTML Renderer ---
+        
+        // This is a basic Delta to HTML converter. A more robust library might be needed for full features.
+        class QuillDeltaToHtmlConverter {
+            constructor(deltaOps) {
+                this.ops = deltaOps;
+            }
+            convert() {
+                let html = '';
+                this.ops.forEach(op => {
+                    if (typeof op.insert === 'string') {
+                        let text = this.escapeHtml(op.insert);
+                        if (op.attributes) {
+                            if (op.attributes.bold) text = `<strong>${text}</strong>`;
+                            if (op.attributes.italic) text = `<em>${text}</em>`;
+                            if (op.attributes.underline) text = `<u>${text}</u>`;
+                            if (op.attributes.strike) text = `<s>${text}</s>`;
+                            if (op.attributes.link) text = `<a href="${op.attributes.link}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+                        }
+                        
+                        // Handle newlines
+                        const lines = text.split('\n');
+                        let currentHtml = '';
+
+                        lines.forEach((line, index) => {
+                            if (index > 0) {
+                                // Close previous tag and open a new one
+                                if (currentHtml.startsWith('<h')) currentHtml += `</h${op.attributes.header}>`;
+                                else if (currentHtml.startsWith('<blockquote')) currentHtml += `</p></blockquote>`;
+                                else if (currentHtml.startsWith('<pre')) currentHtml += `</code></pre>`;
+                                else if (currentHtml.startsWith('<li')) currentHtml += `</li>`;
+                                else if (currentHtml.startsWith('<p')) currentHtml += `</p>`;
+                                
+                                html += currentHtml;
+                                currentHtml = '';
+                            }
+
+                            if (op.attributes && op.attributes.header) {
+                                currentHtml = `<h${op.attributes.header}>${line}`;
+                            } else if (op.attributes && op.attributes.blockquote) {
+                                currentHtml = `<blockquote><p>${line}`;
+                            } else if (op.attributes && op.attributes['code-block']) {
+                                currentHtml = `<pre><code>${line}`;
+                            } else if (op.attributes && op.attributes.list === 'ordered') {
+                                currentHtml = `<li>${line}`; // Note: This basic converter doesn't wrap in <ol>
+                            } else if (op.attributes && op.attributes.list === 'bullet') {
+                                currentHtml = `<li>${line}`; // Note: This basic converter doesn't wrap in <ul>
+                            } else {
+                                currentHtml = `<p>${line}`;
+                            }
+                        });
+
+                        // Close the last tag
+                        if (currentHtml.startsWith('<h')) currentHtml += `</h${op.attributes.header}>`;
+                        else if (currentHtml.startsWith('<blockquote')) currentHtml += `</p></blockquote>`;
+                        else if (currentHtml.startsWith('<pre')) currentHtml += `</code></pre>`;
+                        else if (currentHtml.startsWith('<li')) currentHtml += `</li>`;
+                        else if (currentHtml.startsWith('<p')) currentHtml += `</p>`;
+                        
+                        html += currentHtml;
+
+                    } else if (op.insert && op.insert.image) {
+                        html += `<p><img src="${op.insert.image}" alt="Post image"></p>`;
+                    }
+                });
+                
+                // --- Group list items ---
+                html = html.replace(/<\/li><li>/g, '</li><li>'); // Consolidate list items
+                
+                // Wrap list items in <ul> or <ol>
+                // This is a simplified approach. A true delta converter is more complex.
+                // Regex to wrap consecutive <li> items
+                const wrapLists = (html, listType, tag) => {
+                    const regex = new RegExp(`(<li>.*?<\/li>)+`, 'g');
+                    return html.replace(regex, (match) => {
+                        if (match.includes('<' + tag + '>')) return match; // Already wrapped (avoid nesting)
+                        // Check if the <li> items are from the correct list type (a bit of a hack)
+                        // This logic is flawed if lists are mixed, but it's better than nothing.
+                        if (listType === 'bullet' && op.attributes && op.attributes.list === 'bullet') {
+                           return `<ul>${match}</ul>`;
+                        }
+                        if (listType === 'ordered' && op.attributes && op.attributes.list === 'ordered') {
+                           return `<ol>${match}</ol>`;
+                        }
+                        // Fallback for simple cases
+                        if (!match.includes('<ul>') && !match.includes('<ol>')) {
+                             return `<${tag}>${match}</${tag}>`;
+                        }
+                        return match;
+                    });
+                };
+                
+                // A very basic way to wrap lists.
+                // A better parser would track state.
+                html = html.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
+                html = html.replace(/<\/ul><ul>/g, ''); // Consolidate
+
+                // Clean up empty paragraphs
+                html = html.replace(/<p><\/p>/g, '');
+                return html;
+            }
+            escapeHtml(text) {
+                return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            }
+        }
+        
+        function renderQuillContent(contentString) {
+            try {
+                // Check if content is already a plain string (legacy)
+                if (typeof contentString === 'string' && !contentString.trim().startsWith('{"ops":')) {
+                    // Treat as plain text and wrap in paragraphs
+                    return contentString.split('\n').map(p => `<p>${p}</p>`).join('');
+                }
+                
+                const ops = JSON.parse(contentString).ops;
+                const converter = new QuillDeltaToHtmlConverter(ops, {});
+                return converter.convert(); 
+            } catch (e) {
+                console.error("Error parsing Quill content:", e);
+                // Fallback if JSON is malformed but not plain text
+                if (typeof contentString === 'string') {
+                    return `<p>${contentString.replace('\n', '</p><p>')}</p>`;
+                }
+                return "<p>Error displaying post content.</p>";
+            }
+        }
+        
+        // --- Main Data Loading Function ---
+        async function loadPost(id) {
+            currentPostId = id;
+            try {
+                // 1. Get Post Document
+                const postRef = doc(db, "blogPosts", id);
+                const postSnap = await getDoc(postRef);
+
+                if (!postSnap.exists() || postSnap.data().status !== 'Published') {
+                    document.body.innerHTML = `<div class="text-center p-20">
+                        <h1 class="text-4xl font-bold mb-4">Post Not Found</h1>
+                        <p class="text-gray-600">This post may have been removed or is not available.</p>
+                        <a href="/blog.html" class="mt-8 inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold">Back to Blog</a>
+                    </div>`;
+                    lucide.createIcons();
+                    return;
+                }
+
+                const post = postSnap.data();
+
+                // 2. Increment View Count (do this async, don't wait)
+                // We don't await this, just fire and forget
+                updateDoc(postRef, { views: increment(1) }).catch(err => {
+                    console.warn("Failed to increment view count:", err);
+                });
+
+                // 3. Populate Page Content
+                document.title = post.title;
+                breadcrumbTitleEl.textContent = post.title;
+                postTitleEl.textContent = post.title;
+                postAuthorNameEl.textContent = post.author || 'Admin';
+                authorBoxNameEl.textContent = `About ${post.author || 'Admin'}`;
+                postDateEl.textContent = formatDate(post.publishDate);
+                postImageEl.src = post.featureImage || 'https://placehold.co/1200x600/e2e8f0/64748b?text=Blog+Post';
+                postImageEl.alt = post.title;
+
+                // Render Quill content
+                postContentEl.innerHTML = renderQuillContent(post.content);
+
+                // 4. Populate Tags
+                postTagsEl.innerHTML = '<h4 class="font-semibold mb-2">Tags:</h4>';
+                const tagsContainer = document.createElement('div');
+                tagsContainer.className = "flex flex-wrap gap-2";
+                if (post.tags && post.tags.length > 0) {
+                    post.tags.forEach(tag => {
+                        const tagEl = document.createElement('span');
+                        tagEl.className = "bg-gray-100 text-gray-700 text-sm font-medium px-3 py-1 rounded-full";
+                        tagEl.textContent = tag;
+                        tagsContainer.appendChild(tagEl);
+                    });
+                } else {
+                    tagsContainer.innerHTML = `<span class="text-sm text-gray-500">No tags</span>`;
+                }
+                postTagsEl.appendChild(tagsContainer);
+
+                // 5. Setup Share Links
+                const postUrl = window.location.href;
+                document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent(post.title)}`;
+                document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`;
+                document.getElementById('share-linkedin').href = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(postUrl)}&title=${encodeURIComponent(post.title)}`;
+                document.getElementById('share-whatsapp').href = `https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + " " + postUrl)}`;
+
+                // 6. Load Related & Comments
+                loadRelatedPosts(post.category, id);
+                loadComments(id);
+
+            } catch (error) {
+                console.error("Error loading post:", error);
+                postContentEl.innerHTML = "<p>Error loading post. Please try again later.</p>";
+            } finally {
+                // Ensure icons are always created
+                lucide.createIcons();
+            }
+        }
+
+        async function loadRelatedPosts(category, currentPostId) {
+            try {
+                const q = query(postsCollection, 
+                    where("status", "==", "Published"),
+                    where("category", "==", category),
+                    // We can't order by publishDate here without an index
+                    // So we'll fetch and sort in JS
+                    limit(5) // Get a few extra to be safe
+                );
+                const snapshot = await getDocs(q);
+                relatedPostsListEl.innerHTML = ''; // Clear loader
+                
+                let relatedPosts = [];
+                snapshot.docs.forEach(doc => {
+                    if (doc.id !== currentPostId) {
+                        relatedPosts.push({ id: doc.id, ...doc.data() });
+                    }
+                });
+
+                // Sort by date in JS
+                relatedPosts.sort((a, b) => {
+                    const dateA = a.publishDate ? a.publishDate.toDate() : new Date(0);
+                    const dateB = b.publishDate ? b.publishDate.toDate() : new Date(0);
+                    return dateB - dateA; // Newest first
+                });
+
+                // Take the top 3
+                const top3 = relatedPosts.slice(0, 3);
+
+                if (top3.length === 0) {
+                    relatedPostsListEl.innerHTML = '<p class="text-gray-500 text-sm">No related posts found.</p>';
+                    return;
+                }
+
+                top3.forEach(post => {
+                    const postEl = document.createElement('a');
+                    postEl.href = `/post.html?id=${post.id}`;
+                    postEl.className = "flex items-center space-x-3 group";
+                    postEl.innerHTML = `
+                        <img src="${post.featureImage || 'https://placehold.co/100x100/e2e8f0/64748b?text=Post'}" alt="${post.title}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 group-hover:text-indigo-600 group-hover:underline">${post.title}</h4>
+                            <p class="text-sm text-gray-500">${formatDate(post.publishDate)}</p>
+                        </div>
+                    `;
+                    relatedPostsListEl.appendChild(postEl);
+                });
+
+            } catch (error) {
+                console.error("Error loading related posts:", error);
+                relatedPostsListEl.innerHTML = '<p class="text-red-500 text-sm">Could not load related posts.</p>';
+            }
+        }
+
+        async function loadComments(postId) {
+            try {
+                // This query requires an index on postId (ASC) and date (DESC)
+                // Or postId (ASC), status (ASC), date (DESC)
+                // Let's simplify to avoid index issues, and sort in JS
+                const q = query(commentsCollection, 
+                    where("postId", "==", postId),
+                    where("status", "==", "Approved")
+                );
+                const snapshot = await getDocs(q);
+                
+                commentsLoaderEl.style.display = 'none';
+                commentListEl.innerHTML = ''; // Clear
+                
+                let comments = snapshot.docs.map(doc => doc.data());
+
+                // Sort in JS by date, newest first
+                comments.sort((a, b) => {
+                    const dateA = a.date ? a.date.toDate() : new Date(0);
+                    const dateB = b.date ? b.date.toDate() : new Date(0);
+                    return dateB - dateA;
+                });
+
+                commentCountEl.textContent = `${comments.length} Comment${comments.length === 1 ? '' : 's'}`;
+
+                if (comments.length === 0) {
+                    commentListEl.innerHTML = '<p class="text-gray-500">Be the first to comment!</p>';
+                    return;
+                }
+
+                comments.forEach(comment => {
+                    const commentEl = document.createElement('div');
+                    commentEl.className = "flex space-x-4";
+                    commentEl.innerHTML = `
+                        <img src="https://placehold.co/48x48/e2e8f0/64748b?text=${comment.author.charAt(0)}" alt="${comment.author}" class="w-12 h-12 rounded-full flex-shrink-0">
+                        <div class="flex-grow">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold text-gray-800">${comment.author}</span>
+                                <span class="text-xs text-gray-500">${formatDate(comment.date)}</span>
+                            </div>
+                            <p class="text-gray-600 mt-1">${comment.text}</p>
+                            ${comment.reply ? `
+                                <div class="bg-gray-50 p-3 rounded-lg border mt-3 ml-6">
+                                    <p class="text-sm font-semibold text-gray-700">Reply from Admin:</p>
+                                    <p class="text-sm text-gray-600 mt-1">${comment.reply}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    commentListEl.appendChild(commentEl);
+                });
+
+            } catch (error) {
+                console.error("Error loading comments:", error);
+                commentsLoaderEl.textContent = "Could not load comments.";
+            }
+        }
+
+        // --- Event Listeners ---
+        commentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentPostId) return;
+
+            commentSubmitBtn.disabled = true;
+            commentSubmitBtn.textContent = "Submitting...";
+
+            try {
+                const newComment = {
+                    postId: currentPostId,
+                    author: document.getElementById('comment-name').value,
+                    email: document.getElementById('comment-email').value,
+                    text: document.getElementById('comment-text').value,
+                    date: serverTimestamp(),
+                    status: "Pending" // All new comments must be approved
+                };
+
+                await addDoc(commentsCollection, newComment);
+                
+                commentForm.reset();
+                showToast("Comment submitted! It will appear after moderation.", false); // false for success
+
+            } catch (error) {
+                console.error("Error submitting comment:", error);
+                showToast("Failed to submit comment.", true);
+            } finally {
+                commentSubmitBtn.disabled = false;
+                commentSubmitBtn.textContent = "Submit Comment";
+            }
+        });
+
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            // Get post ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+
+            if (id) {
+                loadPost(id);
+            } else {
+                document.body.innerHTML = `<div class="text-center p-20">
+                    <h1 class="text-4xl font-bold mb-4">No Post Specified</h1>
+                    <p class="text-gray-600">A post ID is required to view this page.</p>
+                    <a href="/blog.html" class="mt-8 inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold">Back to Blog</a>
+                </div>`;
+                lucide.createIcons();
+            }
+        });
+    </script>
+
+</body>
+</html>
+
