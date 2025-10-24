@@ -23,13 +23,12 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- Header -->
     <header class="bg-white shadow-sm">
         <nav class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <div class="text-2xl font-bold text-indigo-600">MyBlog</div>
             <div class="flex items-center space-x-4">
-                <a href="#" class="text-gray-600 hover:text-indigo-600 font-medium">Home</a>
-                <a href="/blog.html" class="text-indigo-600 font-bold">Blog</a>
+                <a href="index.html" class="text-gray-600 hover:text-indigo-600 font-medium">Home</a>
+                <a href="blog.html" class="text-indigo-600 font-bold">Blog</a>
                 <a href="#" class="text-gray-600 hover:text-indigo-600 font-medium">About</a>
                 <a href="#" class="text-gray-600 hover:text-indigo-600 font-medium">Contact</a>
             </div>
@@ -38,31 +37,24 @@
 
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
 
-        <!-- Hero / Featured Section -->
         <section id="featured-post" class="mb-12 hidden">
-            <!-- Content will be loaded by JS -->
-        </section>
+            </section>
 
-        <!-- Category Filter Bar -->
         <section class="mb-8">
             <h2 class="text-xl font-semibold mb-4">Filter by Category</h2>
             <div id="category-filters" class="flex flex-wrap gap-2">
                 <button class="filter-btn active bg-indigo-600 text-white px-4 py-2 rounded-full text-sm font-medium" data-category="all">
                     All Posts
                 </button>
-                <!-- Other categories will be loaded by JS -->
                 <div id="category-loader" class="text-gray-500">Loading categories...</div>
             </div>
         </section>
 
-        <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            <!-- Latest Posts Section (Main) -->
             <section class="lg:col-span-2">
                 <h2 class="text-3xl font-bold mb-6">Latest Posts</h2>
                 <div id="latest-posts-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Post cards will be loaded by JS -->
                     <div id="posts-loader" class="md:col-span-2 text-center text-gray-500 py-12">
                         <p>Loading posts...</p>
                     </div>
@@ -70,21 +62,23 @@
                 <div id="no-posts-message" class="hidden md:col-span-2 text-center text-gray-500 py-12">
                     <p>No posts found for this category.</p>
                 </div>
+
+                <div id="load-more-container" class="text-center mt-8 hidden">
+                    <button id="load-more-btn" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg">
+                        Load More
+                    </button>
+                </div>
             </section>
 
-            <!-- Sidebar -->
             <aside class="lg:col-span-1 space-y-8">
                 
-                <!-- Popular Posts -->
                 <section class="bg-white p-6 rounded-lg shadow-sm">
                     <h3 class="text-xl font-semibold mb-4 border-b pb-3">Popular Posts</h3>
                     <div id="popular-posts-list" class="space-y-4">
-                        <!-- Popular posts will be loaded by JS -->
                         <p class="text-gray-500 text-sm">Loading popular posts...</p>
                     </div>
                 </section>
 
-                <!-- Newsletter Signup -->
                 <section class="bg-indigo-600 text-white p-6 rounded-lg shadow-lg">
                     <h3 class="text-xl font-semibold mb-3">Subscribe for updates</h3>
                     <p class="text-indigo-100 text-sm mb-4">Get the latest posts and insights delivered right to your inbox.</p>
@@ -100,7 +94,6 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-gray-800 text-gray-300 mt-12">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
@@ -110,8 +103,8 @@
             <div>
                 <h4 class="text-lg font-semibold text-white mb-3">Quick Links</h4>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="#" class="hover:text-white">Home</a></li>
-                    <li><a href="/blog.html" class="hover:text-white">Blog</a></li>
+                    <li><a href="index.html" class="hover:text-white">Home</a></li>
+                    <li><a href="blog.html" class="hover:text-white">Blog</a></li>
                     <li><a href="#" class="hover:text-white">Terms of Service</a></li>
                     <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
                 </ul>
@@ -131,7 +124,6 @@
         </div>
     </footer>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { 
@@ -170,8 +162,16 @@
         const postsLoaderEl = document.getElementById('posts-loader');
         const noPostsMessageEl = document.getElementById('no-posts-message');
         const popularPostsListEl = document.getElementById('popular-posts-list');
+        // ADDED: Pagination elements
+        const loadMoreContainerEl = document.getElementById('load-more-container');
+        const loadMoreBtnEl = document.getElementById('load-more-btn');
 
-        let allPosts = []; // Cache for posts
+        // --- State Variables ---
+        let allPosts = []; // Cache for all posts
+        const POSTS_PER_PAGE = 6; // Number of posts to load at a time
+        let postsCurrentlyDisplayed = 0; // Posts shown for the current filter
+        let currentCategory = 'all'; // Active category filter
+        let currentFilteredPosts = []; // Cache of posts for the active filter
 
         // --- Utility Functions ---
         function createExcerpt(content, maxLength = 120) {
@@ -201,6 +201,9 @@
                 day: 'numeric'
             });
         }
+        
+        // MODIFIED: Base URL for blog posts
+        const POST_BASE_URL = "https://siciid09.github.io/ardaycaawiyee/post.html?id=";
 
         // --- Data Fetching ---
         async function loadCategories() {
@@ -225,36 +228,29 @@
 
         async function loadPosts() {
             try {
-                // --- *** FIX *** ---
-                // Removed `orderBy("publishDate", "desc")` to avoid needing a composite index.
-                // We will sort the results in JavaScript instead.
+                // Query only for "Published" posts
                 const q = query(postsCollection, 
                     where("status", "==", "Published")
                 );
-                // ---------------------
 
                 const snapshot = await getDocs(q);
                 allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                // --- *** FIX *** ---
-                // Sort the posts manually in JavaScript.
+                // Sort the posts manually in JavaScript by date (newest first)
                 allPosts.sort((a, b) => {
-                    // Handle cases where publishDate might be null
                     const dateA = a.publishDate ? a.publishDate.toDate() : new Date(0);
                     const dateB = b.publishDate ? b.publishDate.toDate() : new Date(0);
-                    return dateB - dateA; // Descending order (newest first)
+                    return dateB - dateA; // Descending order
                 });
-                // ---------------------
 
                 if (allPosts.length > 0) {
                     postsLoaderEl.style.display = 'none'; // Hide loader
                     renderFeaturedPost(allPosts[0]); // Feature the latest post
                     renderPopularPosts();
-                    filterAndRenderPosts('all'); // Initial render
+                    applyFilter('all'); // Initial render with 'all' category
                 } else {
                     postsLoaderEl.textContent = "No posts found.";
-                    // This is OK, filterAndRenderPosts will show the "no posts" message
-                    filterAndRenderPosts('all');
+                    applyFilter('all'); // Still run filter to show "no posts" message
                 }
 
             } catch (error) {
@@ -267,8 +263,10 @@
         // --- Rendering Functions ---
         function renderFeaturedPost(post) {
             const excerpt = createExcerpt(post.content, 150);
+            // MODIFIED: Used POST_BASE_URL
+            const postLink = `${POST_BASE_URL}${post.id}`;
             featuredPostEl.innerHTML = `
-                <a href="/post.html?id=${post.id}" class="block group relative w-full h-64 md:h-96 rounded-lg overflow-hidden shadow-lg">
+                <a href="${postLink}" class="block group relative w-full h-64 md:h-96 rounded-lg overflow-hidden shadow-lg">
                     <img src="${post.featureImage || 'https://placehold.co/1200x600/e2e8f0/64748b?text=Featured+Post'}" alt="${post.title}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 p-6 md:p-8">
@@ -289,7 +287,6 @@
                 if (viewsA !== viewsB) {
                     return viewsB - viewsA;
                 }
-                // Tie-breaker: newest first
                 const dateA = a.publishDate ? a.publishDate.toDate() : new Date(0);
                 const dateB = b.publishDate ? b.publishDate.toDate() : new Date(0);
                 return dateB - dateA;
@@ -304,7 +301,8 @@
 
             popular.forEach(post => {
                 const postEl = document.createElement('a');
-                postEl.href = `/post.html?id=${post.id}`;
+                // MODIFIED: Used POST_BASE_URL
+                postEl.href = `${POST_BASE_URL}${post.id}`;
                 postEl.className = "flex items-center space-x-3 group";
                 postEl.innerHTML = `
                     <img src="${post.featureImage || 'https://placehold.co/100x100/e2e8f0/64748b?text=Post'}" alt="${post.title}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
@@ -317,27 +315,56 @@
             });
         }
 
-        function filterAndRenderPosts(category) {
+        // NEW: Function to apply a category filter
+        function applyFilter(category) {
+            currentCategory = category; // Set the new category
             postsLoaderEl.style.display = 'none'; // Hide loader
             latestPostsGridEl.innerHTML = ''; // Clear grid
 
-            const filtered = (category === 'all') 
-                ? allPosts 
+            // 1. Calculate the new filtered list
+            currentFilteredPosts = (category === 'all')
+                ? allPosts
                 : allPosts.filter(post => post.category === category);
 
-            if (filtered.length === 0) {
+            // 2. Reset display count
+            postsCurrentlyDisplayed = 0;
+
+            // 3. Check if any posts exist at all for this filter
+            if (currentFilteredPosts.length === 0) {
                 noPostsMessageEl.style.display = 'block';
+                loadMoreContainerEl.style.display = 'none'; // Hide "load more"
+            } else {
+                noPostsMessageEl.style.display = 'none';
+                // 4. Render the *first* batch of posts
+                renderMorePosts(); 
+            }
+        }
+
+        // NEW: Function to render the next batch of posts
+        function renderMorePosts() {
+            const start = postsCurrentlyDisplayed;
+            const end = start + POSTS_PER_PAGE;
+            const postsToRender = currentFilteredPosts.slice(start, end);
+
+            // This should be handled by applyFilter, but as a safeguard:
+            if (postsToRender.length === 0 && start === 0) {
+                noPostsMessageEl.style.display = 'block';
+                loadMoreContainerEl.style.display = 'none';
                 return;
             }
-            
+
+            // Hide "no posts" message if we're rendering anything
             noPostsMessageEl.style.display = 'none';
-            filtered.forEach(post => {
+            
+            postsToRender.forEach(post => {
                 const card = document.createElement('article');
                 card.className = "post-card bg-white rounded-lg shadow-sm overflow-hidden flex flex-col";
                 const excerpt = createExcerpt(post.content);
+                // MODIFIED: Used POST_BASE_URL
+                const postLink = `${POST_BASE_URL}${post.id}`;
                 
                 card.innerHTML = `
-                    <a href="/post.html?id=${post.id}" class="block">
+                    <a href="${postLink}" class="block">
                         <img src="${post.featureImage || 'https://placehold.co/600x400/e2e8f0/64748b?text=Blog+Post'}" alt="${post.title}" class="w-full h-48 object-cover">
                     </a>
                     <div class="p-6 flex-grow flex flex-col">
@@ -345,22 +372,34 @@
                             <span class="text-indigo-600 text-sm font-medium">${post.category || 'Uncategorized'}</span>
                         </div>
                         <h3 class="text-xl font-semibold text-gray-900 mb-3">
-                            <a href="/post.html?id=${post.id}" class="hover:underline">${post.title}</a>
+                            <a href="${postLink}" class="hover:underline">${post.title}</a>
                         </h3>
                         <p class="text-gray-600 text-sm mb-4 flex-grow">${excerpt}</p>
                         <div class="flex items-center justify-between text-sm text-gray-500 mt-auto">
                              <span class="font-medium">${post.author || 'Admin'} &bull; ${formatDate(post.publishDate)}</span>
-                             <a href="/post.html?id=${post.id}" class="font-semibold text-indigo-600 hover:text-indigo-800 flex items-center">
+                             <a href="${postLink}" class="font-semibold text-indigo-600 hover:text-indigo-800 flex items-center">
                                  Read more <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
                              </a>
                         </div>
                     </div>
                 `;
+                // MODIFIED: Appends to the grid instead of overwriting
                 latestPostsGridEl.appendChild(card);
             });
 
-            lucide.createIcons();
+            lucide.createIcons(); // Re-render icons
+
+            // Update the count of displayed posts
+            postsCurrentlyDisplayed += postsToRender.length;
+
+            // Show/Hide "Load More" button
+            if (postsCurrentlyDisplayed < currentFilteredPosts.length) {
+                loadMoreContainerEl.style.display = 'block'; // Show button
+            } else {
+                loadMoreContainerEl.style.display = 'none'; // Hide button, all posts are loaded
+            }
         }
+
 
         // --- Event Listeners ---
         categoryFiltersEl.addEventListener('click', (e) => {
@@ -375,9 +414,16 @@
             btn.classList.add('active', 'bg-indigo-600', 'text-white');
             btn.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
 
+            // MODIFIED: Call the new filter function
             const category = btn.dataset.category;
-            filterAndRenderPosts(category);
+            applyFilter(category);
         });
+
+        // ADDED: Event listener for the load more button
+        loadMoreBtnEl.addEventListener('click', () => {
+            renderMorePosts();
+        });
+
 
         // --- Initial Load ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -389,4 +435,3 @@
 
 </body>
 </html>
-
